@@ -1,0 +1,161 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  font-size: 100%;
+}
+
+.calculate-letter-size {
+  font-family: monospace;
+  height: auto;
+  width: auto;
+  top: -100px;
+  left: -100px;
+  visibility: hidden;
+  position: fixed;
+  overflow: visible;
+  white-space: nowrap;
+}
+
+.project.is-hover,
+.project.is-hover .canvas--content--layer {
+  cursor: pointer;
+}
+
+.project.is-able-to-move,
+.project.is-able-to-move .canvas--content--layer {
+  cursor: move;
+}
+
+.project {
+  overflow: hidden;
+  position: relative;
+}
+
+.canvas,
+.selection,
+.selection--dot {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;          
+}
+
+.canvas--content {
+  position: relative;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.canvas--content--layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  cursor: default;
+}
+
+.canvas--content--layer.is-hover {
+  color: red;
+}
+
+.canvas--content--layer.is-selected {
+  color: blue;
+}
+
+.selection {
+  position: absolute;
+  pointer-events: none;
+  border: 1px solid gray;
+}
+
+.selection--dot {
+  position: absolute;
+  background: white;
+  width: 5px;
+  height: 5px;
+  border: 1px solid gray;
+  margin-left: -3px;
+  margin-top: -3px;
+  pointer-events: auto;
+}
+
+.selection--dot__nw,
+.selection.is-flipped-x.is-flipped-y .selection--dot.selection--dot__se,
+.selection.is-flipped-x .selection--dot__ne,
+.selection.is-flipped-y .selection--dot__sw {
+  top: 0;
+  left: 0;
+  margin-left: -4px;
+  margin-top: -4px;
+  cursor: nwse-resize;
+}
+
+.selection--dot__n,
+.selection.is-flipped-y .selection--dot__s {
+  top: 0;
+  left: 50%;
+  margin-left: -4px;
+  margin-top: -4px;
+  cursor: ns-resize;
+}
+
+.selection--dot__ne,
+.selection.is-flipped-x.is-flipped-y .selection--dot.selection--dot__sw,
+.selection.is-flipped-x .selection--dot__nw,
+.selection.is-flipped-y .selection--dot__se {
+  top: 0;
+  left: 100%;
+  margin-top: -4px;
+  cursor: nesw-resize;
+}
+
+.selection--dot__w,
+.selection.is-flipped-x .selection--dot__e {
+  top: 50%;
+  left: 0;
+  margin-left: -4px;
+  margin-top: -4px;
+  cursor: ew-resize;
+}
+
+.selection--dot__e,
+.selection.is-flipped-x .selection--dot__w {
+  top: 50%;
+  left: 100%;
+  cursor: ew-resize;
+}
+
+.selection--dot__sw,
+.selection.is-flipped-x.is-flipped-y .selection--dot.selection--dot__ne,
+.selection.is-flipped-x .selection--dot__se,
+.selection.is-flipped-y .selection--dot__nw {
+  top: 100%;
+  left: 0;
+  cursor: nesw-resize;
+}
+
+.selection--dot__s,
+.selection.is-flipped-y .selection--dot__n {
+  top: 100%;
+  left: 50%;
+  cursor: ns-resize;
+}
+
+.selection--dot__se,
+.selection.is-flipped-x.is-flipped-y .selection--dot.selection--dot__nw,
+.selection.is-flipped-x .selection--dot__sw,
+.selection.is-flipped-y .selection--dot__ne {
+  top: 100%;
+  left: 100%;
+  cursor: nwse-resize;
+}
