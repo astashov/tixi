@@ -1,12 +1,15 @@
 (ns tixi.data
-  (:require [tixi.utils :refer [seq-contains?]]))
+  (:require [tixi.utils :refer [seq-contains? p]]))
 
 (def data
   (atom {:current nil
          :completed {}
-         :tool "line"
+         :tool :line
          :action nil
-         :autoincrement 0}))
+         :autoincrement 0
+         :selected-id nil
+         :hover-id nil
+         :moving-from nil}))
 
 (defn current []
   (:current @data))
@@ -30,14 +33,14 @@
   (:moving-from @data))
 
 (defn draw-tool? []
-  (seq-contains? ["line" "rect" "rect-line"] (tool)))
+  (seq-contains? [:line :rect :rect-line] (tool)))
 
 (defn select-tool? []
-  (seq-contains? ["select"] (tool)))
+  (seq-contains? [:select] (tool)))
 
 (defn draw-action? []
-  (seq-contains? ["draw"] (action)))
+  (seq-contains? [:draw] (action)))
 
 (defn resize-action []
-  (if-let [[_ result] (re-matches #"^resize-(.+)" (action))]
-    result))
+  (when-let [[_ result] (when (action) (re-matches #"^resize-(.+)" (name (action))))]
+    (keyword result)))

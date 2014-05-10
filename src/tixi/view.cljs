@@ -1,10 +1,12 @@
 (ns tixi.view
   (:require-macros [dommy.macros :refer (node sel1)]
+                   [schema.macros :as scm]
                    [cljs.core.async.macros :refer [go]])
   (:require [quiescent :as q :include-macros true]
             [quiescent.dom :as d]
             [dommy.core :as dommy]
             [cljs.core.async :as async :refer [>!]]
+            [tixi.schemas :as s]
             [tixi.utils :refer [p]]
             [tixi.position :as p]
             [tixi.drawer :as drawer]))
@@ -36,14 +38,14 @@
   "Displays the canvas"
   [data channel]
   (d/div {:className "canvas"
-          :onMouseDown (fn [e] (send-event-with-coords "draw" "down" e channel))
-          :onMouseUp (fn [e] (send-event-with-coords "draw" "up" e channel))}
-    (apply d/div {:className "canvas--content"} 
+          :onMouseDown (fn [e] (send-event-with-coords :draw :down e channel))
+          :onMouseUp (fn [e] (send-event-with-coords :draw :up e channel))}
+    (apply d/div {:className "canvas--content"}
            (map
              (fn [[id item]] (Layer {:item item
                                      :is-hover (= id (:hover-id data))
                                      :is-selected (= id (:selected-id data))}))
-             (if-let [[id item] (:current data)]
+             (if-let [{:keys [id item]} (:current data)]
                (assoc (:completed data) id item)
                (:completed data))))))
 
@@ -60,8 +62,8 @@
                                        (selection-position (get-in data [:completed (:selected-id data)]))))}
       (map (fn [css-class]
              (d/div {:className (str "selection--dot selection--dot__" css-class)
-                     :onMouseDown (fn [e] (send-event-with-coords (str "resize-" css-class) "down" e channel))
-                     :onMouseUp (fn [e] (send-event-with-coords (str "resize-" css-class) "up" e channel))}))
+                     :onMouseDown (fn [e] (send-event-with-coords (keyword (str "resize-" css-class)) :down e channel))
+                     :onMouseUp (fn [e] (send-event-with-coords (keyword (str "resize-" css-class)) :up e channel))}))
            ["nw" "n" "ne" "w" "e" "sw" "s" "se"]))))
 
 (q/defcomponent Project
@@ -77,6 +79,6 @@
     (if (:selected-id data)
       (Selection data channel))))
 
-(defn render [data channel]
+(scm/defn ^:always-validate render [data :- s/Data channel]
   "Renders the project"
   (q/render (Project data channel) (sel1 :#content)))

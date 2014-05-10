@@ -7,6 +7,7 @@
                  [quiescent "0.1.1"]
                  [prismatic/dommy "0.1.1"]
                  [org.clojure/core.async "0.1.301.0-deb34a-alpha"]
+                 [prismatic/schema "0.2.2"]
                  [cider/cider-nrepl "0.6.1-SNAPSHOT"]]
 
   :plugins [[lein-cljsbuild "1.0.3"]
@@ -16,7 +17,6 @@
   :profiles {
     :dev {
        :plugins [[com.cemerick/clojurescript.test "0.3.0"]]}}
-  
 
   :source-paths ["src"]
 
@@ -30,9 +30,9 @@
                 :source-map true}}
               {:id "test"
                :source-paths ["src" "test"]
-               :notify-command ["phantomjs" :cljs.test/runner "textik_test.js"]
+               :notify-command ["phantomjs" :cljs.test/runner "tixi_test.js"]
                :compiler {
-                 :output-to "textik_test.js"
+                 :output-to "tixi_test.js"
                  :optimizations :whitespace}}]
     :test-commands {"unit"
       ["phantomjs" :runner "textik_test.js"]}})

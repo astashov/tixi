@@ -44,7 +44,6 @@
            (fn [x1 y1 x2 y2 dx dy] [(+ x1 dx) (+ y1 dy) (+ x2 dx) (+ y2 dy)])))
 
 (defn select-layer! [x y]
-  (p "Selecting layer")
   (if-let [[id _] (find-layer-under-cursor x y)]
     (swap! d/data assoc :selected-id id)
     (swap! d/data assoc :selected-id nil))
@@ -54,18 +53,18 @@
 (defn- build-layer! [type content]
   (let [id (:autoincrement @d/data)]
     (swap! d/data update-in [:autoincrement] inc)
-    [id {:type type :content content}]))
+    {:id id :item {:type type :content content}}))
 
 (defn initiate-current-layer! [x y]
   (swap! d/data assoc :current (build-layer! (d/tool) [x y x y])))
 
 (defn update-current-layer! [x y]
   (when (d/current)
-    (swap! d/data assoc-in [:current 1 :content 2] x)
-    (swap! d/data assoc-in [:current 1 :content 3] y)))
+    (swap! d/data assoc-in [:current :item :content 2] x)
+    (swap! d/data assoc-in [:current :item :content 3] y)))
 
 (defn finish-current-layer! []
-  (when-let [[id item] (d/current)]
+  (when-let [{:keys [id item]} (d/current)]
     (swap! d/data assoc :current nil)
     (swap! d/data update-in [:completed] assoc id item)))
 
@@ -73,12 +72,12 @@
 (defn resize! [id x y type]
   (let [f (fn [x1 y1 x2 y2 dx dy]
             (case type
-              "nw" [(+ x1 dx) (+ y1 dy) x2        y2       ]
-              "n"  [x1        (+ y1 dy) x2        y2       ]
-              "ne" [x1        (+ y1 dy) (+ x2 dx) y2       ]
-              "w"  [(+ x1 dx) y1        x2        y2       ]
-              "e"  [x1        y1        (+ x2 dx) y2       ]
-              "sw" [(+ x1 dx) y1        x2        (+ y2 dy)]
-              "s"  [x1        y1        x2        (+ y2 dy)]
-              "se" [x1        y1        (+ x2 dx) (+ y2 dy)]))]
+              :nw [(+ x1 dx) (+ y1 dy) x2        y2       ]
+              :n  [x1        (+ y1 dy) x2        y2       ]
+              :ne [x1        (+ y1 dy) (+ x2 dx) y2       ]
+              :w  [(+ x1 dx) y1        x2        y2       ]
+              :e  [x1        y1        (+ x2 dx) y2       ]
+              :sw [(+ x1 dx) y1        x2        (+ y2 dy)]
+              :s  [x1        y1        x2        (+ y2 dy)]
+              :se [x1        y1        (+ x2 dx) (+ y2 dy)]))]
     (move-layer-edges! id x y f)))

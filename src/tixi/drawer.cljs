@@ -1,5 +1,8 @@
 (ns tixi.drawer
-  (:require [clojure.string :as s]
+  (:require-macros [schema.macros :as scm])
+  (:require [clojure.string :as string]
+            [schema.core :as sc]
+            [tixi.schemas :as s]
             [tixi.utils :refer [p b]]
             [tixi.data :as d]))
 
@@ -60,13 +63,13 @@
       (concat-lines [[x1 y1 x1 y2]
                      [x1 y2 x2 y2]]))))
 
-(defn parse
+(scm/defn ^:always-validate parse
   "Parses the data structure, and returns the string to display"
-  [data]
+  [data :- s/Item]
   (case (:type data)
-    "line" (parse-line (:content data))
-    "rect" (parse-rect (:content data))
-    "rect-line" (parse-rect-line (:content data))
+    :line (parse-line (:content data))
+    :rect (parse-rect (:content data))
+    :rect-line (parse-rect-line (:content data))
     nil))
 
 (defn- repeat-string [string times]
@@ -77,19 +80,19 @@
            (filter (fn [[[x y] _]] (and (>= x 0) (< x width) (>= y 0) (< y height)))
                    data)))
 
-(defn render [data width height]
-  (b #(s/join "\n"
-    (map s/join
-      (partition
-        width
-        (let [points (prepare-to-render (parse data) width height)]
-          (str
-            (reduce 
-              (fn [string [[x y] sym]]
-                (let [position (- (+ (* width y) x) (count string))]
-                  (str string (repeat-string " " position) sym)))
-              ""
-              points)
-            (let [[[x y] sym] (last points)
-                  last-position (+ (* width y) x)]
-              (repeat-string " " (- (* width height) last-position))))))))))
+(scm/defn ^:always-validate render [data :- s/Item, width :- sc/Int, height :- sc/Int]
+  (string/join "\n"
+      (map string/join
+        (partition
+          width
+          (let [points (prepare-to-render (parse data) width height)]
+            (str
+              (reduce
+                (fn [string [[x y] sym]]
+                  (let [position (- (+ (* width y) x) (count string))]
+                    (str string (repeat-string " " position) sym)))
+                ""
+                points)
+              (let [[[x y] sym] (last points)
+                    last-position (+ (* width y) x)]
+                (repeat-string " " (- (* width height) last-position)))))))))

@@ -22,14 +22,14 @@
       (let [{:keys [type value action]} (<! channel)
             {:keys [x y]} value]
         (case type
-          "down" (do
+          :down (do
                    (m/set-action! action)
                    (m/start-moving! x y))
-          "up" (do
+          :up (do
                  (m/set-action! nil)
                  (m/finish-moving!)))
 
-        (when (= action "draw")
+        (when (= action :draw)
           (cond
             (d/draw-tool?)
             (e/handle-draw-tool-actions type x y)

@@ -13,10 +13,10 @@
     :keypress
     (fn [event]
       (case (.-keyCode event)
-        108 (m/set-tool! "line") ; l
-        114 (m/set-tool! "rect") ; r
-        115 (m/set-tool! "select") ; s
-        116 (m/set-tool! "rect-line") ; t
+        108 (m/set-tool! :line) ; l
+        114 (m/set-tool! :rect) ; r
+        115 (m/set-tool! :select) ; s
+        116 (m/set-tool! :rect-line) ; t
       ))))
 
 (defn install-mouse-events []
@@ -41,11 +41,10 @@
 
 (defn handle-draw-tool-actions [type x y]
   (case type
-    "down" (m/initiate-current-layer! x y)
-    "up" (m/finish-current-layer!)))
+    :down (m/initiate-current-layer! x y)
+    :up (m/finish-current-layer!)))
 
 (defn handle-selection-tool-actions [type x y]
   (case type
-    "down" (m/select-layer! x y)
-    "up" (m/finish-moving!)))
-
+    :down (m/select-layer! x y)
+    :up (m/finish-moving!)))
