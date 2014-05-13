@@ -16,7 +16,7 @@
 (e/install-keyboard-events)
 (e/install-mouse-events)
 
-(v/render @d/data channel)
+(e/render)
 
 (go (while true
       (let [{:keys [type value action]} (<! channel)
@@ -24,7 +24,7 @@
         (case type
           :down (do
                    (m/set-action! action)
-                   (m/start-moving! x y))
+                   (m/start-moving! [x y]))
           :up (do
                  (m/set-action! nil)
                  (m/finish-moving!)))
@@ -32,9 +32,9 @@
         (when (= action :draw)
           (cond
             (d/draw-tool?)
-            (e/handle-draw-tool-actions type x y)
+            (e/handle-draw-tool-actions type [x y])
 
             (d/select-tool?)
-            (e/handle-selection-tool-actions type x y)))
+            (e/handle-selection-tool-actions type [x y])))
 
-        (v/render @d/data channel))))
+        (e/render))))

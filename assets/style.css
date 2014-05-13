@@ -159,3 +159,9 @@ html, body {
   left: 100%;
   cursor: nwse-resize;
 }
+
+.tool {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+}

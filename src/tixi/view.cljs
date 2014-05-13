@@ -18,7 +18,7 @@
     (go (>! channel {:action action :type type :value text-coords}))))
 
 (defn- selection-position [item]
-  (let [[x1 y1 x2 y2] (:content item)
+  (let [[x1 y1 x2 y2] (:input item)
         [small-x large-x] (sort [x1 x2])
         [small-y large-y] (sort [y1 y2])
         {left :x top :y} (p/position-from-text-coords small-x small-y)
@@ -28,11 +28,16 @@
 
 (q/defcomponent Layer
   "Displays the layer"
-  [{:keys [item is-hover is-selected]}]
-  (d/pre {:className (str "canvas--content--layer"
-                          (if is-selected " is-selected" "")
-                          (if is-hover " is-hover" ""))}
-    (apply drawer/render item (p/canvas-size))))
+  [{:keys [id item is-hover is-selected]}]
+  (let [{:keys [origin dimensions text]} (:cache item)
+        {:keys [x y]} (apply p/position-from-text-coords origin)
+        {width :x height :y} (apply p/position-from-text-coords dimensions)]
+    (d/pre {:className (str "canvas--content--layer"
+                            (if is-selected " is-selected" "")
+                            (if is-hover " is-hover" ""))
+            :style {:left x :top y :width width :height height}
+            :id (str "layer-" id)}
+      text)))
 
 (q/defcomponent Canvas
   "Displays the canvas"
@@ -42,7 +47,8 @@
           :onMouseUp (fn [e] (send-event-with-coords :draw :up e channel))}
     (apply d/div {:className "canvas--content"}
            (map
-             (fn [[id item]] (Layer {:item item
+             (fn [[id item]] (Layer {:id id
+                                     :item item
                                      :is-hover (= id (:hover-id data))
                                      :is-selected (= id (:selected-id data))}))
              (if-let [{:keys [id item]} (:current data)]
@@ -53,7 +59,7 @@
   "Displays the selection box around the selected item"
   [data channel]
   (let [selected-item (get-in data [:completed (:selected-id data)])
-        [x1 y1 x2 y2] (:content selected-item)]
+        [x1 y1 x2 y2] (:input selected-item)]
     (apply d/div {:className (str
                                "selection"
                                (when (> x1 x2) " is-flipped-x")
@@ -66,6 +72,11 @@
                      :onMouseUp (fn [e] (send-event-with-coords (keyword (str "resize-" css-class)) :up e channel))}))
            ["nw" "n" "ne" "w" "e" "sw" "s" "se"]))))
 
+(q/defcomponent Tool
+  "Displays the currently selected tool"
+  [data]
+  (d/div {:className "tool"} (str (:tool data))))
+
 (q/defcomponent Project
   "Displays the project"
   [data channel]
@@ -76,8 +87,9 @@
                             (:hover-id data) " is-hover"
                             :else ""))}
     (Canvas data channel)
-    (if (:selected-id data)
-      (Selection data channel))))
+    (when (:selected-id data)
+      (Selection data channel))
+    (Tool data)))
 
 (scm/defn ^:always-validate render [data :- s/Data channel]
   "Renders the project"

@@ -17,6 +17,9 @@
 (defn completed []
   (:completed @data))
 
+(defn completed-item [id]
+  (get-in [:completed id] @data))
+
 (defn tool []
   (:tool @data))
 
