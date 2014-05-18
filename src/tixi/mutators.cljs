@@ -107,3 +107,9 @@
 
 (defn resize-selection! [[dx dy] type]
   (move-selection-edges! [dx dy] (recalculate-edges-fn type)))
+
+(defn delete-selected! []
+  (let [ids (d/selected-ids)]
+    (select-layer! [-1 -1] false)
+    (doseq [id ids]
+      (swap! d/data update-in [:completed] dissoc id))))

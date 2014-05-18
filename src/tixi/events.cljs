@@ -10,13 +10,18 @@
 (defn install-keyboard-events []
   (dommy/listen!
     js/document
-    :keypress
+    :keydown
     (fn [event]
       (case (.-keyCode event)
-        108 (m/set-tool! :line) ; l
-        114 (m/set-tool! :rect) ; r
-        115 (m/set-tool! :select) ; s
-        116 (m/set-tool! :rect-line) ; t
+        8  (do ; backspace
+             (.preventDefault event)
+             (m/delete-selected!)
+             (render))
+        76 (m/set-tool! :line) ; l
+        82 (m/set-tool! :rect) ; r
+        83 (m/set-tool! :select) ; s
+        84 (m/set-tool! :rect-line) ; t
+        nil
       ))))
 
 (defn handle-draw-tool-actions [type [x y]]
@@ -38,7 +43,6 @@
   (let [id (.requestAnimationFrame js/window
              (fn [_]
                (reset! request-id nil)
-               (p @d/data)
                (v/render @d/data channel)))]
     (reset! request-id id)))
 
