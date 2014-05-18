@@ -21,9 +21,10 @@
    :tool (apply s/enum (conj item-types :select))
    :action (s/maybe s/Keyword)
    :autoincrement s/Int
-   :selected-id (s/maybe s/Int)
-   :hover-id (s/maybe s/Int)
-   :moving-from (s/maybe [s/Int])})
+   :selection {:ids [s/Int]
+               :edges [s/Int]
+               :rel-sizes {s/Int [s/Num]}}
+   :hover-id (s/maybe s/Int)})
 
 (def Points
   {:origin [s/Int]

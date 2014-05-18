@@ -7,9 +7,10 @@
          :tool :line
          :action nil
          :autoincrement 0
-         :selected-id nil
-         :hover-id nil
-         :moving-from nil}))
+         :selection {:ids []
+                     :edges nil
+                     :rel-sizes {}}
+         :hover-id nil}))
 
 (defn current []
   (:current @data))
@@ -18,7 +19,7 @@
   (:completed @data))
 
 (defn completed-item [id]
-  (get-in [:completed id] @data))
+  (get-in @data [:completed id]))
 
 (defn tool []
   (:tool @data))
@@ -26,14 +27,17 @@
 (defn action []
   (:action @data))
 
-(defn selected-id []
-  (:selected-id @data))
+(defn selected-ids []
+  (get-in @data [:selection :ids]))
+
+(defn selected-rel-size [id]
+  (get-in @data [:selection :rel-sizes id]))
+
+(defn selection-edges []
+  (get-in @data [:selection :edges]))
 
 (defn hover-id []
   (:hover-id @data))
-
-(defn moving-from []
-  (:moving-from @data))
 
 (defn draw-tool? []
   (seq-contains? [:line :rect :rect-line] (tool)))

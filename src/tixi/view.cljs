@@ -14,11 +14,12 @@
 (enable-console-print!)
 
 (defn- send-event-with-coords [action type event channel]
-  (let [text-coords (p/text-coords-from-event (.-nativeEvent event))]
-    (go (>! channel {:action action :type type :value text-coords}))))
+  (let [nativeEvent (.-nativeEvent event)
+        text-coords (p/text-coords-from-event nativeEvent)]
+    (go (>! channel {:action action :type type :value text-coords :event nativeEvent}))))
 
-(defn- selection-position [item]
-  (let [[x1 y1 x2 y2] (:input item)
+(defn- selection-position [edges]
+  (let [[x1 y1 x2 y2] edges
         [small-x large-x] (sort [x1 x2])
         [small-y large-y] (sort [y1 y2])
         {left :x top :y} (p/position-from-text-coords small-x small-y)
@@ -50,7 +51,7 @@
              (fn [[id item]] (Layer {:id id
                                      :item item
                                      :is-hover (= id (:hover-id data))
-                                     :is-selected (= id (:selected-id data))}))
+                                     :is-selected (some #{id} (get-in data [:selection :ids]))}))
              (if-let [{:keys [id item]} (:current data)]
                (assoc (:completed data) id item)
                (:completed data))))))
@@ -58,14 +59,13 @@
 (q/defcomponent Selection
   "Displays the selection box around the selected item"
   [data channel]
-  (let [selected-item (get-in data [:completed (:selected-id data)])
-        [x1 y1 x2 y2] (:input selected-item)]
-    (apply d/div {:className (str
-                               "selection"
-                               (when (> x1 x2) " is-flipped-x")
+  (let [selected-ids (get-in data [:selection :ids])
+        edges (p/wrapping-edges selected-ids)
+        [x1 y1 x2 y2] edges]
+    (apply d/div {:className (str "selection" (when (> x1 x2) " is-flipped-x")
                                (when (> y1 y2) " is-flipped-y"))
                   :style (into {} (map (fn [[key value]] [key (str value "px")])
-                                       (selection-position (get-in data [:completed (:selected-id data)]))))}
+                                       (selection-position edges)))}
       (map (fn [css-class]
              (d/div {:className (str "selection--dot selection--dot__" css-class)
                      :onMouseDown (fn [e] (send-event-with-coords (keyword (str "resize-" css-class)) :down e channel))
@@ -80,16 +80,16 @@
 (q/defcomponent Project
   "Displays the project"
   [data channel]
-  (d/div {:className (str "project"
-                          (cond
-                            (and (:selected-id data)
-                                 (= (:hover-id data) (:selected-id data))) " is-able-to-move"
-                            (:hover-id data) " is-hover"
-                            :else ""))}
-    (Canvas data channel)
-    (when (:selected-id data)
-      (Selection data channel))
-    (Tool data)))
+  (let [selected-ids (get-in data [:selection :ids])]
+    (d/div {:className (str "project"
+                            (cond
+                              (some #{(:hover-id data)} selected-ids) " is-able-to-move"
+                              (:hover-id data) " is-hover"
+                              :else ""))}
+      (Canvas data channel)
+      (when (not-empty selected-ids)
+        (Selection data channel))
+      (Tool data))))
 
 (scm/defn ^:always-validate render [data :- s/Data channel]
   "Renders the project"

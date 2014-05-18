@@ -19,15 +19,14 @@
 (e/render)
 
 (go (while true
-      (let [{:keys [type value action]} (<! channel)
+      (let [{:keys [type value action event]} (<! channel)
             {:keys [x y]} value]
         (case type
           :down (do
                    (m/set-action! action)
-                   (m/start-moving! [x y]))
+                   (e/set-moving-from! [x y]))
           :up (do
-                 (m/set-action! nil)
-                 (m/finish-moving!)))
+                 (m/set-action! nil)))
 
         (when (= action :draw)
           (cond
@@ -35,6 +34,6 @@
             (e/handle-draw-tool-actions type [x y])
 
             (d/select-tool?)
-            (e/handle-selection-tool-actions type [x y])))
+            (e/handle-selection-tool-actions type [x y] (.-shiftKey event))))
 
         (e/render))))

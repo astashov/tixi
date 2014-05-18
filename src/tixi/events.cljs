@@ -24,12 +24,13 @@
     :down (m/initiate-current-layer! [x y])
     :up (m/finish-current-layer!)))
 
-(defn handle-selection-tool-actions [type [x y]]
+(defn handle-selection-tool-actions [type [x y] add-more?]
   (case type
-    :down (m/select-layer! [x y])
-    :up (m/finish-moving!)))
+    :down (m/select-layer! [x y] add-more?)
+    :up nil))
 
 (def ^:private request-id (atom nil))
+(def ^:private moving-from (atom [0 0]))
 
 (defn render []
   (when @request-id
@@ -37,8 +38,12 @@
   (let [id (.requestAnimationFrame js/window
              (fn [_]
                (reset! request-id nil)
+               (p @d/data)
                (v/render @d/data channel)))]
     (reset! request-id id)))
+
+(defn set-moving-from! [[x y]]
+  (reset! moving-from [x y]))
 
 (defn install-mouse-events []
   (dommy/listen!
@@ -46,16 +51,21 @@
     :mousemove
     (fn [event]
       (when-let [{:keys [x y]} (p/text-coords-from-event event)]
-        (cond
-          (d/draw-action?)
+        (let [[px py] @moving-from
+              dx (- x px)
+              dy (- y py)]
           (cond
-            (d/draw-tool?) (m/update-current-layer! [x y])
-            (d/select-tool?) (m/move-layer! (d/selected-id) [x y]))
+            (d/draw-action?)
+            (cond
+              (d/draw-tool?) (m/update-current-layer! [x y])
+              (d/select-tool?) (m/move-selection! [dx dy]))
 
-          (d/resize-action)
-          (m/resize! (d/selected-id) [x y] (d/resize-action))
+            (d/resize-action)
+            (m/resize-selection! [dx dy] (d/resize-action))
 
-          :else
-          (when (d/select-tool?)
-            (m/highlight-layer! [x y])))
+            :else
+            (when (d/select-tool?)
+              (m/highlight-layer! [x y]))))
+
+        (set-moving-from! [x y])
         (render)))))

@@ -2,10 +2,10 @@
 
 (enable-console-print!)
 
-(defn p [value]
+(defn p [& values]
   "Prints the value, and then returns it"
-  (*print-fn* (pr-str value))
-  value)
+  (*print-fn* (apply pr-str values))
+  (last values))
 
 (defn seq-contains? [coll target]
   (some #(= target %) coll))

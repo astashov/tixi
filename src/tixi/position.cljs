@@ -62,3 +62,17 @@
   (->> (d/completed)
        (filter (fn [[id item]] (hit-item? item coords)))
        (filter (fn [[id item]] (item-has-point? item coords)))))
+
+(defn- wrapping-coords [coords]
+  (let [[x1 y1 x2 y2] coords]
+    [(min x1 x2) (min y1 y2) (max x1 x2) (max y1 y2)]))
+
+
+(defn wrapping-edges [ids]
+  (when (and ids (not-empty ids))
+    (let [inputs (map #(:input (d/completed-item %)) ids)
+          [x1s y1s x2s y2s] (apply map vector (map #(wrapping-coords %) inputs))]
+      [(apply min x1s)
+       (apply min y1s)
+       (apply max x2s)
+       (apply max y2s)])))

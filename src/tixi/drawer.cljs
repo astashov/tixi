@@ -5,7 +5,6 @@
             [schema.core :as sc]
             [tixi.schemas :as s]
             [tixi.utils :refer [p]]
-            [tixi.mutators :as m]
             [tixi.data :as d]))
 
 ;; Bresenham's line algorithm
