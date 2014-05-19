@@ -7,6 +7,18 @@
             [tixi.utils :refer [p]]
             [tixi.mutators :as m]))
 
+(def ^:private request-id (atom nil))
+(def ^:private moving-from (atom [0 0]))
+
+(defn render []
+  (when @request-id
+    (.cancelAnimationFrame js/window @request-id))
+  (let [id (.requestAnimationFrame js/window
+             (fn [_]
+               (reset! request-id nil)
+               (v/render @d/data channel)))]
+    (reset! request-id id)))
+
 (defn install-keyboard-events []
   (dommy/listen!
     js/document
@@ -32,19 +44,7 @@
 (defn handle-selection-tool-actions [type [x y] add-more?]
   (case type
     :down (m/select-layer! [x y] add-more?)
-    :up nil))
-
-(def ^:private request-id (atom nil))
-(def ^:private moving-from (atom [0 0]))
-
-(defn render []
-  (when @request-id
-    (.cancelAnimationFrame js/window @request-id))
-  (let [id (.requestAnimationFrame js/window
-             (fn [_]
-               (reset! request-id nil)
-               (v/render @d/data channel)))]
-    (reset! request-id id)))
+    :up (m/finish-selection!)))
 
 (defn set-moving-from! [[x y]]
   (reset! moving-from [x y]))
@@ -62,7 +62,9 @@
             (d/draw-action?)
             (cond
               (d/draw-tool?) (m/update-current-layer! [x y])
-              (d/select-tool?) (m/move-selection! [dx dy]))
+              (d/select-tool?) (do
+                                 (m/update-selection! [x y])
+                                 (m/move-selection! [dx dy])))
 
             (d/resize-action)
             (m/resize-selection! [dx dy] (d/resize-action))

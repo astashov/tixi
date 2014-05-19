@@ -47,6 +47,12 @@ html, body {
   user-select: none;          
 }
 
+.current-selection {
+  position: absolute;
+  pointer-events: none;
+  border: 1px solid gray;
+}
+
 .canvas--content {
   position: relative;
   top: 0;

@@ -25,7 +25,7 @@
         {left :x top :y} (p/position-from-text-coords small-x small-y)
         {width :x height :y} (p/position-from-text-coords (inc (.abs js/Math (- large-x small-x)))
                                                           (inc (.abs js/Math (- large-y small-y))))]
-    {:left left :top top :width width :height height}))
+    {:left (str left "px") :top (str top "px") :width (str width "px") :height (str height "px")}))
 
 (q/defcomponent Layer
   "Displays the layer"
@@ -64,13 +64,18 @@
         [x1 y1 x2 y2] edges]
     (apply d/div {:className (str "selection" (when (> x1 x2) " is-flipped-x")
                                (when (> y1 y2) " is-flipped-y"))
-                  :style (into {} (map (fn [[key value]] [key (str value "px")])
-                                       (selection-position edges)))}
+                  :style (selection-position edges)}
       (map (fn [css-class]
              (d/div {:className (str "selection--dot selection--dot__" css-class)
                      :onMouseDown (fn [e] (send-event-with-coords (keyword (str "resize-" css-class)) :down e channel))
                      :onMouseUp (fn [e] (send-event-with-coords (keyword (str "resize-" css-class)) :up e channel))}))
            ["nw" "n" "ne" "w" "e" "sw" "s" "se"]))))
+
+(q/defcomponent CurrentSelection
+  "Displays the selection box around the selected item"
+  [data channel]
+  (let [edges (p/wrapping-coords (get-in data [:selection :current]))]
+    (d/div {:className "current-selection" :style (selection-position edges)})))
 
 (q/defcomponent Tool
   "Displays the currently selected tool"
@@ -80,7 +85,8 @@
 (q/defcomponent Project
   "Displays the project"
   [data channel]
-  (let [selected-ids (get-in data [:selection :ids])]
+  (let [selected-ids (get-in data [:selection :ids])
+        current-selection (get-in data [:selection :current])]
     (d/div {:className (str "project"
                             (cond
                               (some #{(:hover-id data)} selected-ids) " is-able-to-move"
@@ -89,6 +95,9 @@
       (Canvas data channel)
       (when (not-empty selected-ids)
         (Selection data channel))
+      (when current-selection
+        (CurrentSelection data channel))
+      (when ())
       (Tool data))))
 
 (scm/defn ^:always-validate render [data :- s/Data channel]

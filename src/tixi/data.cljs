@@ -9,6 +9,7 @@
          :autoincrement 0
          :selection {:ids []
                      :edges nil
+                     :current nil
                      :rel-sizes {}}
          :hover-id nil}))
 
@@ -35,6 +36,9 @@
 
 (defn selection-edges []
   (get-in @data [:selection :edges]))
+
+(defn current-selection []
+  (get-in @data [:selection :current]))
 
 (defn hover-id []
   (:hover-id @data))

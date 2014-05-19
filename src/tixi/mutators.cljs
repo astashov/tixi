@@ -34,7 +34,7 @@
         (cache-item! id)))))
 
 (defn- move-selection-edges! [[dx dy] f]
-  (let [[x1 y1 x2 y2] (d/selection-edges)]
+  (when-let [[x1 y1 x2 y2] (d/selection-edges)]
     (swap! d/data assoc-in [:selection :edges] (f x1 y1 x2 y2 dx dy))
     (adjust-layers-to-selection!)))
 
@@ -61,6 +61,21 @@
             rely2 (/ (- y2 sely1) selheight)]
         (swap! d/data assoc-in [:selection :rel-sizes id] [relx1 rely1 relx2 rely2])))))
 
+(defn start-selection! [[x y]]
+  (swap! d/data assoc-in [:selection :current] [x y x y]))
+
+(defn update-selection! [[x y]]
+  (when (d/current-selection)
+    (swap! d/data assoc-in [:selection :current 2] x)
+    (swap! d/data assoc-in [:selection :current 3] y)))
+
+(defn finish-selection! []
+  (let [[x1 y1 x2 y2] (d/current-selection)]
+    (when (and (not= x1 x2) (not= y1 y2))
+      (swap! d/data assoc-in [:selection :ids] (map first (p/items-inside-coords (d/current-selection))))
+      (set-selection-rel-sizes!)
+      (swap! d/data assoc-in [:selection :edges] (p/wrapping-edges (d/selected-ids)))))
+  (swap! d/data assoc-in [:selection :current] nil))
 
 (defn select-layer! [[x y] add-more?]
   (if-let [[id _] (find-layer-under-cursor [x y])]
@@ -68,7 +83,9 @@
       (swap! d/data update-in [:selection :ids] conj id)
       (when-not (some #{id} (d/selected-ids))
         (swap! d/data assoc-in [:selection :ids] [id])))
-    (swap! d/data assoc-in [:selection :ids] []))
+    (do
+      (swap! d/data assoc-in [:selection :ids] [])
+      (start-selection! [x y])))
   (set-selection-rel-sizes!)
   (swap! d/data assoc-in [:selection :edges] (p/wrapping-edges (d/selected-ids))))
 

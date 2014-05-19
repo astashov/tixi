@@ -58,15 +58,21 @@
                [(inc (+ px origin-x)) (+ py origin-y)]))
           points)))
 
+(defn items-inside-coords [coords]
+  (filter (fn [[_ item]]
+            (let [[x1 y1 x2 y2] (wrapping-coords (:input item))
+                  [selx1 sely1 selx2 sely2] (wrapping-coords coords)]
+              (and (>= x1 selx1) (<= x2 selx2) (>= y1 sely1) (<= y2 sely2))))
+          (d/completed)))
+
 (defn items-from-text-coords [coords]
   (->> (d/completed)
-       (filter (fn [[id item]] (hit-item? item coords)))
-       (filter (fn [[id item]] (item-has-point? item coords)))))
+       (filter (fn [[_ item]] (hit-item? item coords)))
+       (filter (fn [[_ item]] (item-has-point? item coords)))))
 
-(defn- wrapping-coords [coords]
+(defn wrapping-coords [coords]
   (let [[x1 y1 x2 y2] coords]
     [(min x1 x2) (min y1 y2) (max x1 x2) (max y1 y2)]))
-
 
 (defn wrapping-edges [ids]
   (when (and ids (not-empty ids))

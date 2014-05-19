@@ -22,7 +22,8 @@
    :action (s/maybe s/Keyword)
    :autoincrement s/Int
    :selection {:ids [s/Int]
-               :edges [s/Int]
+               :edges (s/maybe [s/Int])
+               :current (s/maybe [s/Int])
                :rel-sizes {s/Int [s/Num]}}
    :hover-id (s/maybe s/Int)})
 
