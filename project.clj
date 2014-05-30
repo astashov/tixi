@@ -10,6 +10,8 @@
                  [prismatic/schema "0.2.2"]
                  [cider/cider-nrepl "0.6.1-SNAPSHOT"]]
 
+  :jvm-opts ["-Xmx1G"]
+
   :plugins [[lein-cljsbuild "1.0.3"]
             [com.cemerick/austin "0.1.4"]
             [cider/cider-nrepl "0.6.1-SNAPSHOT"]]
@@ -30,9 +32,9 @@
                 :source-map true}}
               {:id "test"
                :source-paths ["src" "test"]
-               :notify-command ["phantomjs" :cljs.test/runner "tixi_test.js"]
+               :notify-command ["phantomjs" :cljs.test/runner "assets/function-bind-shim.js" "assets/react.js" "assets/raf.js" "tixi_test.js"]
                :compiler {
                  :output-to "tixi_test.js"
                  :optimizations :whitespace}}]
     :test-commands {"unit"
-      ["phantomjs" :runner "textik_test.js"]}})
+      ["phantomjs" :runner "assets/function-bind-shim.js" "assets/react.js" "assets/raf.js" "tixi_test.js"]}})

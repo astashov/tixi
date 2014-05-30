@@ -3,12 +3,20 @@
             [tixi.view :as v]
             [tixi.channel :refer [channel]]
             [tixi.data :as d]
+            [tixi.geometry :as g :refer [Size Rect Point]]
             [tixi.position :as p]
             [tixi.utils :refer [p]]
             [tixi.mutators :as m]))
 
 (def ^:private request-id (atom nil))
-(def ^:private moving-from (atom [0 0]))
+(def ^:private moving-from (atom (Point. 0 0)))
+
+(defn reset-data! []
+  (reset! request-id nil)
+  (reset! moving-from (Point. 0 0)))
+
+(defn- set-moving-from! [point]
+  (reset! moving-from point))
 
 (defn render []
   (when @request-id
@@ -19,12 +27,8 @@
                (v/render @d/data channel)))]
     (reset! request-id id)))
 
-(defn install-keyboard-events []
-  (dommy/listen!
-    js/document
-    :keydown
-    (fn [event]
-      (case (.-keyCode event)
+(defn handle-keyboard-events [event]
+  (case (.-keyCode event)
         8  (do ; backspace
              (.preventDefault event)
              (m/delete-selected!)
@@ -33,45 +37,56 @@
         82 (m/set-tool! :rect) ; r
         83 (m/set-tool! :select) ; s
         84 (m/set-tool! :rect-line) ; t
-        nil
-      ))))
+        nil))
 
-(defn handle-draw-tool-actions [type [x y]]
+(defn handle-mousemove [event]
+  (when-let [point (p/event->coords event)]
+    (let [previous-point @moving-from
+          diff-point (g/sub point previous-point)]
+      (cond
+        (d/draw-action?)
+        (cond
+          (d/draw-tool?)
+          (m/update-current-layer! point)
+
+          (d/select-tool?)
+          (do
+            (m/update-selection! point)
+            (m/move-selection! diff-point)))
+
+        (d/resize-action)
+        (m/resize-selection! diff-point (d/resize-action))
+
+        :else
+        (when (d/select-tool?)
+          (m/highlight-layer! point))))
+
+    (set-moving-from! point)
+    (render)))
+
+(defn handle-input-event [{:keys [type point action event]}]
   (case type
-    :down (m/initiate-current-layer! [x y])
-    :up (m/finish-current-layer!)))
+    :down
+    (do
+      (m/set-action! action)
+      (set-moving-from! point))
+    :up
+    (m/set-action! nil))
+  (when (= action :draw)
+    (cond
+      (d/draw-tool?)
+      (case type
+        :down (m/initiate-current-layer! point)
+        :up (m/finish-current-layer!))
 
-(defn handle-selection-tool-actions [type [x y] add-more?]
-  (case type
-    :down (m/select-layer! [x y] add-more?)
-    :up (m/finish-selection!)))
+      (d/select-tool?)
+      (case type
+        :down (m/select-layer! point (.-shiftKey event))
+        :up (m/finish-selection!))))
+  (render))
 
-(defn set-moving-from! [[x y]]
-  (reset! moving-from [x y]))
+(defn install-keyboard-events []
+  (dommy/listen! js/document :keydown handle-keyboard-events))
 
 (defn install-mouse-events []
-  (dommy/listen!
-    js/document
-    :mousemove
-    (fn [event]
-      (when-let [{:keys [x y]} (p/text-coords-from-event event)]
-        (let [[px py] @moving-from
-              dx (- x px)
-              dy (- y py)]
-          (cond
-            (d/draw-action?)
-            (cond
-              (d/draw-tool?) (m/update-current-layer! [x y])
-              (d/select-tool?) (do
-                                 (m/update-selection! [x y])
-                                 (m/move-selection! [dx dy])))
-
-            (d/resize-action)
-            (m/resize-selection! [dx dy] (d/resize-action))
-
-            :else
-            (when (d/select-tool?)
-              (m/highlight-layer! [x y]))))
-
-        (set-moving-from! [x y])
-        (render)))))
+  (dommy/listen!  js/document :mousemove handle-mousemove))

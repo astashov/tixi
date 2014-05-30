@@ -2,6 +2,7 @@
   (:require-macros [dommy.macros :refer (node sel1)]
                    [tixi.utils :refer (b)])
   (:require [dommy.core :as dommy]
+            [tixi.geometry :as g :refer [Size Rect Point]]
             [tixi.data :as d]
             [tixi.utils :refer [p]]))
 
@@ -12,73 +13,92 @@
     (let [calculator (sel1 :.calculate-letter-size)
           width (.-offsetWidth calculator)
           height (.-offsetHeight calculator)
-          result {:width (/ width number-of-x) :height height}]
+          result (Size. (.round js/Math (/ width number-of-x)) height)]
       (dommy/remove! calculator)
       result)))
 
 (defn- letter-size []
   ((memoize calculate-letter-size)))
 
+(defn- hit-item? [item point]
+  (let [{:keys [origin dimensions]} (:cache item)
+        rect (g/build-rect origin dimensions)]
+    (g/inside? rect point)))
+
+(defn- item-has-point? [item point]
+  (let [points (keys (:points (:cache item)))
+        moved-point (g/sub point (:origin (:cache item)))]
+    (not= (some #{moved-point} points) nil)))
+
 (defn canvas-size []
-  [(.floor js/Math (/ (.-innerWidth js/window) (:width (letter-size))))
-   (.floor js/Math (/ (.-innerHeight js/window) (:height (letter-size))))])
+  (Size. (.floor js/Math (/ (.-innerWidth js/window) (:width (letter-size))))
+         (.floor js/Math (/ (.-innerHeight js/window) (:height (letter-size))))))
 
-(defn text-coords-from-position [x y]
-  (let [{:keys [width height]} (letter-size)]
-    {:x (.round js/Math (/ x width))
-     :y (.floor js/Math (/ y height))}))
+(defprotocol IConvert
+  (position->coords [this])
+  (coords->position [this]))
 
-(defn position-from-text-coords [x y]
-  (let [{:keys [width height]} (letter-size)]
-    {:x (* x width)
-     :y (* y height)}))
+(extend-type Rect
+  IConvert
+  (position->coords [this]
+    (let [{:keys [width height]} (letter-size)
+          [x1 y1 x2 y2] (g/values this)]
+      (Rect. (Point. (.floor js/Math (/ x1 width))
+                     (.floor js/Math (/ y1 height)))
+             (Point. (.floor js/Math (/ x2 width))
+                     (.floor js/Math (/ y2 height))))))
+  (coords->position [this]
+    (let [{:keys [width height]} (letter-size)
+          [x1 y1 x2 y2] (g/values this)]
+      (Rect. (Point. (.floor js/Math (* x1 width))
+                     (.floor js/Math (* y1 height)))
+             (Point. (.floor js/Math (* x2 width))
+                     (.floor js/Math (* y2 height)))))))
 
-(defn text-coords-from-event [event]
-  (when-let [root (sel1 :.canvas)]
+(extend-type Point
+  IConvert
+  (position->coords [this]
+    (let [{:keys [width height]} (letter-size)
+          [x y] (g/values this)]
+      (Point. (.floor js/Math (/ x width))
+              (.floor js/Math (/ y height)))))
+  (coords->position [this]
+    (let [{:keys [width height]} (letter-size)
+         [x y] (g/values this)]
+      (Point. (.floor js/Math (* x width))
+              (.floor js/Math (* y height))))))
+
+(extend-type Size
+  IConvert
+  (position->coords [this]
+    (let [{:keys [width height]} (letter-size)
+          [x y] (g/values this)]
+      (Size. (.floor js/Math (/ x width))
+             (.floor js/Math (/ y height)))))
+  (coords->position [this]
+    (let [{:keys [width height]} (letter-size)
+         [x y] (g/values this)]
+      (Size. (.floor js/Math (* x width))
+             (.floor js/Math (* y height))))))
+
+(defn event->coords [event]
+  (let [root (or (sel1 :.canvas) (js-obj "offsetLeft" 0 "offsetTop" 0))]
     (let [x (- (.-clientX event) (.-offsetLeft root))
           y (- (.-clientY event) (.-offsetTop root))]
-      (text-coords-from-position x y))))
+      (position->coords (Point. x y)))))
 
-
-(defn- hit-item? [item [x y]]
-  (let [cache (:cache item)
-        [width height] (:dimensions cache)
-        [origin-x origin-y] (:origin cache)]
-    (and (>= x origin-x)
-         (>= y origin-y)
-         (<= x (+ origin-x width))
-         (<= y (+ origin-y height)))))
-
-(defn- item-has-point? [item [x y]]
-  (let [cache (:cache item)
-        points (:points cache)
-        [origin-x origin-y] (:origin cache)]
-    (some (fn [[[px py] _]]
-            (= [x y]
-               [(inc (+ px origin-x)) (+ py origin-y)]))
-          points)))
-
-(defn items-inside-coords [coords]
+(defn items-inside-rect [rect]
   (filter (fn [[_ item]]
-            (let [[x1 y1 x2 y2] (wrapping-coords (:input item))
-                  [selx1 sely1 selx2 sely2] (wrapping-coords coords)]
-              (and (>= x1 selx1) (<= x2 selx2) (>= y1 sely1) (<= y2 sely2))))
+            (let [input-rect (g/normalize (:input item))
+                  sel-rect (g/normalize rect)]
+              (g/inside? sel-rect input-rect)))
           (d/completed)))
 
-(defn items-from-text-coords [coords]
+(defn items-at-point [point]
   (->> (d/completed)
-       (filter (fn [[_ item]] (hit-item? item coords)))
-       (filter (fn [[_ item]] (item-has-point? item coords)))))
+       (filter (fn [[_ item]] (hit-item? item point)))
+       (filter (fn [[_ item]] (item-has-point? item point)))))
 
-(defn wrapping-coords [coords]
-  (let [[x1 y1 x2 y2] coords]
-    [(min x1 x2) (min y1 y2) (max x1 x2) (max y1 y2)]))
-
-(defn wrapping-edges [ids]
+(defn items-wrapping-rect [ids]
   (when (and ids (not-empty ids))
-    (let [inputs (map #(:input (d/completed-item %)) ids)
-          [x1s y1s x2s y2s] (apply map vector (map #(wrapping-coords %) inputs))]
-      [(apply min x1s)
-       (apply min y1s)
-       (apply max x2s)
-       (apply max y2s)])))
+    (g/wrapping-rect (map #(:input (d/completed-item %)) ids))))

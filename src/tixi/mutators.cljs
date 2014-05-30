@@ -2,92 +2,28 @@
   (:require [tixi.data :as d]
             [tixi.drawer :as dr]
             [tixi.position :as p]
+            [tixi.geometry :as g :refer [Size]]
             [tixi.utils :refer [p seq-contains?]]))
 
-(defn set-tool! [name]
-  (swap! d/data assoc :tool name))
-
-(defn set-action! [name]
-  (swap! d/data assoc :action name))
-
-
-(defn- find-layer-under-cursor [[x y]]
-  (first (p/items-from-text-coords [x y])))
+(defn- find-layer-under-cursor [point]
+  (first (p/items-at-point point)))
 
 (defn- cache-item! [id]
   (swap! d/data assoc-in [:completed id :cache] (dr/render (get-in @d/data [:completed id]))))
 
-(defn- reposition-item! [id coords]
-  (swap! d/data assoc-in [:completed id :input] coords))
+(defn- reposition-item! [id rect]
+  (swap! d/data assoc-in [:completed id :input] rect))
 
 (defn- adjust-layers-to-selection! []
-  (let [[selx1 sely1 selx2 sely2] (d/selection-edges)
-        selwidth (- selx2 selx1)
-        selheight (- sely2 sely1)]
+  (let [sel-rect (d/selection-rect)]
     (doseq [id (d/selected-ids)]
-      (let [[relx1 rely1 relx2 rely2] (d/selected-rel-size id)
-            newx1 (.round js/Math (+ selx1 (* selwidth relx1)))
-            newy1 (.round js/Math (+ sely1 (* selheight rely1)))
-            newx2 (.round js/Math (+ selx1 (* selwidth relx2)))
-            newy2 (.round js/Math (+ sely1 (* selheight rely2)))]
-        (reposition-item! id [newx1 newy1 newx2 newy2])
+      (let [rel-rect (d/selected-rel-rect id)]
+        (reposition-item! id (g/absolute sel-rect rel-rect))
         (cache-item! id)))))
 
-(defn- move-selection-edges! [[dx dy] f]
-  (when-let [[x1 y1 x2 y2] (d/selection-edges)]
-    (swap! d/data assoc-in [:selection :edges] (f x1 y1 x2 y2 dx dy))
-    (adjust-layers-to-selection!)))
-
-(defn highlight-layer! [[x y]]
-  (if-let [[id _] (find-layer-under-cursor [x y])]
-    (swap! d/data assoc :hover-id id)
-    (swap! d/data assoc :hover-id nil)))
-
-(defn move-selection! [[dx dy]]
-  (move-selection-edges!
-    [dx dy]
-    (fn [x1 y1 x2 y2 dx dy] [(+ x1 dx) (+ y1 dy) (+ x2 dx) (+ y2 dy)])))
-
-(defn set-selection-rel-sizes! []
-  (let [ids (d/selected-ids)
-        [selx1 sely1 selx2 sely2] (p/wrapping-edges ids)
-        selwidth (- selx2 selx1)
-        selheight (- sely2 sely1)]
-    (doseq [id ids]
-      (let [[x1 y1 x2 y2] (:input (d/completed-item id))
-            relx1 (/ (- x1 selx1) selwidth)
-            rely1 (/ (- y1 sely1) selheight)
-            relx2 (/ (- x2 selx1) selwidth)
-            rely2 (/ (- y2 sely1) selheight)]
-        (swap! d/data assoc-in [:selection :rel-sizes id] [relx1 rely1 relx2 rely2])))))
-
-(defn start-selection! [[x y]]
-  (swap! d/data assoc-in [:selection :current] [x y x y]))
-
-(defn update-selection! [[x y]]
-  (when (d/current-selection)
-    (swap! d/data assoc-in [:selection :current 2] x)
-    (swap! d/data assoc-in [:selection :current 3] y)))
-
-(defn finish-selection! []
-  (let [[x1 y1 x2 y2] (d/current-selection)]
-    (when (and (not= x1 x2) (not= y1 y2))
-      (swap! d/data assoc-in [:selection :ids] (map first (p/items-inside-coords (d/current-selection))))
-      (set-selection-rel-sizes!)
-      (swap! d/data assoc-in [:selection :edges] (p/wrapping-edges (d/selected-ids)))))
-  (swap! d/data assoc-in [:selection :current] nil))
-
-(defn select-layer! [[x y] add-more?]
-  (if-let [[id _] (find-layer-under-cursor [x y])]
-    (if add-more?
-      (swap! d/data update-in [:selection :ids] conj id)
-      (when-not (some #{id} (d/selected-ids))
-        (swap! d/data assoc-in [:selection :ids] [id])))
-    (do
-      (swap! d/data assoc-in [:selection :ids] [])
-      (start-selection! [x y])))
-  (set-selection-rel-sizes!)
-  (swap! d/data assoc-in [:selection :edges] (p/wrapping-edges (d/selected-ids))))
+(defn- update-selection-rect! [new-rect]
+  (swap! d/data assoc-in [:selection :rect] new-rect)
+  (adjust-layers-to-selection!))
 
 (defn- build-layer! [type content]
   (let [id (:autoincrement @d/data)
@@ -95,13 +31,66 @@
     (swap! d/data update-in [:autoincrement] inc)
     {:id id :item (assoc item :cache (dr/render item))}))
 
-(defn initiate-current-layer! [[x y]]
-  (swap! d/data assoc :current (build-layer! (d/tool) [x y x y])))
 
-(defn update-current-layer! [[x y]]
+(defn reset-data! []
+  (reset! d/data d/initial-data))
+
+(defn set-tool! [name]
+  (swap! d/data assoc :tool name))
+
+(defn set-action! [name]
+  (swap! d/data assoc :action name))
+
+(defn highlight-layer! [point]
+  (if-let [[id _] (find-layer-under-cursor point)]
+    (swap! d/data assoc :hover-id id)
+    (swap! d/data assoc :hover-id nil)))
+
+
+(defn set-selection-rel-rects! []
+  (let [ids (d/selected-ids)
+        wrapping-rect (p/items-wrapping-rect ids)]
+    (doseq [id ids]
+      (let [rect (:input (d/completed-item id))]
+        (swap! d/data assoc-in [:selection :rel-rects id] (g/relative rect wrapping-rect))))))
+
+(defn start-selection! [point]
+  (swap! d/data assoc-in [:selection :current] (g/build-rect point point)))
+
+(defn update-selection! [point]
+  (when (d/current-selection)
+    (swap! d/data update-in [:selection :current] g/expand point)))
+
+(defn finish-selection! []
+  (when-let [current-rect (d/current-selection)]
+    (when (and (not= (g/width current-rect) 0)
+               (not= (g/height current-rect) 0))
+      (swap! d/data assoc-in [:selection :ids] (map first (p/items-inside-rect (d/current-selection))))
+      (set-selection-rel-rects!)
+      (swap! d/data assoc-in [:selection :rect] (p/items-wrapping-rect (d/selected-ids)))))
+  (swap! d/data assoc-in [:selection :current] nil))
+
+(defn select-layer!
+  ([point] (select-layer! point false))
+  ([point add-more?]
+  (if-let [[id _] (find-layer-under-cursor point)]
+    (if add-more?
+      (swap! d/data update-in [:selection :ids] conj id)
+      (when-not (some #{id} (d/selected-ids))
+        (swap! d/data assoc-in [:selection :ids] [id])))
+    (do
+      (swap! d/data assoc-in [:selection :ids] [])
+      (start-selection! point)))
+  (set-selection-rel-rects!)
+  (swap! d/data assoc-in [:selection :rect] (p/items-wrapping-rect (d/selected-ids)))))
+
+
+(defn initiate-current-layer! [point]
+  (swap! d/data assoc :current (build-layer! (d/tool) (g/build-rect point point))))
+
+(defn update-current-layer! [point]
   (when (d/current)
-    (swap! d/data assoc-in [:current :item :input 2] x)
-    (swap! d/data assoc-in [:current :item :input 3] y)
+    (swap! d/data update-in [:current :item :input] g/expand point)
     (swap! d/data assoc-in [:current :item :cache] (dr/render (get-in @d/data [:current :item])))))
 
 (defn finish-current-layer! []
@@ -109,21 +98,14 @@
     (swap! d/data assoc :current nil)
     (swap! d/data update-in [:completed] assoc id item)))
 
-(defn- recalculate-edges-fn [type]
-  (fn [x1 y1 x2 y2 dx dy]
-    (case type
-      :nw [(+ x1 dx) (+ y1 dy) x2        y2       ]
-      :n  [x1        (+ y1 dy) x2        y2       ]
-      :ne [x1        (+ y1 dy) (+ x2 dx) y2       ]
-      :w  [(+ x1 dx) y1        x2        y2       ]
-      :e  [x1        y1        (+ x2 dx) y2       ]
-      :sw [(+ x1 dx) y1        x2        (+ y2 dy)]
-      :s  [x1        y1        x2        (+ y2 dy)]
-      :se [x1        y1        (+ x2 dx) (+ y2 dy)])))
 
+(defn move-selection! [diff]
+  (when-let [rect (d/selection-rect)]
+    (update-selection-rect! (g/move rect diff))))
 
-(defn resize-selection! [[dx dy] type]
-  (move-selection-edges! [dx dy] (recalculate-edges-fn type)))
+(defn resize-selection! [diff type]
+  (when-let [rect (d/selection-rect)]
+    (update-selection-rect! (g/resize rect diff type))))
 
 (defn delete-selected! []
   (let [ids (d/selected-ids)]

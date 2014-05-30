@@ -1,57 +1,78 @@
 (ns tixi.data
   (:require [tixi.utils :refer [seq-contains? p]]))
 
+(def initial-data
+  {:current nil
+   :completed {}
+   :tool :line
+   :action nil
+   :autoincrement 0
+   :selection {:ids []
+               :rect nil
+               :current nil
+               :rel-rects {}}
+   :hover-id nil})
+
 (def data
-  (atom {:current nil
-         :completed {}
-         :tool :line
-         :action nil
-         :autoincrement 0
-         :selection {:ids []
-                     :edges nil
-                     :current nil
-                     :rel-sizes {}}
-         :hover-id nil}))
+  (atom initial-data))
 
-(defn current []
-  (:current @data))
+(defn current
+  ([] (current @data))
+  ([data] (:current data)))
 
-(defn completed []
-  (:completed @data))
+(defn completed
+  ([] (completed @data))
+  ([data] (:completed data)))
 
-(defn completed-item [id]
-  (get-in @data [:completed id]))
+(defn completed-item
+  ([id] (completed-item @data id))
+  ([data id] (get-in data [:completed id])))
 
-(defn tool []
-  (:tool @data))
+(defn tool
+  ([] (tool @data))
+  ([data] (:tool data)))
 
-(defn action []
-  (:action @data))
+(defn action
+  ([] (action @data))
+  ([data] (:action data)))
 
-(defn selected-ids []
-  (get-in @data [:selection :ids]))
+(defn selection
+  ([] (selection @data))
+  ([data] (:selection data)))
 
-(defn selected-rel-size [id]
-  (get-in @data [:selection :rel-sizes id]))
+(defn selected-ids
+  ([] (selected-ids @data))
+  ([data] (get-in data [:selection :ids])))
 
-(defn selection-edges []
-  (get-in @data [:selection :edges]))
+(defn selected-rel-rect
+  ([id] (selected-rel-rect @data id))
+  ([data id] (get-in data [:selection :rel-rects id])))
 
-(defn current-selection []
-  (get-in @data [:selection :current]))
+(defn selection-rect
+  ([] (selection-rect @data))
+  ([data] (get-in data [:selection :rect])))
 
-(defn hover-id []
-  (:hover-id @data))
+(defn current-selection
+  ([] (current-selection @data))
+  ([data] (get-in data [:selection :current])))
 
-(defn draw-tool? []
-  (seq-contains? [:line :rect :rect-line] (tool)))
+(defn hover-id
+  ([] (hover-id @data))
+  ([data] (:hover-id data)))
 
-(defn select-tool? []
-  (seq-contains? [:select] (tool)))
+(defn draw-tool?
+  ([] (draw-tool? @data))
+  ([data] (seq-contains? [:line :rect :rect-line] (tool data))))
 
-(defn draw-action? []
-  (seq-contains? [:draw] (action)))
+(defn select-tool?
+  ([] (select-tool? @data))
+  ([data] (seq-contains? [:select] (tool data))))
 
-(defn resize-action []
-  (when-let [[_ result] (when (action) (re-matches #"^resize-(.+)" (name (action))))]
-    (keyword result)))
+(defn draw-action?
+  ([] (draw-action? @data))
+  ([data] (seq-contains? [:draw] (action data))))
+
+(defn resize-action
+  ([] (resize-action @data))
+  ([data] (when-let [[_ result] (when (action data) (re-matches #"^resize-(.+)" (name (action data))))]
+    (keyword result))))

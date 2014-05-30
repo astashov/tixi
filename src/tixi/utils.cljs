@@ -8,7 +8,7 @@
   (last values))
 
 (defn seq-contains? [coll target]
-  (some #(= target %) coll))
+  (not= (some #(= target %) coll) nil))
 
 (defn benchmark
   "Prints the execution time for the given function. Accepts optional string, which will be used as a description"

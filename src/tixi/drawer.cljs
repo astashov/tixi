@@ -4,8 +4,10 @@
   (:require [clojure.string :as string]
             [schema.core :as sc]
             [tixi.schemas :as s]
+            [tixi.geometry :as g :refer [Size Point]]
             [tixi.utils :refer [p]]
-            [tixi.data :as d]))
+            [tixi.data :as d])
+  )
 
 ;; Bresenham's line algorithm
 ;; http://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
@@ -25,11 +27,11 @@
                           (and (= sym "-") (not= new-y1 y1)))
                     slash
                     sym)]
-      (build-line-rest-coords (assoc current [x1 y1] new-sym) new-x1 new-y1 x2 y2 new-err dx dy sx sy sym slash))
-    (assoc current [x1 y1] sym)))
+      (build-line-rest-coords (assoc current (Point. x1 y1) new-sym) new-x1 new-y1 x2 y2 new-err dx dy sx sy sym slash))
+    (assoc current (Point. x1 y1) sym)))
 
 (defn- build-line [data]
-  (let [[x1 y1 x2 y2] data
+  (let [[x1 y1 x2 y2] data 
         dx (.abs js/Math (- x2 x1))
         dy (.abs js/Math (- y2 y1))
         sx (if (< x1 x2) 1 -1)
@@ -40,26 +42,15 @@
     (build-line-rest-coords {} x1 y1 x2 y2 err dx dy sx sy sym slash)))
 
 (defn- normalize [data]
-  (let [[x1 y1 x2 y2] data
-        min-x (.min js/Math x1 x2)
-        min-y (.min js/Math y1 y2)
-        max-x (.max js/Math x1 x2)
-        max-y (.max js/Math y1 y2)
-        new-x1 (- x1 min-x)
-        new-x2 (- x2 min-x)
-        new-y1 (- y1 min-y)
-        new-y2 (- y2 min-y)
-        width (inc (- max-x min-x))
-        height (inc (- max-y min-y))]
-    {:origin [min-x min-y]
-     :dimensions [width height]
-     :coordinates [new-x1 new-y1 new-x2 new-y2]}))
+  {:origin (g/origin data)
+   :dimensions (Size. (g/width data) (g/height data))
+   :coordinates (g/shifted-to-0 data)})
 
 (defn- parse-line [data]
   (let [{:keys [origin dimensions coordinates]} (normalize data)]
     {:origin origin
      :dimensions dimensions
-     :points (build-line coordinates)}))
+     :points (build-line (g/values coordinates))}))
 
 (defn- concat-lines [line-coords]
   (let [all-coords (apply concat (map build-line line-coords))
@@ -73,25 +64,23 @@
   (let [{:keys [origin dimensions coordinates]} (normalize data)]
     {:origin origin
      :dimensions dimensions
-     :points (concat-lines (f coordinates))}))
+     :points (concat-lines (f (g/values coordinates)))}))
 
-(defn- parse-rect [data]
-  (let [[x1 y1 x2 y2] data]
-    (if (or (= x1 x2) (= y1 y2))
-      (parse-line data)
-      (concat-and-normalize-lines data (fn [[nx1 ny1 nx2 ny2]]
-                                         [[nx1 ny1 nx2 ny1]
-                                          [nx1 ny1 nx1 ny2]
-                                          [nx2 ny1 nx2 ny2]
-                                          [nx1 ny2 nx2 ny2]])))))
+(defn- parse-rect [input]
+  (if (g/line? input)
+    (parse-line input)
+    (concat-and-normalize-lines input (fn [[nx1 ny1 nx2 ny2]]
+                                        [[nx1 ny1 nx2 ny1]
+                                         [nx1 ny1 nx1 ny2]
+                                         [nx2 ny1 nx2 ny2]
+                                         [nx1 ny2 nx2 ny2]]))))
 
-(defn- parse-rect-line [data]
-  (let [[x1 y1 x2 y2] data]
-    (if (or (= x1 x2) (= y1 y2))
-      (parse-line [x1 y1 x2 y2])
-      (concat-and-normalize-lines data (fn [[nx1 ny1 nx2 ny2]]
-                                         [[nx1 ny1 nx1 ny2]
-                                          [nx1 ny2 nx2 ny2]])))))
+(defn- parse-rect-line [input]
+  (if (g/line? input)
+    (parse-line input)
+    (concat-and-normalize-lines input (fn [[nx1 ny1 nx2 ny2]]
+                                        [[nx1 ny1 nx1 ny2]
+                                         [nx1 ny2 nx2 ny2]]))))
 
 (scm/defn ^:always-validate parse
   "Parses the data structure, and returns the string to display"
@@ -106,22 +95,23 @@
   (apply str (repeat times string)))
 
 (defn- sort-data [data]
-  (sort-by (comp vec reverse first) data))
+  (apply array-map (flatten (sort-by (comp vec reverse g/values first) data))))
 
 (defn- generate-text [dimensions points]
-  (let [[width height] dimensions]
+  (let [width (inc (:width dimensions))
+        height (inc (:height dimensions))]
     (string/join "\n"
       (map string/join
         (partition
           width
           (str
             (reduce
-              (fn [string [[x y] sym]]
+              (fn [string [{:keys [x y]} sym]]
                 (let [position (- (+ (* width y) x) (count string))]
                   (str string (repeat-string " " position) sym)))
               ""
               points)
-            (let [[[x y] sym] (last points)
+            (let [[{:keys [x y]} sym] (last points)
                   last-position (+ (* width y) x)]
               (repeat-string " " (- (* width height) last-position)))))))))
 
