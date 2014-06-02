@@ -36,6 +36,7 @@ html, body {
   position: relative;
 }
 
+body,
 .canvas,
 .selection,
 .selection--dot {
