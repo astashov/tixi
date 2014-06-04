@@ -74,8 +74,7 @@
   "Displays the selection box around the selected item"
   [data channel]
   (let [rect (g/normalize (d/current-selection data))]
-    (when (p (and (> (g/width rect) 0) (> (g/height rect) 0)))
-      (dom/div {:className "current-selection" :style (selection-position rect)}))))
+    (dom/div {:className "current-selection" :style (selection-position rect)})))
 
 (q/defcomponent Tool
   "Displays the currently selected tool"
@@ -95,7 +94,7 @@
       (Canvas data channel)
       (when (not-empty selected-ids)
         (Selection data channel))
-      (when current-selection
+      (when (and current-selection (> (g/width current-selection) 0) (> (g/height current-selection) 0))
         (CurrentSelection data channel))
       (when ())
       (Tool data))))
