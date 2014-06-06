@@ -109,3 +109,37 @@
     (is (= (d/selection-rect) nil))
     (is (= (d/current-selection) nil))
     (is (= (vec (keys (d/completed))) [id3]))))
+
+(deftest undo!
+  (let [id1 (create-layer! (g/build-rect (Point. 5 6) (Point. 7 8)))]
+    (m/snapshot!)
+    (let [id2 (create-layer! (g/build-rect (Point. 9 10) (Point. 11 12)))]
+      (is (= (keys (d/completed)) '(0 1)))
+      (m/undo!)
+      (is (= (keys (d/completed)) '(0)))
+      (m/undo!)
+      (is (= (keys (d/completed)) '(0))))))
+
+(deftest redo!
+  (let [id1 (create-layer! (g/build-rect (Point. 5 6) (Point. 7 8)))]
+    (m/snapshot!)
+    (let [id2 (create-layer! (g/build-rect (Point. 9 10) (Point. 11 12)))]
+      (is (= (keys (d/completed)) '(0 1)))
+      (m/undo!)
+      (is (= (keys (d/completed)) '(0)))
+      (m/redo!)
+      (is (= (keys (d/completed)) '(0 1)))
+      (m/redo!)
+      (is (= (keys (d/completed)) '(0 1))))))
+
+(deftest undo-if-unchanged! []
+  (let [id1 (create-layer! (g/build-rect (Point. 5 6) (Point. 7 8)))]
+    (m/snapshot!)
+    (let [id2 (create-layer! (g/build-rect (Point. 9 10) (Point. 11 12)))]
+      (is (= (keys (d/completed)) '(0 1)))
+      (m/undo-if-unchanged!)
+      (is (= (keys (d/completed)) '(0 1)))
+      (m/snapshot!)
+      (m/undo-if-unchanged!)
+      (m/undo!)
+      (is (= (keys (d/completed)) '(0))))))

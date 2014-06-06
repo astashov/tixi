@@ -31,13 +31,15 @@
   (case (.-keyCode event)
         8  (do ; backspace
              (.preventDefault event)
-             (m/delete-selected!)
-             (render))
+             (m/delete-selected!))
         76 (m/set-tool! :line) ; l
         82 (m/set-tool! :rect) ; r
         83 (m/set-tool! :select) ; s
         84 (m/set-tool! :rect-line) ; t
-        nil))
+        85 (m/undo!) ; t
+        73 (m/redo!) ; i
+        nil)
+  (render))
 
 (defn handle-mousemove [event]
   (when-let [point (p/event->coords event)]
@@ -72,6 +74,10 @@
       (set-moving-from! point))
     :up
     (m/set-action! nil))
+
+  (when (= type :down)
+    (m/snapshot!))
+
   (when (= action :draw)
     (cond
       (d/draw-tool?)
@@ -83,6 +89,10 @@
       (case type
         :down (m/select-layer! point (.-shiftKey event))
         :up (m/finish-selection!))))
+
+  (when (= type :up)
+    (m/undo-if-unchanged!))
+
   (render))
 
 (defn install-keyboard-events []

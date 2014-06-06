@@ -1,16 +1,17 @@
 (ns test.tixi.data
   (:require-macros [cemerick.cljs.test :as m :refer (is deftest)])
   (:require [cemerick.cljs.test :as test]
-            [tixi.data :as d]))
+            [tixi.data :as d]
+            [tixi.tree :as t]))
 
 (deftest current
   (is (= (d/current {:current "bla"}) "bla")))
 
 (deftest completed
-  (is (= (d/completed {:completed "bla"}) "bla")))
+  (is (= (d/completed {:state (d/zip (t/node {:completed "bla"}))}) "bla")))
 
 (deftest completed-item
-  (is (= (d/completed-item {:completed {1 "bla"}} 1) "bla")))
+  (is (= (d/completed-item {:state (d/zip (t/node {:completed {1 "bla"}}))} 1) "bla")))
 
 (deftest tool
   (is (= (d/tool {:tool "bla"}) "bla")))

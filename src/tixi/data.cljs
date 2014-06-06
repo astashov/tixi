@@ -1,9 +1,18 @@
 (ns tixi.data
-  (:require [tixi.utils :refer [seq-contains? p]]))
+  (:require [tixi.utils :refer [seq-contains? p]]
+            [tixi.tree :as t :refer [Node]]
+            [clojure.zip :as z]))
+
+(defn zip [root]
+  (z/zipper
+    (fn [_] true)
+    #(:children %)
+    #(assoc %1 :children %2)
+    root))
 
 (def initial-data
   {:current nil
-   :completed {}
+   :state (zip (t/node {:completed {}}))
    :tool :line
    :action nil
    :autoincrement 0
@@ -20,13 +29,21 @@
   ([] (current @data))
   ([data] (:current data)))
 
+(defn state-loc
+  ([] (state-loc @data))
+  ([data] (:state data)))
+
+(defn state
+  ([] (state @data))
+  ([data] (:value (z/node (state-loc data)))))
+
 (defn completed
   ([] (completed @data))
-  ([data] (:completed data)))
+  ([data] (:completed (state data))))
 
 (defn completed-item
   ([id] (completed-item @data id))
-  ([data id] (get-in data [:completed id])))
+  ([data id] (get-in (state data) [:completed id])))
 
 (defn tool
   ([] (tool @data))

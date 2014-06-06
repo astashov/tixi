@@ -18,7 +18,7 @@
 
 (def Data
   {:current (s/maybe {:id s/Int :item Item})
-   :completed {s/Int Item}
+   :state s/Any
    :tool (apply s/enum (conj item-types :select))
    :action (s/maybe s/Keyword)
    :autoincrement s/Int

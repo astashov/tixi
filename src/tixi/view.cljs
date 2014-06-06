@@ -53,8 +53,8 @@
                                      :is-hover (= id (:hover-id data))
                                      :is-selected (some #{id} (d/selected-ids data))}))
              (if-let [{:keys [id item]} (:current data)]
-               (assoc (:completed data) id item)
-               (:completed data))))))
+               (assoc (d/completed data) id item)
+               (d/completed data))))))
 
 (q/defcomponent Selection
   "Displays the selection box around the selected item"
