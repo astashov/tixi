@@ -9,7 +9,7 @@
 (defn- calculate-letter-size []
   (let [number-of-x 100]
     (dommy/append! (sel1 :body)
-             [:.calculate-letter-size (apply str (repeat number-of-x "X"))])
+                   [:.calculate-letter-size (apply str (repeat number-of-x "X"))])
     (let [calculator (sel1 :.calculate-letter-size)
           width (.-offsetWidth calculator)
           height (.-offsetHeight calculator)
@@ -17,6 +17,7 @@
       (dommy/remove! calculator)
       result)))
 
+;; TODO: Sometimes it forgets it?
 (defn- letter-size []
   ((memoize calculate-letter-size)))
 
@@ -98,6 +99,9 @@
   (->> (d/completed)
        (filter (fn [[_ item]] (hit-item? item point)))
        (filter (fn [[_ item]] (item-has-point? item point)))))
+
+(defn item-id-at-point [point]
+  (first (first (items-at-point point))))
 
 (defn items-wrapping-rect [ids]
   (when (and ids (not-empty ids))

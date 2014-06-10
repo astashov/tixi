@@ -9,11 +9,12 @@
   {:origin Point
    :dimensions Size
    :points {Point s/Str}
-   :text s/Str})
+   :data s/Str})
 
 (def Item
   {:type (apply s/enum item-types)
    :input Rect
+   :text (s/maybe s/Str)
    :cache (s/maybe ItemData)})
 
 (def Data
@@ -26,6 +27,7 @@
                :rect (s/maybe Rect)
                :current (s/maybe Rect)
                :rel-rects {s/Int Rect}}
+   :edit-text-id (s/maybe s/Int)
    :hover-id (s/maybe s/Int)})
 
 (def Points

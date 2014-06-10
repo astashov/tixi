@@ -6,8 +6,7 @@
             [tixi.schemas :as s]
             [tixi.geometry :as g :refer [Size Point]]
             [tixi.utils :refer [p]]
-            [tixi.data :as d])
-  )
+            [tixi.data :as d]))
 
 ;; Bresenham's line algorithm
 ;; http://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
@@ -97,9 +96,8 @@
 (defn- sort-data [data]
   (apply array-map (flatten (sort-by (comp vec reverse g/values first) data))))
 
-(defn- generate-text [dimensions points]
-  (let [width (inc (:width dimensions))
-        height (inc (:height dimensions))]
+(defn- generate-data [dimensions points]
+  (let [{:keys [width height]} (g/incr dimensions)]
     (string/join "\n"
       (map string/join
         (partition
@@ -118,8 +116,8 @@
 (scm/defn ^:always-validate render [data :- s/Item]
   (let [{:keys [origin dimensions points]} (parse data)
         sorted-points (sort-data points)
-        text (generate-text dimensions sorted-points)]
+        data (generate-data dimensions sorted-points)]
     {:origin origin
      :dimensions dimensions
      :points sorted-points
-     :text text}))
+     :data data}))

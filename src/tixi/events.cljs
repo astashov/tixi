@@ -9,7 +9,10 @@
             [tixi.mutators :as m]))
 
 (def ^:private request-id (atom nil))
+(def ^:private start-point (atom (Point. 0 0)))
+(def ^:private end-point (atom (Point. 0 0)))
 (def ^:private moving-from (atom (Point. 0 0)))
+(def ^:private select-second-clicked (atom nil))
 
 (defn reset-data! []
   (reset! request-id nil)
@@ -31,7 +34,8 @@
   (case (.-keyCode event)
         8  (do ; backspace
              (.preventDefault event)
-             (m/delete-selected!))
+             (when-not (d/edit-text-id)
+               (m/delete-selected!)))
         76 (m/set-tool! :line) ; l
         82 (m/set-tool! :rect) ; r
         83 (m/set-tool! :select) ; s
@@ -42,6 +46,7 @@
   (render))
 
 (defn handle-mousemove [event]
+  (reset! select-second-clicked false)
   (when-let [point (p/event->coords event)]
     (let [previous-point @moving-from
           diff-point (g/sub point previous-point)]
@@ -61,37 +66,51 @@
 
         :else
         (when (d/select-tool?)
-          (m/highlight-layer! point))))
+          (m/highlight-layer! (p/item-id-at-point point)))))
 
     (set-moving-from! point)
     (render)))
 
-(defn handle-input-event [{:keys [type point action event]}]
+(defn handle-input-event [{:keys [type point action event id text]}]
   (case type
     :down
     (do
+      (reset! start-point point)
+      (set-moving-from! point)
       (m/set-action! action)
-      (set-moving-from! point))
+      (m/snapshot!)
+      (when (= action :draw)
+        (cond
+          (d/draw-tool?)
+          (m/initiate-current-layer! point)
+
+          (d/select-tool?)
+          (let [id (p/item-id-at-point point)]
+            (when (= (d/selected-ids) [id])
+              (reset! select-second-clicked true))
+            (m/select-layer! id point (.-shiftKey event))))))
+
     :up
-    (m/set-action! nil))
+    (do
+      (reset! end-point point)
+      (m/set-action! nil)
+      (when (= action :draw)
+        (cond
+          (d/draw-tool?)
+          (m/finish-current-layer!)
 
-  (when (= type :down)
-    (m/snapshot!))
+          (d/select-tool?)
+          (do
+            (m/finish-selection!)
+            (when (and @select-second-clicked (= @start-point @end-point))
+              (m/edit-text-in-item! (first (d/selected-ids))))
+            (reset! select-second-clicked false))))
+      (m/undo-if-unchanged!))
 
-  (when (= action :draw)
-    (cond
-      (d/draw-tool?)
-      (case type
-        :down (m/initiate-current-layer! point)
-        :up (m/finish-current-layer!))
-
-      (d/select-tool?)
-      (case type
-        :down (m/select-layer! point (.-shiftKey event))
-        :up (m/finish-selection!))))
-
-  (when (= type :up)
-    (m/undo-if-unchanged!))
+    :edit
+    (do
+      (m/edit-text-in-item! nil)
+      (m/set-text-to-item! id text)))
 
   (render))
 

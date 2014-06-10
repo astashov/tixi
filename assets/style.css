@@ -172,3 +172,42 @@ body,
   right: 0;
   bottom: 0;
 }
+
+.text {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.text--wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  box-sizing: border-box;
+}
+
+.text--wrapper--content {
+  background: white;
+  word-wrap: break-word;
+  display: inline-block;
+  max-width: 100%;
+}
+
+.CodeMirror {
+  height: auto;
+  background: white;
+  border: none;
+  pointer-events: none;
+  line-height: inherit;
+  text-align: center;
+}
+
+.CodeMirror-scroll {
+  overflow-y: hidden;
+  height: auto;
+}

@@ -76,3 +76,9 @@
 
 (deftest point-sub
   (is (= (g/sub (Point. 3 4) (Point. 1 2)) (Point. 2 2))))
+
+(deftest point-incr
+  (is (= (g/incr (Point. 3 4)) (Point. 4 5))))
+
+(deftest size-incr
+  (is (= (g/incr (Size. 3 4)) (Size. 4 5))))

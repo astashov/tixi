@@ -41,10 +41,17 @@
   (is (= (d/tool) :rect-line)))
 
 (deftest handle-keyboard-events-delete
-  (create-layer! (g/build-rect (Point. 5 6) (Point. 7 8)))
-  (m/select-layer! (Point. 5 6))
-  (e/handle-keyboard-events (build-keyboard-event 8))
-  (is (= (vec (keys (d/completed))) [])))
+  (let [id (create-layer! (g/build-rect (Point. 5 6) (Point. 7 8)))]
+    (m/select-layer! id (Point. 5 6))
+    (e/handle-keyboard-events (build-keyboard-event 8))
+    (is (= (vec (keys (d/completed))) []))))
+
+(deftest handle-keyboard-events-ignore-delete
+  (let [id (create-layer! (g/build-rect (Point. 5 6) (Point. 7 8)))]
+    (m/select-layer! id (Point. 5 6))
+    (m/edit-text-in-item! id)
+    (e/handle-keyboard-events (build-keyboard-event 8))
+    (is (= (vec (keys (d/completed))) [id]))))
 
 (deftest handle-input-event-action-down
   (e/handle-input-event {:type :down, :action :resize-ne})
@@ -72,14 +79,6 @@
   (e/handle-input-event {:type :down, :action :draw, :point (Point. 5 5), :event (build-keyboard-event 8)})
   (is (= (d/selected-ids) [1])))
 
-(deftest handle-input-event-select-down
-  (create-layer! (g/build-rect 2 2 4 4))
-  (create-layer! (g/build-rect 5 5 7 7))
-  (m/set-tool! :select)
-  (e/handle-input-event {:type :down, :action :draw, :point (Point. 2 2), :event (build-keyboard-event 8)})
-  (e/handle-input-event {:type :down, :action :draw, :point (Point. 5 5), :event (build-keyboard-event 8 true)})
-  (is (= (d/selected-ids) [0 1])))
-
 (deftest handle-input-event-select-down-more
   (create-layer! (g/build-rect 2 2 4 4))
   (create-layer! (g/build-rect 5 5 7 7))
@@ -87,6 +86,14 @@
   (e/handle-input-event {:type :down, :action :draw, :point (Point. 2 2), :event (build-keyboard-event 8)})
   (e/handle-input-event {:type :down, :action :draw, :point (Point. 5 5), :event (build-keyboard-event 8 true)})
   (is (= (d/selected-ids) [0 1])))
+
+(deftest handle-input-event-select-down-edit-text
+  (let [id (create-layer! (g/build-rect 2 2 4 4))]
+    (m/set-tool! :select)
+    (e/handle-input-event {:type :down, :action :draw, :point (Point. 2 2), :event (build-keyboard-event 8)})
+    (e/handle-input-event {:type :down, :action :draw, :point (Point. 2 2), :event (build-keyboard-event 8)})
+    (e/handle-input-event {:type :up,   :action :draw, :point (Point. 2 2), :event (build-keyboard-event 8)})
+    (is (= (d/edit-text-id) id))))
 
 (deftest handle-input-event-select-up
   (create-layer! (g/build-rect 2 2 4 4))
@@ -128,3 +135,10 @@
   (e/handle-input-event {:type :down, :action :resize-se, :point (Point. 4 4)})
   (e/handle-mousemove (build-mouse-event (p/coords->position (Point. 6 6))))
   (is (= (d/selection-rect) (g/build-rect 2 2 6 6))))
+
+(deftest handle-input-event-edit
+  (m/edit-text-in-item! 8)
+  (let [id (create-layer! (g/build-rect 2 2 4 4))]
+    (e/handle-input-event {:type :edit, :text "bla", :id id})
+    (is (= (d/edit-text-id) nil))
+    (is (= (:text (d/completed-item id)) "bla"))))

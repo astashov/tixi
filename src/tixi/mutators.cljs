@@ -4,11 +4,8 @@
             [tixi.position :as p]
             [tixi.tree :as t]
             [clojure.zip :as z]
-            [tixi.geometry :as g :refer [Size]]
+            [tixi.geometry :as g :refer [Size Point]]
             [tixi.utils :refer [p seq-contains?]]))
-
-(defn- find-layer-under-cursor [point]
-  (first (p/items-at-point point)))
 
 (defn- update-state! [f ks & args]
   (swap! d/data assoc-in [:state] (z/replace (d/state-loc) (t/update (z/node (d/state-loc)) (apply f (d/state) ks args)))))
@@ -32,7 +29,7 @@
 
 (defn- build-layer! [type content]
   (let [id (:autoincrement @d/data)
-        item {:type type :input content :cache nil}]
+        item {:type type :input content :cache nil :text nil}]
     (swap! d/data update-in [:autoincrement] inc)
     {:id id :item (assoc item :cache (dr/render item))}))
 
@@ -52,8 +49,8 @@
 (defn set-action! [name]
   (swap! d/data assoc :action name))
 
-(defn highlight-layer! [point]
-  (if-let [[id _] (find-layer-under-cursor point)]
+(defn highlight-layer! [id]
+  (if id
     (swap! d/data assoc :hover-id id)
     (swap! d/data assoc :hover-id nil)))
 
@@ -82,16 +79,18 @@
   (swap! d/data assoc-in [:selection :current] nil))
 
 (defn select-layer!
-  ([point] (select-layer! point false))
-  ([point add-more?]
-  (if-let [[id _] (find-layer-under-cursor point)]
+  ([id] (select-layer! id nil))
+  ([id point] (select-layer! id point false))
+  ([id point add-more?]
+  (if id
     (if add-more?
       (swap! d/data update-in [:selection :ids] conj id)
       (when-not (some #{id} (d/selected-ids))
         (swap! d/data assoc-in [:selection :ids] [id])))
     (do
       (swap! d/data assoc-in [:selection :ids] [])
-      (start-selection! point)))
+      (when point
+        (start-selection! point))))
   (set-selection-rel-rects!)
   (swap! d/data assoc-in [:selection :rect] (p/items-wrapping-rect (d/selected-ids)))))
 
@@ -104,16 +103,6 @@
     (swap! d/data update-in [:current :item :input] g/expand point)
     (swap! d/data assoc-in [:current :item :cache] (dr/render (:item (d/current))))))
 
-(defn snapshot! []
-  (swap! d/data assoc-in [:state] (-> (d/state-loc)
-                                      (z/insert-child (t/node (d/state)))
-                                      z/down)))
-
-(defn undo-if-unchanged! []
-  (when (and (z/up (d/state-loc))
-             (= (d/state)
-                (:value (z/node (z/up (d/state-loc))))))
-    (undo!)))
 
 (defn finish-current-layer! []
   (when-let [{:keys [id item]} (d/current)]
@@ -132,9 +121,21 @@
   (let [ids (d/selected-ids)]
     (when (not-empty ids)
       (snapshot!)
-      (select-layer! [-1 -1] false)
+      (select-layer! nil)
       (doseq [id ids]
         (update-state! update-in [:completed] dissoc id)))))
+
+
+(defn snapshot! []
+  (swap! d/data assoc-in [:state] (-> (d/state-loc)
+                                      (z/insert-child (t/node (d/state)))
+                                      z/down)))
+
+(defn undo-if-unchanged! []
+  (when (and (z/up (d/state-loc))
+             (= (d/state)
+                (:value (z/node (z/up (d/state-loc))))))
+    (undo!)))
 
 (defn undo! []
   (when (can-undo?)
@@ -143,3 +144,10 @@
 (defn redo! []
   (when (can-redo?)
     (swap! d/data assoc-in [:state] (z/down (d/state-loc)))))
+
+
+(defn edit-text-in-item! [id]
+  (swap! d/data assoc :edit-text-id id))
+
+(defn set-text-to-item! [id text]
+  (update-state! assoc-in [:completed id :text] text))

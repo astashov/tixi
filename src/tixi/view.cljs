@@ -11,6 +11,7 @@
             [tixi.geometry :as g :refer [Size]]
             [tixi.utils :refer [p]]
             [tixi.position :as p]
+            [tixi.text-editor :as te]
             [tixi.drawer :as drawer]))
 
 (enable-console-print!)
@@ -21,24 +22,43 @@
     (go (>! channel {:action action :type type :point point :event nativeEvent}))))
 
 (defn- selection-position [rect]
-  (let [normalized-rect (g/normalize rect) 
+  (let [normalized-rect (g/normalize rect)
         {left :x top :y} (p/coords->position (g/origin normalized-rect))
-        {rect-width :width rect-height :height} (g/dimensions normalized-rect) 
-        {:keys [width height]} (p/coords->position (Size. (inc rect-width) (inc rect-height)))]
+        {:keys [width height]} (p/coords->position (g/incr (g/dimensions normalized-rect)))]
     {:left (str left "px") :top (str top "px") :width (str width "px") :height (str height "px")}))
+
+(defn- letter-size []
+  (str (:height (p/letter-size)) "px " (:width (p/letter-size)) "px"))
+
+(q/defcomponent Text
+  [{:keys [id item edit-text-id]} channel]
+  (q/on-update
+    (dom/div {:ref "text" :className "text"}
+      (dom/div {:className "text--wrapper" :style {:padding (letter-size)}}
+        (when (not= id edit-text-id)
+          (dom/div {:className "text--wrapper--content"} (:text item)))))
+    (fn [node]
+      (let [install-node (sel1 node :.text--wrapper)]
+        (te/install-or-remove!
+          (= id edit-text-id) install-node (or (:text item) "")
+          (fn [value]
+            (go (>! channel {:type :edit :text value :id id}))))
+        (when-let [content (sel1 install-node :.text--wrapper--content)]
+          (te/adjust-height! install-node content))))))
 
 (q/defcomponent Layer
   "Displays the layer"
-  [{:keys [id item is-hover is-selected]}]
-  (let [{:keys [origin dimensions text]} (:cache item)
+  [{:keys [id item is-hover is-selected edit-text-id]} channel]
+  (let [{:keys [origin dimensions data]} (:cache item)
         {:keys [x y]} (p/coords->position origin)
-        {:keys [width height]} (p/coords->position dimensions)]
+        {:keys [width height]} (p/coords->position (g/incr dimensions))]
     (dom/pre {:className (str "canvas--content--layer"
                             (if is-selected " is-selected" "")
                             (if is-hover " is-hover" ""))
             :style {:left x :top y :width width :height height}
             :id (str "layer-" id)}
-      text)))
+      (Text {:id id :item item :edit-text-id edit-text-id} channel)
+      data)))
 
 (q/defcomponent Canvas
   "Displays the canvas"
@@ -51,7 +71,9 @@
              (fn [[id item]] (Layer {:id id
                                      :item item
                                      :is-hover (= id (:hover-id data))
-                                     :is-selected (some #{id} (d/selected-ids data))}))
+                                     :is-selected (some #{id} (d/selected-ids data))
+                                     :edit-text-id (d/edit-text-id data)}
+                                    channel))
              (if-let [{:keys [id item]} (:current data)]
                (assoc (d/completed data) id item)
                (d/completed data))))))

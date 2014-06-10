@@ -20,25 +20,41 @@
 
 (defprotocol IMath
   (add [this another])
-  (sub [this another]))
+  (sub [this another])
+  (incr [this]))
 
 (defprotocol IValues
   (values [this]))
 
 (defrecord Point [x y]
   IMath
-  (add [this point] (Point. (+ x (:x point))
-                            (+ y (:y point))))
-  (sub [this point] (Point. (- x (:x point))
-                            (- y (:y point))))
+  (add [this point]
+    (Point. (+ x (:x point))
+            (+ y (:y point))))
+  (sub [this point]
+    (Point. (- x (:x point))
+            (- y (:y point))))
+  (incr [this]
+    (Point. (+ x 1) (+ y 1)))
 
   IValues
-  (values [this] [x y]))
+  (values [this]
+    [x y]))
 
 (defrecord Size [width height]
   IValues
-  (values [this] [width height]))
- 
+  (values [this] [width height])
+
+  IMath
+  (add [this size]
+    (Size. (+ width (:width size))
+           (+ height (:height size))))
+  (sub [this size]
+    (Size. (- width (:width size))
+           (- height (:height size))))
+  (incr [this]
+    (Size. (+ width 1) (+ height 1))))
+
 (declare build-rect)
 (defrecord Rect [start-point end-point]
   IRect
@@ -72,8 +88,8 @@
                      (- (:y end-point) (:y org))))))
 
   (relative [this wrapper]
-    (let [[x1 y1 x2 y2] (values this) 
-          [wrx1 wry1 wrx2 wry2] (values (normalize wrapper)) 
+    (let [[x1 y1 x2 y2] (values this)
+          [wrx1 wry1 wrx2 wry2] (values (normalize wrapper))
           relx1 (/ (- x1 wrx1) (width wrapper))
           rely1 (/ (- y1 wry1) (height wrapper))
           relx2 (/ (- x2 wrx1) (width wrapper))

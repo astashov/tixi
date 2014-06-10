@@ -57,3 +57,8 @@
         id2 (create-layer! (g/build-rect (Point. 2 2) (Point. 3 5)))
         id3 (create-layer! (g/build-rect (Point. 3 5) (Point. 4 6)))]
     (is (= (p/items-wrapping-rect [id1 id2 id3]) (g/build-rect (Point. 2 2) (Point. 4 6))))))
+
+(deftest item-id-at-point
+  (let [id1 (create-layer! (g/build-rect (Point. 2 2) (Point. 3 4)))
+        id2 (create-layer! (g/build-rect (Point. 2 2) (Point. 3 5)))]
+    (is (= (p/item-id-at-point (Point. 2 2)) id1))))

@@ -63,7 +63,7 @@
 
 (deftest select-layer!
   (let [id (create-sample-layer!)]
-    (m/select-layer! (Point. 3 4))
+    (m/select-layer! id (Point. 3 4))
     (is (= (d/selected-ids) [id]))
     (is (= (d/selection-rect) (g/build-rect (Point. 2 3) (Point. 4 5))))
     (is (= (d/current-selection) nil))
@@ -72,12 +72,14 @@
 (deftest highlight-layer!
   (create-layer! (g/build-rect (Point. 2 3) (Point. 4 5)))
   (let [[id _] (first (d/completed))]
-    (m/highlight-layer! (Point. 3 4))
-    (is (= (d/hover-id) id))))
+    (m/highlight-layer! id)
+    (is (= (d/hover-id) id))
+    (m/highlight-layer! nil)
+    (is (= (d/hover-id) nil))))
 
 (deftest move-selection!-one-item
   (let [id (create-sample-layer!)]
-    (m/select-layer! (Point. 3 4))
+    (m/select-layer! id (Point. 3 4))
     (m/move-selection! (Size. 4 5))
     (is (= (d/selection-rect) (g/build-rect (Point. 6 8) (Point. 8 10))))
     (is (= (:input (d/completed-item id)) (g/build-rect (Point. 6 8) (Point. 8 10))))))
@@ -85,8 +87,8 @@
 (deftest move-selection!-two-items
   (let [id1 (create-sample-layer!)
         id2 (create-layer! (g/build-rect (Point. 3 4) (Point. 5 6)))]
-    (m/select-layer! (Point. 2 3))
-    (m/select-layer! (Point. 5 6) true)
+    (m/select-layer! id1 (Point. 2 3))
+    (m/select-layer! id2 (Point. 5 6) true)
     (m/move-selection! (Size. 4 5))
     (is (= (d/selection-rect) (g/build-rect (Point. 6 8) (Point. 9 11))))
     (is (= (:input (d/completed-item id1)) (g/build-rect (Point. 6 8) (Point. 8 10))))
@@ -94,7 +96,7 @@
 
 (deftest move-selection!-one-item
   (let [id (create-sample-layer!)]
-    (m/select-layer! (Point. 3 4))
+    (m/select-layer! id (Point. 3 4))
     (m/resize-selection! (Size. 4 5) :se)
     (is (= (d/selection-rect) (g/build-rect (Point. 2 3) (Point. 8 10))))))
 
@@ -102,8 +104,8 @@
   (let [id1 (create-sample-layer!)
         id2 (create-layer! (g/build-rect (Point. 5 6) (Point. 7 8)))
         id3 (create-layer! (g/build-rect (Point. 9 10) (Point. 11 12)))]
-    (m/select-layer! (Point. 2 3))
-    (m/select-layer! (Point. 5 6) true)
+    (m/select-layer! id1 (Point. 2 3))
+    (m/select-layer! id2 (Point. 5 6) true)
     (m/delete-selected!)
     (is (= (d/selected-ids) []))
     (is (= (d/selection-rect) nil))
@@ -132,7 +134,7 @@
       (m/redo!)
       (is (= (keys (d/completed)) '(0 1))))))
 
-(deftest undo-if-unchanged! []
+(deftest undo-if-unchanged!
   (let [id1 (create-layer! (g/build-rect (Point. 5 6) (Point. 7 8)))]
     (m/snapshot!)
     (let [id2 (create-layer! (g/build-rect (Point. 9 10) (Point. 11 12)))]
@@ -143,3 +145,12 @@
       (m/undo-if-unchanged!)
       (m/undo!)
       (is (= (keys (d/completed)) '(0))))))
+
+(deftest edit-text-in-item!
+  (m/edit-text-in-item! 3)
+  (is (= (d/edit-text-id) 3)))
+
+(deftest set-text-to-item!
+  (let [id (create-layer! (g/build-rect (Point. 5 6) (Point. 7 8)))]
+    (m/set-text-to-item! id "bla")
+    (is (= (:text (d/completed-item id)) "bla"))))

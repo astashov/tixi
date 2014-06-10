@@ -57,3 +57,6 @@
 
 (deftest resize-action-nil
   (is (= (d/resize-action {:action :bla}) nil)))
+
+(deftest edit-text-id
+  (is (= (d/edit-text-id {:edit-text-id 2}) 2)))

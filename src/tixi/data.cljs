@@ -20,6 +20,7 @@
                :rect nil
                :current nil
                :rel-rects {}}
+   :edit-text-id nil
    :hover-id nil})
 
 (def data
@@ -93,3 +94,7 @@
   ([] (resize-action @data))
   ([data] (when-let [[_ result] (when (action data) (re-matches #"^resize-(.+)" (name (action data))))]
     (keyword result))))
+
+(defn edit-text-id
+  ([] (edit-text-id @data))
+  ([data] (:edit-text-id data)))
