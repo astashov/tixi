@@ -33,10 +33,10 @@
 (q/defcomponent Text
   [{:keys [id item edit-text-id]} channel]
   (q/on-update
-    (dom/div {:ref "text" :className "text"}
+    (dom/div {:ref "text" :className "text" :id (str "text-" id)}
       (dom/div {:className "text--wrapper" :style {:padding (letter-size)}}
         (when (not= id edit-text-id)
-          (dom/div {:className "text--wrapper--content"} (:text item)))))
+          (dom/div {:className "text--wrapper--content" :id (str "text-content-" id)} (:text item)))))
     (fn [node]
       (let [install-node (sel1 node :.text--wrapper)]
         (te/install-or-remove!

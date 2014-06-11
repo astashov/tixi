@@ -95,13 +95,27 @@
               (g/inside? sel-rect input-rect)))
           (d/completed)))
 
-(defn items-at-point [point]
-  (->> (d/completed)
-       (filter (fn [[_ item]] (hit-item? item point)))
-       (filter (fn [[_ item]] (item-has-point? item point)))))
+(defn- item-at-client-point [client-point]
+  (when client-point
+    (let [[x y] (g/values client-point)
+          element-at-client-point (.elementFromPoint js/document x y)
+          [_, id-str] (re-find #"^text-content-(\d+)" (.-id element-at-client-point))]
+      (when id-str
+        (let [id (.parseInt js/window id-str 10)]
+          [id (d/completed-item id)])))))
 
-(defn item-id-at-point [point]
-  (first (first (items-at-point point))))
+(defn items-at-point
+  ([point] (items-at-point point nil))
+  ([point client-point]
+    (if-let [result (item-at-client-point client-point)]
+      [result]
+      (->> (d/completed)
+        (filter (fn [[_ item]] (hit-item? item point)))
+        (filter (fn [[_ item]] (item-has-point? item point)))))))
+
+(defn item-id-at-point
+  ([point] (item-id-at-point point nil))
+  ([point client-point] (first (first (items-at-point point client-point)))))
 
 (defn items-wrapping-rect [ids]
   (when (and ids (not-empty ids))

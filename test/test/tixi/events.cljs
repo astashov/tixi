@@ -37,7 +37,7 @@
   (e/handle-keyboard-events (build-keyboard-event 83))
   (is (= (d/tool) :select))
 
-  (e/handle-keyboard-events (build-keyboard-event 84))
+  (e/handle-keyboard-events (build-keyboard-event 89))
   (is (= (d/tool) :rect-line)))
 
 (deftest handle-keyboard-events-delete

@@ -39,8 +39,8 @@
         76 (m/set-tool! :line) ; l
         82 (m/set-tool! :rect) ; r
         83 (m/set-tool! :select) ; s
-        84 (m/set-tool! :rect-line) ; t
-        85 (m/undo!) ; t
+        89 (m/set-tool! :rect-line) ; y
+        85 (m/undo!) ; u
         73 (m/redo!) ; i
         nil)
   (render))
@@ -66,7 +66,8 @@
 
         :else
         (when (d/select-tool?)
-          (m/highlight-layer! (p/item-id-at-point point)))))
+          (let [client-point (Point. (.-clientX event) (.-clientY event))]
+            (m/highlight-layer! (p/item-id-at-point point client-point))))))
 
     (set-moving-from! point)
     (render)))
@@ -85,7 +86,8 @@
           (m/initiate-current-layer! point)
 
           (d/select-tool?)
-          (let [id (p/item-id-at-point point)]
+          (let [client-point (Point. (.-clientX event) (.-clientY event))
+                id (p/item-id-at-point point client-point)]
             (when (= (d/selected-ids) [id])
               (reset! select-second-clicked true))
             (m/select-layer! id point (.-shiftKey event))))))
