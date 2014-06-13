@@ -1,6 +1,7 @@
 (ns tixi.view
   (:require-macros [dommy.macros :refer (node sel1)]
                    [schema.macros :as scm]
+                   [tixi.utils :refer (b)]
                    [cljs.core.async.macros :refer [go]])
   (:require [quiescent :as q :include-macros true]
             [quiescent.dom :as dom]
@@ -11,6 +12,7 @@
             [tixi.geometry :as g :refer [Size]]
             [tixi.utils :refer [p]]
             [tixi.position :as p]
+            [tixi.items :as i]
             [tixi.text-editor :as te]
             [tixi.drawer :as drawer]))
 
@@ -49,9 +51,9 @@
 (q/defcomponent Layer
   "Displays the layer"
   [{:keys [id item is-hover is-selected edit-text-id]} channel]
-  (let [{:keys [origin dimensions data]} (:cache item)
-        {:keys [x y]} (p/coords->position origin)
-        {:keys [width height]} (p/coords->position (g/incr dimensions))]
+  (let [{:keys [data]} (:cache item)
+        {:keys [x y]} (p/coords->position (i/origin item))
+        {:keys [width height]} (p/coords->position (g/incr (i/dimensions item)))]
     (dom/pre {:className (str "canvas--content--layer"
                             (if is-selected " is-selected" "")
                             (if is-hover " is-hover" ""))
@@ -121,13 +123,13 @@
       (when ())
       (Tool data))))
 
-(defn dom-content []
+(defn- dom-content []
   (if-let [content (sel1 :#content)]
     content
     (do
       (dommy/append! (sel1 :body) [:#content ""])
       (sel1 :#content))))
 
-(scm/defn ^:always-validate render [data :- s/Data channel]
+(scm/defn render [data :- s/Data channel]
   "Renders the project"
   (q/render (Project data channel) (dom-content)))

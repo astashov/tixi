@@ -4,6 +4,7 @@
   (:require [dommy.core :as dommy]
             [tixi.geometry :as g :refer [Size Rect Point]]
             [tixi.data :as d]
+            [tixi.items :as i]
             [tixi.utils :refer [p]]))
 
 (defn- calculate-letter-size []
@@ -22,13 +23,12 @@
   ((memoize calculate-letter-size)))
 
 (defn- hit-item? [item point]
-  (let [{:keys [origin dimensions]} (:cache item)
-        rect (g/build-rect origin dimensions)]
+  (let [rect (g/build-rect (i/origin item) (i/dimensions item))]
     (g/inside? rect point)))
 
 (defn- item-has-point? [item point]
   (let [points (keys (:points (:cache item)))
-        moved-point (g/sub point (:origin (:cache item)))]
+        moved-point (g/sub point (i/origin item))]
     (not= (some #{moved-point} points) nil)))
 
 (defn canvas-size []

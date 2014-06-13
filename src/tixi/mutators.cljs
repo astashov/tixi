@@ -3,6 +3,7 @@
             [tixi.drawer :as dr]
             [tixi.position :as p]
             [tixi.tree :as t]
+            [tixi.items :as i]
             [clojure.zip :as z]
             [tixi.geometry :as g :refer [Size Point]]
             [tixi.utils :refer [p seq-contains?]]))
@@ -10,18 +11,14 @@
 (defn- update-state! [f ks & args]
   (swap! d/data assoc-in [:state] (z/replace (d/state-loc) (t/update (z/node (d/state-loc)) (apply f (d/state) ks args)))))
 
-(defn- cache-item! [id]
-  (update-state! assoc-in [:completed id :cache] (dr/render (d/completed-item id))))
-
 (defn- reposition-item! [id rect]
-  (update-state! assoc-in [:completed id :input] rect))
+  (update-state! assoc-in [:completed id] (i/reposition (d/completed-item id) rect)))
 
 (defn- adjust-layers-to-selection! []
   (let [sel-rect (d/selection-rect)]
     (doseq [id (d/selected-ids)]
       (let [rel-rect (d/selected-rel-rect id)]
-        (reposition-item! id (g/absolute sel-rect rel-rect))
-        (cache-item! id)))))
+        (reposition-item! id (g/absolute sel-rect rel-rect))))))
 
 (defn- update-selection-rect! [new-rect]
   (swap! d/data assoc-in [:selection :rect] new-rect)
@@ -29,9 +26,9 @@
 
 (defn- build-layer! [type content]
   (let [id (:autoincrement @d/data)
-        item {:type type :input content :cache nil :text nil}]
+        item (i/build-item type content)]
     (swap! d/data update-in [:autoincrement] inc)
-    {:id id :item (assoc item :cache (dr/render item))}))
+    {:id id :item item}))
 
 (defn- can-undo? []
   (boolean (z/up (d/state-loc))))
@@ -100,14 +97,14 @@
 
 (defn update-current-layer! [point]
   (when (d/current)
-    (swap! d/data update-in [:current :item :input] g/expand point)
-    (swap! d/data assoc-in [:current :item :cache] (dr/render (:item (d/current))))))
-
+    (let [{:keys [id item]} (d/current)]
+      (swap! d/data assoc-in [:current :item] (i/update item point)))))
 
 (defn finish-current-layer! []
   (when-let [{:keys [id item]} (d/current)]
     (swap! d/data assoc :current nil)
     (update-state! assoc-in [:completed id] item)))
+
 
 (defn move-selection! [diff]
   (when-let [rect (d/selection-rect)]

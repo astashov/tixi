@@ -29,8 +29,12 @@
       (build-line-rest-coords (assoc current (Point. x1 y1) new-sym) new-x1 new-y1 x2 y2 new-err dx dy sx sy sym slash))
     (assoc current (Point. x1 y1) sym)))
 
-(defn- build-line [data]
-  (let [[x1 y1 x2 y2] data 
+(defn- repeat-string [string times]
+  (apply str (repeat times string)))
+
+
+(defn build-line [data]
+  (let [[x1 y1 x2 y2] data
         dx (.abs js/Math (- x2 x1))
         dy (.abs js/Math (- y2 y1))
         sx (if (< x1 x2) 1 -1)
@@ -40,18 +44,7 @@
         slash (if (= sx sy) "\\" "/")]
     (build-line-rest-coords {} x1 y1 x2 y2 err dx dy sx sy sym slash)))
 
-(defn- normalize [data]
-  {:origin (g/origin data)
-   :dimensions (Size. (g/width data) (g/height data))
-   :coordinates (g/shifted-to-0 data)})
-
-(defn- parse-line [data]
-  (let [{:keys [origin dimensions coordinates]} (normalize data)]
-    {:origin origin
-     :dimensions dimensions
-     :points (build-line (g/values coordinates))}))
-
-(defn- concat-lines [line-coords]
+(defn concat-lines [line-coords]
   (let [all-coords (apply concat (map build-line line-coords))
         repeated-coords (keys (filter (fn ([[_ count]] (> count 1))) (frequencies (map first all-coords))))]
     (reduce
@@ -59,44 +52,10 @@
       (into {} all-coords)
       repeated-coords)))
 
-(defn- concat-and-normalize-lines [data f]
-  (let [{:keys [origin dimensions coordinates]} (normalize data)]
-    {:origin origin
-     :dimensions dimensions
-     :points (concat-lines (f (g/values coordinates)))}))
-
-(defn- parse-rect [input]
-  (if (g/line? input)
-    (parse-line input)
-    (concat-and-normalize-lines input (fn [[nx1 ny1 nx2 ny2]]
-                                        [[nx1 ny1 nx2 ny1]
-                                         [nx1 ny1 nx1 ny2]
-                                         [nx2 ny1 nx2 ny2]
-                                         [nx1 ny2 nx2 ny2]]))))
-
-(defn- parse-rect-line [input]
-  (if (g/line? input)
-    (parse-line input)
-    (concat-and-normalize-lines input (fn [[nx1 ny1 nx2 ny2]]
-                                        [[nx1 ny1 nx1 ny2]
-                                         [nx1 ny2 nx2 ny2]]))))
-
-(scm/defn ^:always-validate parse
-  "Parses the data structure, and returns the string to display"
-  [data :- s/Item]
-  (case (:type data)
-    :line (parse-line (:input data))
-    :rect (parse-rect (:input data))
-    :rect-line (parse-rect-line (:input data))
-    nil))
-
-(defn- repeat-string [string times]
-  (apply str (repeat times string)))
-
-(defn- sort-data [data]
+(defn sort-data [data]
   (apply array-map (flatten (sort-by (comp vec reverse g/values first) data))))
 
-(defn- generate-data [dimensions points]
+(defn generate-data [dimensions points]
   (let [{:keys [width height]} (g/incr dimensions)]
     (string/join "\n"
       (map string/join
@@ -112,12 +71,3 @@
             (let [[{:keys [x y]} sym] (last points)
                   last-position (+ (* width y) x)]
               (repeat-string " " (- (* width height) last-position)))))))))
-
-(scm/defn ^:always-validate render [data :- s/Item]
-  (let [{:keys [origin dimensions points]} (parse data)
-        sorted-points (sort-data points)
-        data (generate-data dimensions sorted-points)]
-    {:origin origin
-     :dimensions dimensions
-     :points sorted-points
-     :data data}))
