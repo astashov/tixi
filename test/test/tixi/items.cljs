@@ -90,3 +90,35 @@
   (let [item (i/build-item :rect-line (g/build-rect 2 3 4 6))
         item-with-text (i/set-text item "bla")]
     (is (= (:text item-with-text) "bla"))))
+
+
+(deftest build-text
+  (let [rect (g/build-rect 2 3 3 5)
+        item (i/build-item :text rect)]
+    (is (= (:input item) rect))
+    (is (= (:text item) nil))
+    (is (= (:cache item) {:points {}, :data "  \n  \n  "}))))
+
+(deftest update-text
+  (let [rect (g/build-rect 2 3 2 3)
+        item (i/build-item :text rect)
+        updated-item (i/update item (g/Point. 4 5))]
+    (is (= (:input updated-item) (g/build-rect 4 5 4 5)))
+    (is (= (:text updated-item) nil))
+    (is (= (:cache updated-item) {:points {}, :data " "}))))
+
+(deftest reposition-text
+  (let [rect (g/build-rect 2 3 2 3)
+        item (i/build-item :text rect)
+        repositioned-item (i/reposition item (g/build-rect 4 5 4 5))
+        non-repositioned-item (i/reposition item (g/build-rect 4 5 6 7))] 
+    (is (= (:input repositioned-item) (g/build-rect 4 5 4 5)))
+    (is (= (:input non-repositioned-item) rect))))
+
+(deftest set-text-with-dimensions
+  (let [rect (g/build-rect 2 3 2 3)
+        item (i/build-item :text rect)
+        item-with-text (i/set-text item "bla" (g/Size. 3 4))]
+    (is (= (:input item-with-text) (g/build-rect 2 3 4 6)))
+    (is (= (:text item-with-text) "bla"))
+    (is (= (:cache item-with-text) {:points {}, :data "   \n   \n   \n   "}))))

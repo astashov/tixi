@@ -154,3 +154,9 @@
   (let [id (create-layer! (g/build-rect (Point. 5 6) (Point. 7 8)))]
     (m/set-text-to-item! id "bla")
     (is (= (:text (d/completed-item id)) "bla"))))
+
+(deftest set-text-to-item-with-dimensions
+  (m/set-tool! :text)
+  (let [id (create-layer! (g/build-rect (Point. 5 6) (Point. 5 6)))]
+    (m/set-text-to-item! id "bla" (Size. 3 3))
+    (is (= (:input (d/completed-item id)) (g/build-rect 5 6 7 8)))))

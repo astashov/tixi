@@ -21,7 +21,8 @@
 (defprotocol IMath
   (add [this another])
   (sub [this another])
-  (incr [this]))
+  (incr [this])
+  (decr [this]))
 
 (defprotocol IValues
   (values [this]))
@@ -36,6 +37,8 @@
             (- y (:y point))))
   (incr [this]
     (Point. (+ x 1) (+ y 1)))
+  (decr [this]
+    (Point. (- x 1) (- y 1)))
 
   IValues
   (values [this]
@@ -53,7 +56,9 @@
     (Size. (- width (:width size))
            (- height (:height size))))
   (incr [this]
-    (Size. (+ width 1) (+ height 1))))
+    (Size. (+ width 1) (+ height 1)))
+  (decr [this]
+    (Size. (- width 1) (- height 1))))
 
 (declare build-rect)
 (defrecord Rect [start-point end-point]
@@ -172,7 +177,7 @@
 
     (instance? Size end-point-or-size)
     (let [end-point (Point. (+ (:x start-point) (:width end-point-or-size))
-                            (+ (:y start-point) (:width end-point-or-size)))]
+                            (+ (:y start-point) (:height end-point-or-size)))]
       (Rect. start-point end-point)))))
 
 (defn wrapping-rect [rects]

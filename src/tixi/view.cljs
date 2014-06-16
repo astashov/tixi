@@ -5,6 +5,7 @@
                    [cljs.core.async.macros :refer [go]])
   (:require [quiescent :as q :include-macros true]
             [quiescent.dom :as dom]
+            [clojure.string :as string]
             [dommy.core :as dommy]
             [cljs.core.async :as async :refer [>!]]
             [tixi.schemas :as s]
@@ -21,7 +22,7 @@
 (defn- send-event-with-coords [action type event channel]
   (let [nativeEvent (.-nativeEvent event)
         point (p/event->coords nativeEvent)]
-    (go (>! channel {:action action :type type :point point :event nativeEvent}))))
+    (go (>! channel {:type type :data {:action action :point point :event nativeEvent}}))))
 
 (defn- selection-position [rect]
   (let [normalized-rect (g/normalize rect)
@@ -43,8 +44,8 @@
       (let [install-node (sel1 node :.text--wrapper)]
         (te/install-or-remove!
           (= id edit-text-id) install-node (or (:text item) "")
-          (fn [value]
-            (go (>! channel {:type :edit :text value :id id}))))
+          (fn [value dimensions]
+            (go (>! channel {:type :edit :data {:text value :id id :dimensions (p/position->coords dimensions)}}))))
         (when-let [content (sel1 install-node :.text--wrapper--content)]
           (te/adjust-height! install-node content))))))
 
@@ -55,6 +56,7 @@
         {:keys [x y]} (p/coords->position (i/origin item))
         {:keys [width height]} (p/coords->position (g/incr (i/dimensions item)))]
     (dom/pre {:className (str "canvas--content--layer"
+                            (str " canvas-content--layer__" (i/kind item))
                             (if is-selected " is-selected" "")
                             (if is-hover " is-hover" ""))
             :style {:left x :top y :width width :height height}
@@ -84,9 +86,16 @@
   "Displays the selection box around the selected item"
   [data channel]
   (let [selected-ids (d/selected-ids data)
-        rect (p/items-wrapping-rect selected-ids)]
-    (apply dom/div {:className (str "selection" (when (g/flipped-by-x? rect) " is-flipped-x")
-                               (when (g/flipped-by-y? rect) " is-flipped-y"))
+        rect (p/items-wrapping-rect selected-ids)
+        classes (->> (d/selected-ids data)
+                     (map #(d/completed-item %))
+                     (map #(i/kind %))
+                     sort
+                     (string/join "__"))]
+    (apply dom/div {:className (str "selection"
+                                    (str " selection__" classes)
+                                    (when (g/flipped-by-x? rect) " is-flipped-x")
+                                    (when (g/flipped-by-y? rect) " is-flipped-y"))
                     :style (selection-position rect)}
       (map (fn [css-class]
              (dom/div {:className (str "selection--dot selection--dot__" css-class)
@@ -116,11 +125,10 @@
                              (d/hover-id data) " is-hover"
                              :else ""))}
       (Canvas data channel)
-      (when (not-empty selected-ids)
+      (when (and (not-empty selected-ids) (not (d/edit-text-id)))
         (Selection data channel))
       (when (and current-selection (> (g/width current-selection) 0) (> (g/height current-selection) 0))
         (CurrentSelection data channel))
-      (when ())
       (Tool data))))
 
 (defn- dom-content []

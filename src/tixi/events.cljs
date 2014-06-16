@@ -31,19 +31,20 @@
     (reset! request-id id)))
 
 (defn handle-keyboard-events [event]
-  (case (.-keyCode event)
-        8  (do ; backspace
-             (.preventDefault event)
-             (when-not (d/edit-text-id)
-               (m/delete-selected!)))
-        76 (m/set-tool! :line) ; l
-        82 (m/set-tool! :rect) ; r
-        83 (m/set-tool! :select) ; s
-        89 (m/set-tool! :rect-line) ; y
-        85 (m/undo!) ; u
-        73 (m/redo!) ; i
-        nil)
-  (render))
+  (when-not (d/edit-text-id)
+    (case (.-keyCode event)
+          8  (do ; backspace
+               (.preventDefault event)
+               (m/delete-selected!))
+          76 (m/set-tool! :line) ; l
+          82 (m/set-tool! :rect) ; r
+          83 (m/set-tool! :select) ; s
+          84 (m/set-tool! :text) ; t
+          89 (m/set-tool! :rect-line) ; y
+          85 (m/undo!) ; u
+          73 (m/redo!) ; i
+          nil)
+    (render)))
 
 (defn handle-mousemove [event]
   (reset! select-second-clicked false)
@@ -72,10 +73,10 @@
     (set-moving-from! point)
     (render)))
 
-(defn handle-input-event [{:keys [type point action event id text]}]
+(defn handle-input-event [{:keys [type data]}]
   (case type
     :down
-    (do
+    (let [{:keys [point action event id]} data]
       (reset! start-point point)
       (set-moving-from! point)
       (m/set-action! action)
@@ -93,7 +94,7 @@
             (m/select-layer! id point (.-shiftKey event))))))
 
     :up
-    (do
+    (let [{:keys [point action]} data]
       (reset! end-point point)
       (m/set-action! nil)
       (when (= action :draw)
@@ -110,9 +111,9 @@
       (m/undo-if-unchanged!))
 
     :edit
-    (do
+    (let [{:keys [id text dimensions]} data]
       (m/edit-text-in-item! nil)
-      (m/set-text-to-item! id text)))
+      (m/set-text-to-item! id text dimensions)))
 
   (render))
 

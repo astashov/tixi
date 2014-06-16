@@ -1,6 +1,7 @@
 (ns tixi.text-editor
   (:require [tixi.utils :refer [p]]
-            [tixi.position :as p]))
+            [tixi.position :as p]
+            [tixi.geometry :as g]))
 
 (defn- find-node [install-node]
   (.querySelector (.-parentNode install-node) ".CodeMirror"))
@@ -38,13 +39,20 @@
   (.focus instance)
   (.execCommand instance "goDocEnd"))
 
+(defn- commit [instance node on-completed-callback]
+  (let [size (g/Size. (.-offsetWidth node) (.-offsetHeight node))
+        value (.getValue instance)]
+    (remove! node)
+    (p [value size])
+    (on-completed-callback value size)))
+
 (defn- install! [install-node on-completed-callback]
   (let [instance (.CodeMirror js/window install-node #js {:lineWrapping true})
         node (find-node install-node)]
     (.on instance "change" (fn [] (adjust-height! install-node node)))
-    (.on instance "blur" (fn []
-                           (on-completed-callback (.getValue instance))
-                           (remove! node)))
+    (.on instance "blur" (fn [] (commit instance node on-completed-callback)))
+    (.on instance "keyHandled" (fn [_ _ event] (when (= (.-keyCode event) 27) ; Esc
+                                                 (.blur (.getInputField instance)))))
     (adjust-height! install-node node)))
 
 (defn install-or-remove! [install? install-node text on-completed-callback]

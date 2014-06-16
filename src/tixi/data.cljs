@@ -80,7 +80,7 @@
 
 (defn draw-tool?
   ([] (draw-tool? @data))
-  ([data] (seq-contains? [:line :rect :rect-line] (tool data))))
+  ([data] (seq-contains? [:line :rect :rect-line :text] (tool data))))
 
 (defn select-tool?
   ([] (select-tool? @data))

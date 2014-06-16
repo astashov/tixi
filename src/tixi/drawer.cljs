@@ -18,10 +18,8 @@
                         (> e2 (- dy)) (- err dy)
                         (< e2 dx) (+ err dx)
                         :else err)
-          new-x1 (cond (> e2 (- dy)) (+ x1 sx)
-                       :else x1)
-          new-y1 (cond (< e2 dx) (+ y1 sy)
-                       :else y1)
+          new-x1 (if (> e2 (- dy)) (+ x1 sx) x1)
+          new-y1 (if (< e2 dx) (+ y1 sy) y1)
           new-sym (if (or (and (= sym "|") (not= new-x1 x1))
                           (and (= sym "-") (not= new-y1 y1)))
                     slash

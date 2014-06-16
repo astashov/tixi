@@ -167,6 +167,20 @@ body,
   cursor: nwse-resize;
 }
 
+.for-focus {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 50px;
+  height: 50px;
+  background: gray;
+  z-index: 1;
+}
+
+.selection__text .selection--dot {
+  display: none;
+}
+
 .tool {
   position: fixed;
   right: 0;
@@ -196,6 +210,23 @@ body,
   word-wrap: break-word;
   display: inline-block;
   max-width: 100%;
+}
+
+.canvas-content--layer__text .text--wrapper {
+  padding: 0 !important;
+  width: auto;
+  height: auto;
+}
+
+.canvas-content--layer__text .text--wrapper--content {
+  word-wrap: initial;
+  text-align: left;
+  margin-top: 0 !important;
+}
+
+.canvas-content--layer__text .CodeMirror {
+  text-align: left;
+  padding-right: 1px;
 }
 
 .CodeMirror {

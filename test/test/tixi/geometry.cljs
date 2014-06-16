@@ -82,3 +82,9 @@
 
 (deftest size-incr
   (is (= (g/incr (Size. 3 4)) (Size. 4 5))))
+
+(deftest point-decr
+  (is (= (g/decr (Point. 3 4)) (Point. 2 3))))
+
+(deftest size-decr
+  (is (= (g/decr (Size. 3 4)) (Size. 2 3))))

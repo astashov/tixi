@@ -103,7 +103,9 @@
 (defn finish-current-layer! []
   (when-let [{:keys [id item]} (d/current)]
     (swap! d/data assoc :current nil)
-    (update-state! assoc-in [:completed id] item)))
+    (update-state! assoc-in [:completed id] item)
+    (if (= (i/kind item) "text")
+      (edit-text-in-item! id))))
 
 
 (defn move-selection! [diff]
@@ -146,5 +148,5 @@
 (defn edit-text-in-item! [id]
   (swap! d/data assoc :edit-text-id id))
 
-(defn set-text-to-item! [id text]
-  (update-state! assoc-in [:completed id :text] text))
+(defn set-text-to-item! [id text dimensions]
+  (update-state! assoc-in [:completed id] (i/set-text (d/completed-item id) text dimensions)))
