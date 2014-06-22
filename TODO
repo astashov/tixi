@@ -1,0 +1,16 @@
+* Revisit locking, maybe specify points for every shape where you could lock connectors to.
+* Need to revisit Items inheritance approach, it is now hard to add shared functions to "subclasses"
+* Fix the bug when flat lines cause exceptions
+* Add some UI
+* Improve performance of rendering an item. Especially - sorting the points, for now it is freaking slow
+* Design better 'rect-line'
+* Change how the selection looks for a line - it should just have 2 dots for moving it around (start and end)
+* Add possibility to group/ungroup items
+* Add grid
+* Add guides
+* Add a way to change z-indexes of items
+* Add copying/pasting
+* Add a way to flattenize and copy to clipboard
+* Add nice helpers showing the origin/dimensions of an item when you resize/move it around
+
+
