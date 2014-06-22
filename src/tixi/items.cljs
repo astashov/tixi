@@ -1,4 +1,5 @@
 (ns tixi.items
+  (:require-macros [tixi.utils :refer (b)])
   (:require [tixi.drawer :as dr]
             [tixi.geometry :as g]
             [tixi.utils :refer [p]]))
@@ -9,12 +10,24 @@
   (dimensions [this])
   (reposition [this input])
   (selection-rect [this])
-  (origin [this]))
+  (origin [this])
+  (set-text [this text dimensions]))
+
+(defprotocol IItemLock
+  (lockable? [this])
+  (connector? [this]))
 
 (defprotocol IItemCustom
   (kind [this])
   (-builder [this])
   (-parse [this]))
+
+(defprotocol IItemLine
+  (start-char [this])
+  (end-char [this]))
+
+(defprotocol IItemRelative
+  (relative-point [this point]))
 
 (defn- render [item]
   (let [points (dr/sort-data (-parse item))
@@ -22,13 +35,26 @@
     {:points points :data data}))
 
 (defn- recache [item rebuild?]
-  ((-builder item) (:input item) (:text item) (if rebuild? (render item) (:cache item))))
+  ((-builder item) {:input (:input item)
+                    :text (:text item)
+                    :cache (if rebuild? (render item) (:cache item))}))
 
 (defn- parse-line [rect]
   (dr/build-line (g/values (g/shifted-to-0 rect))))
 
 (defn- concat-and-normalize-lines [rect f]
   (dr/concat-lines (f (g/values (g/shifted-to-0 rect)))))
+
+(defn- maybe-add-edge-chars [f args]
+  (let [result (f)
+        {:keys [input start-char end-char]} args
+        shifted-input (g/shifted-to-0 input)]
+    (cond
+      (and start-char end-char) (assoc result (:start-point shifted-input) start-char
+                                              (:end-point shifted-input) end-char)
+      start-char (assoc result (:start-point shifted-input) start-char)
+      end-char (assoc result (:end-point shifted-input) end-char)
+      :else result)))
 
 (defrecord Item [input text cache]
   IItemBase
@@ -38,82 +64,104 @@
   (origin [this]
     (g/origin (:input this)))
   (update [this point]
-    (recache ((-builder this) (g/expand (:input this) point) (:text this) nil) true))
+    (recache ((-builder this) {:input (g/expand (:input this) point) :text (:text this)}) true))
   (reposition [this input]
     (let [dimensions-changed? (not= (g/dimensions (:input this)) (g/dimensions input))]
-      (recache ((-builder this) input (:text this) (:cache this)) dimensions-changed?))))
+      (recache ((-builder this) {:input input :text (:text this) :cache (:cache this)}) dimensions-changed?)))
+  (set-text [this text dimensions]
+    (let [input (if (point-like? this)
+                  (g/build-rect (g/origin (:input this)) (g/decr dimensions))
+                  (:input this))]
+      (recache ((-builder this) {:input input :text text}) true))))
 
-(defrecord Text [input text cache]
-  IItem
-  (kind [this] "text")
-  (update [this point]
-    (recache ((-builder this) (g/build-rect point point) (:text this)) nil))
-  (dimensions [this] (g/Size. 1 1))
-  (origin [this] (g/origin (:input this)))
-  (-builder [this] build-text)
-  (-parse [this] {}))
+(defn- build-line [args]
+  (let [{:keys [input text cache]} args]
+    (specify (Item. input text cache)
+      IItemLine
+      (start-char [this] (:start-char args))
+      (end-char [this] (:end-char args))
 
-(defn- build-line [input text cache]
-  (specify (Item. input text cache)
-    IItemCustom
-    (kind [this] "line")
-    (-builder [this] build-line)
-    (-parse [this]
-      (parse-line input))))
+      IItemCustom
+      (kind [this] "line")
+      (-builder [this]
+        (fn [new-args] (build-line (merge args new-args))))
+      (-parse [this]
+        (maybe-add-edge-chars #(parse-line input) args))
 
-(defn- build-rect [input text cache]
-  (specify (Item. input text cache)
-    IItemCustom
-    (kind [this] "rect")
-    (-builder [this] build-rect)
-    (-parse [this]
-      (if (g/line? input)
-        (parse-line input)
-        (concat-and-normalize-lines input (fn [[nx1 ny1 nx2 ny2]]
-                                            [[nx1 ny1 nx2 ny1]
-                                             [nx1 ny1 nx1 ny2]
-                                             [nx2 ny1 nx2 ny2]
-                                             [nx1 ny2 nx2 ny2]]))))))
+      IItemLock
+      (lockable? [this] false)
+      (connector? [this] true))))
 
-(defn- build-rect-line [input text cache]
-  (specify (Item. input text cache)
-    IItemCustom
-    (kind [this] "rect-line")
-    (-builder [this] build-rect-line)
-    (-parse [this]
-      (if (g/line? input)
-        (parse-line input)
-        (concat-and-normalize-lines input (fn [[nx1 ny1 nx2 ny2]]
-                                            [[nx1 ny1 nx1 ny2]
-                                             [nx1 ny2 nx2 ny2]]))))))
+(defn- build-rect [args]
+  (let [{:keys [input text cache]} args]
+    (specify (Item. input text cache)
+      IItemCustom
+      (kind [this] "rect")
+      (-builder [this] build-rect)
+      (-parse [this]
+        (if (g/line? input)
+          (parse-line input)
+          (concat-and-normalize-lines input (fn [[nx1 ny1 nx2 ny2]]
+                                              [[nx1 ny1 nx2 ny1]
+                                               [nx1 ny1 nx1 ny2]
+                                               [nx2 ny1 nx2 ny2]
+                                               [nx1 ny2 nx2 ny2]]))))
+      IItemRelative
+      (relative-point [this point]
+        (g/relative point (:input this)))
 
-(defn- build-text [input text cache]
-  (specify (Item. input text cache)
-    IItemBase
-    (point-like? [this] true)
-    (update [this point]
-      (recache ((-builder this) (g/build-rect point point) (:text this) (:cache this)) false))
-    (reposition [this input]
-      (let [dimensions-changed? (not= (g/dimensions (:input this)) (g/dimensions input))]
-        (if dimensions-changed?
-          this
-          (recache ((-builder this) input (:text this) (:cache this)) false))))
+      IItemLock
+      (lockable? [this] true)
+      (connector? [this] false))))
 
-    IItemCustom
-    (kind [this] "text")
-    (-builder [this] build-text)
-    (-parse [this] {})))
+(defn- build-rect-line [args]
+  (let [{:keys [input text cache]} args]
+    (specify (Item. input text cache)
+      IItemLine
+      (start-char [this] (:start-char args))
+      (end-char [this] (:end-char args))
 
-(defn build-item [type & args]
+      IItemCustom
+      (kind [this] "rect-line")
+      (-builder [this]
+        (fn [new-args] (build-rect-line (merge args new-args))))
+      (-parse [this]
+        (maybe-add-edge-chars #(if (g/line? input)
+                                 (parse-line input)
+                                 (concat-and-normalize-lines input (fn [[nx1 ny1 nx2 ny2]]
+                                                                     [[nx1 ny1 nx1 ny2]
+                                                                      [nx1 ny2 nx2 ny2]])))
+                              args))
+      IItemLock
+      (lockable? [this] false)
+      (connector? [this] true))))
+
+(defn- build-text [args]
+  (let [{:keys [input text cache]} args]
+    (specify (Item. input text cache)
+      IItemBase
+      (point-like? [this] true)
+      (update [this point]
+        (recache ((-builder this) (assoc args :input (g/build-rect point point))) false))
+      (reposition [this input]
+        (let [dimensions-changed? (not= (g/dimensions (:input this)) (g/dimensions input))]
+          (if dimensions-changed?
+            this
+            (recache ((-builder this) (assoc args :input input)) false))))
+
+      IItemCustom
+      (kind [this] "text")
+      (-builder [this] build-text)
+      (-parse [this] {})
+
+      IItemLock
+      (lockable? [this] false)
+      (connector? [this] false))))
+
+(defn build-item [type args]
   (let [builder (case type
                   :line build-line
                   :rect build-rect
                   :rect-line build-rect-line
                   :text build-text)]
-    (recache (apply builder args) true)))
-
-(defn set-text [item text dimensions]
-  (let [input (if (point-like? item)
-                (g/build-rect (g/origin (:input item)) (g/decr dimensions))
-                (:input item))]
-    (recache ((-builder item) input text nil) true)))
+    (recache (builder args) true)))

@@ -12,7 +12,9 @@
 
 (def initial-data
   {:current nil
-   :state (zip (t/node {:completed {}}))
+   :state (zip (t/node {:completed {}
+                        :locks {:connectors {}
+                                :lockables {}}}))
    :tool :line
    :action nil
    :autoincrement 0
@@ -41,6 +43,26 @@
 (defn completed
   ([] (completed @data))
   ([data] (:completed (state data))))
+
+(defn locks
+  ([] (locks @data))
+  ([data] (:locks (state data))))
+
+(defn lockable
+  ([lockable-id] (lockable @data lockable-id))
+  ([data lockable-id] (get-in (state data) [:locks :lockables lockable-id] {})))
+
+(defn lockable-connector
+  ([lockable-id connector-id] (lockable-connector @data lockable-id connector-id))
+  ([data lockable-id connector-id] (get-in (state data) [:locks :lockables lockable-id connector-id] {})))
+
+(defn connector-types
+  ([connector-id] (connector-types @data connector-id))
+  ([data connector-id] (get-in (state data) [:locks :connectors connector-id] {})))
+
+(defn lockable-id-by-connector-id-and-type
+  ([connector-id type] (lockable-id-by-connector-id-and-type @data connector-id type))
+  ([data connector-id type] (get-in (state data) [:locks :connectors connector-id type])))
 
 (defn completed-item
   ([id] (completed-item @data id))

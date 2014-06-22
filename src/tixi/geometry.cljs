@@ -3,14 +3,13 @@
 
 (defprotocol IRect
   (expand [this point])
+  (shrink [this point])
   (width [this])
   (height [this])
   (dimensions [this])
   (normalize [this])
   (origin [this])
   (shifted-to-0 [this])
-  (relative [this wrapper])
-  (absolute [this rel-rect])
   (inside? [this point])
   (line? [this])
   (move [this diff])
@@ -27,7 +26,14 @@
 (defprotocol IValues
   (values [this]))
 
+(defprotocol IRelative
+  (relative [this wrapper])
+  (absolute [this wrapper]))
+
 (defrecord Point [x y]
+  Object
+  (toString [_] (str [x y]))
+
   IMath
   (add [this point]
     (Point. (+ x (:x point))
@@ -42,9 +48,29 @@
 
   IValues
   (values [this]
-    [x y]))
+    [x y])
+
+  IRelative
+  (relative [this wrapper]
+    (let [[x y] (values this)
+          [wrx1 wry1 wrx2 wry2] (values (normalize wrapper))
+          relx (/ (- x wrx1) (width wrapper))
+          rely (/ (- y wry1) (height wrapper))]
+      (Point. relx rely)))
+
+  (absolute [this wrapper]
+    (let [[wrx wry] (values (:start-point wrapper))
+          [x y] (values this)
+          new-x (.round js/Math (+ wrx (* (width wrapper) x)))
+          new-y (.round js/Math (+ wry (* (height wrapper) y)))]
+      (Point. new-x new-y))))
+
+
 
 (defrecord Size [width height]
+  Object
+  (toString [_] (str [width height]))
+
   IValues
   (values [this] [width height])
 
@@ -62,9 +88,15 @@
 
 (declare build-rect)
 (defrecord Rect [start-point end-point]
+  Object
+  (toString [_] (str (values start-point) (values end-point)))
+
   IRect
   (expand [this point]
     (build-rect start-point point))
+
+  (shrink [this point]
+    (build-rect point end-point))
 
   (width [this]
     (.abs js/Math (- (:x start-point) (:x end-point))))
@@ -91,26 +123,6 @@
                      (- (:y start-point) (:y org)))
              (Point. (- (:x end-point) (:x org))
                      (- (:y end-point) (:y org))))))
-
-  (relative [this wrapper]
-    (let [[x1 y1 x2 y2] (values this)
-          [wrx1 wry1 wrx2 wry2] (values (normalize wrapper))
-          relx1 (/ (- x1 wrx1) (width wrapper))
-          rely1 (/ (- y1 wry1) (height wrapper))
-          relx2 (/ (- x2 wrx1) (width wrapper))
-          rely2 (/ (- y2 wry1) (height wrapper))]
-      (Rect. (Point. relx1 rely1) (Point. relx2 rely2))))
-
-  (absolute [this rel-rect]
-    (let [[rel-x1 rel-y1 rel-x2 rel-y2] (values rel-rect)
-          [x1 y1 x2 y2] (values (normalize this))
-          fx (fn [v] (if (flipped-by-x? this) (- x2 v) (+ x1 v)))
-          fy (fn [v] (if (flipped-by-y? this) (- y2 v) (+ y1 v)))
-          new-x1 (.round js/Math (fx (* (width this) rel-x1)))
-          new-y1 (.round js/Math (fy (* (height this) rel-y1)))
-          new-x2 (.round js/Math (fx (* (width this) rel-x2)))
-          new-y2 (.round js/Math (fy (* (height this) rel-y2)))]
-      (build-rect (Point. new-x1 new-y1) (Point. new-x2 new-y2))))
 
   (line? [this]
     (or (= (:x start-point) (:x end-point)
@@ -161,6 +173,27 @@
   (flipped-by-y? [this]
     (> (:y start-point) (:y end-point)))
 
+  IRelative
+  (relative [this wrapper]
+    (let [[x1 y1 x2 y2] (values this)
+          [wrx1 wry1 wrx2 wry2] (values (normalize wrapper))
+          relx1 (/ (- x1 wrx1) (width wrapper))
+          rely1 (/ (- y1 wry1) (height wrapper))
+          relx2 (/ (- x2 wrx1) (width wrapper))
+          rely2 (/ (- y2 wry1) (height wrapper))]
+      (Rect. (Point. relx1 rely1) (Point. relx2 rely2))))
+
+  (absolute [this rel-rect]
+    (let [[rel-x1 rel-y1 rel-x2 rel-y2] (values rel-rect)
+          [x1 y1 x2 y2] (values (normalize this))
+          fx (fn [v] (if (flipped-by-x? this) (- x2 v) (+ x1 v)))
+          fy (fn [v] (if (flipped-by-y? this) (- y2 v) (+ y1 v)))
+          new-x1 (.round js/Math (fx (* (width this) rel-x1)))
+          new-y1 (.round js/Math (fy (* (height this) rel-y1)))
+          new-x2 (.round js/Math (fx (* (width this) rel-x2)))
+          new-y2 (.round js/Math (fy (* (height this) rel-y2)))]
+      (build-rect (Point. new-x1 new-y1) (Point. new-x2 new-y2))))
+
   IValues
   (values [this]
     (vec (flatten [(values (:start-point this)) (values (:end-point this))]))))
@@ -185,3 +218,16 @@
     (let [[x1s y1s x2s y2s] (apply map vector (map #(values (normalize %)) rects))]
       (Rect. (Point. (apply min x1s) (apply min y1s))
              (Point. (apply max x2s) (apply max y2s))))))
+
+(extend-protocol IPrintWithWriter
+  Point
+  (-pr-writer [coll writer opts]
+    (-write writer (str "P" coll)))
+
+  Size
+  (-pr-writer [coll writer opts]
+    (-write writer (str "S" coll)))
+
+  Rect
+  (-pr-writer [coll writer opts]
+    (-write writer (str "R" coll))))

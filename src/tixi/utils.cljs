@@ -18,3 +18,6 @@
         result (f)]
     (p (str (when msg (str msg ": ")) (- (.now js/Date) start) "ms"))
     result)))
+
+(defn get-by-val [coll value]
+  (filter (comp #{value} coll) (keys coll)))

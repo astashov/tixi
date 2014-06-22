@@ -2,11 +2,8 @@
   (:require-macros [schema.macros :as scm]
                    [tixi.utils :refer (b)])
   (:require [clojure.string :as string]
-            [schema.core :as sc]
-            [tixi.schemas :as s]
             [tixi.geometry :as g :refer [Size Point]]
-            [tixi.utils :refer [p]]
-            [tixi.data :as d]))
+            [tixi.utils :refer [p]]))
 
 ;; Bresenham's line algorithm
 ;; http://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
@@ -50,6 +47,7 @@
       (into {} all-coords)
       repeated-coords)))
 
+;; TODO: That is freaking slow :( Need to find a way to speed it up
 (defn sort-data [data]
   (apply array-map (flatten (sort-by (comp vec reverse g/values first) data))))
 

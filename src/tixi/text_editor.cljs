@@ -43,7 +43,6 @@
   (let [size (g/Size. (.-offsetWidth node) (.-offsetHeight node))
         value (.getValue instance)]
     (remove! node)
-    (p [value size])
     (on-completed-callback value size)))
 
 (defn- install! [install-node on-completed-callback]
