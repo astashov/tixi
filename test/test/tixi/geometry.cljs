@@ -38,7 +38,10 @@
 (deftest rect-relative
   (is (= (g/relative (Rect. (Point. 2 2) (Point. 4 4))
                      (Rect. (Point. 1 1) (Point. 6 6)))
-         (Rect. (Point. 0.2 0.2) (Point. 0.6 0.6)))))
+         (Rect. (Point. 0.2 0.2) (Point. 0.6 0.6))))
+  (is (= (g/relative (Rect. (Point. 2 2) (Point. 4 2))
+                     (Rect. (Point. 1 2) (Point. 6 2)))
+         (Rect. (Point. 0.2 0) (Point. 0.6 1)))))
 
 (deftest rect-absolute
   (is (= (g/absolute (Rect. (Point. 1 1) (Point. 6 6))
@@ -85,6 +88,14 @@
 
 (deftest point-decr
   (is (= (g/decr (Point. 3 4)) (Point. 2 3))))
+
+(deftest point-relative
+  (is (= (g/relative (Point. 2 2)
+                     (Rect. (Point. 1 1) (Point. 6 6)))
+         (Point. 0.2 0.2)))
+  (is (= (g/relative (Point. 2 2)
+                     (Rect. (Point. 1 2) (Point. 6 2)))
+         (Point. 0.2 0))))
 
 (deftest size-decr
   (is (= (g/decr (Size. 3 4)) (Size. 2 3))))

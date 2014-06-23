@@ -54,8 +54,8 @@
   (relative [this wrapper]
     (let [[x y] (values this)
           [wrx1 wry1 wrx2 wry2] (values (normalize wrapper))
-          relx (/ (- x wrx1) (width wrapper))
-          rely (/ (- y wry1) (height wrapper))]
+          relx (if (= (width wrapper) 0) 0 (/ (- x wrx1) (width wrapper)))
+          rely (if (= (height wrapper) 0) 0 (/ (- y wry1) (height wrapper)))]
       (Point. relx rely)))
 
   (absolute [this wrapper]
@@ -177,10 +177,10 @@
   (relative [this wrapper]
     (let [[x1 y1 x2 y2] (values this)
           [wrx1 wry1 wrx2 wry2] (values (normalize wrapper))
-          relx1 (/ (- x1 wrx1) (width wrapper))
-          rely1 (/ (- y1 wry1) (height wrapper))
-          relx2 (/ (- x2 wrx1) (width wrapper))
-          rely2 (/ (- y2 wry1) (height wrapper))]
+          relx1 (if (= (width wrapper) 0) 0 (/ (- x1 wrx1) (width wrapper)))
+          rely1 (if (= (height wrapper) 0) 0 (/ (- y1 wry1) (height wrapper)))
+          relx2 (if (= (width wrapper) 0) 1 (/ (- x2 wrx1) (width wrapper)))
+          rely2 (if (= (height wrapper) 0) 1 (/ (- y2 wry1) (height wrapper)))]
       (Rect. (Point. relx1 rely1) (Point. relx2 rely2))))
 
   (absolute [this rel-rect]
