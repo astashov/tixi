@@ -10,41 +10,61 @@
         item (i/build-item :line {:input rect})]
     (is (= (:input item) rect))
     (is (= (:text item) nil))
-    (is (= (:cache item) {:points {(g/Point. 0 0) "\\"
-                                   (g/Point. 1 1) "|"
-                                   (g/Point. 1 2) "\\"
-                                   (g/Point. 2 3) "|"}
-                          :data "\\  \n | \n \\ \n  |"}))))
+    (is (= (js->clj (:cache item)) {:points [[[0 0] {"v" "\\"}]
+                                             [[1 1] {"v" "|"}]
+                                             [[1 2] {"v" "\\"}]
+                                             [[2 3] {"v" "|"}]]
+                                    :data "\\ \n |\n \\\n  |"
+                                    :index {"0_0" {"v" "\\"}
+                                            "1_1" {"v" "|"}
+                                            "1_2" {"v" "\\"}
+                                            "2_3" {"v" "|"}}}))))
 
 (deftest build-rect
   (let [rect (g/build-rect 2 3 4 6)
         item (i/build-item :rect {:input rect})]
     (is (= (:input item) rect))
     (is (= (:text item) nil))
-    (is (= (:cache item) {:points {(g/Point. 0 0) "+"
-                                   (g/Point. 1 0) "-"
-                                   (g/Point. 2 0) "+"
-                                   (g/Point. 0 1) "|"
-                                   (g/Point. 2 1) "|"
-                                   (g/Point. 0 2) "|"
-                                   (g/Point. 2 2) "|"
-                                   (g/Point. 0 3) "+"
-                                   (g/Point. 1 3) "-"
-                                   (g/Point. 2 3) "+"}
-                          :data "+-+\n| |\n| |\n+-+"}))))
+    (is (= (js->clj (:cache item)) {:points [[[0 0] {"v" "+"}]
+                                             [[1 0] {"v" "-"}]
+                                             [[2 0] {"v" "+"}]
+                                             [[0 1] {"v" "|"}]
+                                             [[2 1] {"v" "|"}]
+                                             [[0 2] {"v" "|"}]
+                                             [[2 2] {"v" "|"}]
+                                             [[0 3] {"v" "+"}]
+                                             [[1 3] {"v" "-"}]
+                                             [[2 3] {"v" "+"}]]
+                                    :data "+-+\n| |\n| |\n+-+"
+                                    :index {"0_0" {"v" "+"}
+                                            "1_0" {"v" "-"}
+                                            "0_1" {"v" "|"}
+                                            "2_0" {"v" "+"}
+                                            "0_2" {"v" "|"}
+                                            "2_1" {"v" "|"}
+                                            "0_3" {"v" "+"}
+                                            "2_2" {"v" "|"}
+                                            "1_3" {"v" "-"}
+                                            "2_3" {"v" "+"}}}))))
 
 (deftest build-rect-line
   (let [rect (g/build-rect 2 3 4 6)
         item (i/build-item :rect-line {:input rect})]
     (is (= (:input item) rect))
     (is (= (:text item) nil))
-    (is (= (:cache item) {:points {(g/Point. 0 0) "|"
-                                   (g/Point. 0 1) "|"
-                                   (g/Point. 0 2) "|"
-                                   (g/Point. 0 3) "+"
-                                   (g/Point. 1 3) "-"
-                                   (g/Point. 2 3) "-"}
-                          :data "|  \n|  \n|  \n+--"}))))
+    (is (= (js->clj (:cache item)) {:points [[[0 0] {"v" "-"}]
+                                             [[1 0] {"v" "-"}]
+                                             [[2 0] {"v" "+"}]
+                                             [[2 1] {"v" "|"}]
+                                             [[2 2] {"v" "|"}]
+                                             [[2 3] {"v" "|"}]]
+                                    :data "--+\n  |\n  |\n  |"
+                                    :index {"2_0" {"v" "+"}
+                                            "0_0" {"v" "-"}
+                                            "1_0" {"v" "-"}
+                                            "2_1" {"v" "|"}
+                                            "2_2" {"v" "|"}
+                                            "2_3" {"v" "|"}}}))))
 
 (deftest dimensions
   (let [rect (g/build-rect 2 3 4 6)
@@ -62,14 +82,21 @@
         updated-item (i/update item (g/Point. 4 7))]
     (is (= (:input updated-item) (g/build-rect 2 3 4 7)))
     (is (= (:text updated-item) nil))
-    (is (= (:cache updated-item) {:points {(g/Point. 0 0) "|",
-                                           (g/Point. 0 1) "|"
-                                           (g/Point. 0 2) "|"
-                                           (g/Point. 0 3) "|"
-                                           (g/Point. 0 4) "+"
-                                           (g/Point. 1 4) "-"
-                                           (g/Point. 2 4) "-"}
-                                  :data "|  \n|  \n|  \n|  \n+--"}))))
+    (is (= (js->clj (:cache updated-item)) {:points [[[0 0] {"v" "|"}]
+                                                     [[0 1] {"v" "|"}]
+                                                     [[0 2] {"v" "|"}]
+                                                     [[0 3] {"v" "|"}]
+                                                     [[0 4] {"v" "+"}]
+                                                     [[1 4] {"v" "-"}]
+                                                     [[2 4] {"v" "-"}]]
+                                            :data "| \n| \n| \n| \n+--"
+                                            :index {"0_4" {"v" "+"}
+                                                    "0_0" {"v" "|"}
+                                                    "0_1" {"v" "|"}
+                                                    "0_2" {"v" "|"}
+                                                    "0_3" {"v" "|"}
+                                                    "1_4" {"v" "-"}
+                                                    "2_4" {"v" "-"}}}))))
 
 (deftest reposition
   (let [rect (g/build-rect 2 3 4 6)
@@ -78,13 +105,19 @@
         repositioned-item (i/reposition item new-rect)]
     (is (= (:input repositioned-item) new-rect))
     (is (= (:text repositioned-item) nil))
-    (is (= (:cache repositioned-item) {:points {(g/Point. 0 0) "|"
-                                                (g/Point. 0 1) "|"
-                                                (g/Point. 0 2) "|"
-                                                (g/Point. 0 3) "+"
-                                                (g/Point. 1 3) "-"
-                                                (g/Point. 2 3) "-"}
-                                       :data "|  \n|  \n|  \n+--"}))))
+    (is (= (js->clj (:cache repositioned-item)) {:points [[[0 0] {"v" "-"}]
+                                                          [[1 0] {"v" "-"}]
+                                                          [[2 0] {"v" "+"}]
+                                                          [[2 1] {"v" "|"}]
+                                                          [[2 2] {"v" "|"}]
+                                                          [[2 3] {"v" "|"}]]
+                                                 :data "--+\n  |\n  |\n  |"
+                                                 :index {"2_0" {"v" "+"}
+                                                         "0_0" {"v" "-"}
+                                                         "1_0" {"v" "-"}
+                                                         "2_1" {"v" "|"}
+                                                         "2_2" {"v" "|"}
+                                                         "2_3" {"v" "|"}}}))))
 
 (deftest set-text
   (let [item (i/build-item :rect-line {:input (g/build-rect 2 3 4 6)})
@@ -97,7 +130,7 @@
         item (i/build-item :text {:input rect})]
     (is (= (:input item) rect))
     (is (= (:text item) nil))
-    (is (= (:cache item) {:points {}, :data "  \n  \n  "}))))
+    (is (= (js->clj (:cache item)) {:points [], :data " \n ", :index {}}))))
 
 (deftest update-text
   (let [rect (g/build-rect 2 3 2 3)
@@ -105,7 +138,7 @@
         updated-item (i/update item (g/Point. 4 5))]
     (is (= (:input updated-item) (g/build-rect 4 5 4 5)))
     (is (= (:text updated-item) nil))
-    (is (= (:cache updated-item) {:points {}, :data " "}))))
+    (is (= (js->clj (:cache updated-item)) {:points [], :data "", :index {}}))))
 
 (deftest reposition-text
   (let [rect (g/build-rect 2 3 2 3)
@@ -121,4 +154,4 @@
         item-with-text (i/set-text item "bla" (g/Size. 3 4))]
     (is (= (:input item-with-text) (g/build-rect 2 3 4 6)))
     (is (= (:text item-with-text) "bla"))
-    (is (= (:cache item-with-text) {:points {}, :data "   \n   \n   \n   "}))))
+    (is (= (js->clj (:cache item-with-text)) {:points [], :data "  \n  \n  ", :index {}}))))

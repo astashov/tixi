@@ -1,7 +1,6 @@
 (ns tixi.mutators
   (:require-macros [tixi.utils :refer (b)])
   (:require [tixi.data :as d]
-            [tixi.drawer :as dr]
             [tixi.position :as p]
             [tixi.tree :as t]
             [tixi.items :as i]

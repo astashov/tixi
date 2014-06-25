@@ -27,9 +27,11 @@
     (g/inside? rect point)))
 
 (defn- item-has-point? [item point]
-  (let [points (keys (:points (:cache item)))
-        moved-point (g/sub point (i/origin item))]
-    (not= (some #{moved-point} points) nil)))
+  (let [index (:index (:cache item))
+        moved-point (g/sub point (i/origin item))
+        [x y] (g/values moved-point)
+        k (str x "_" y)]
+    (boolean (aget index k))))
 
 (defn canvas-size []
   (Size. (.floor js/Math (/ (.-innerWidth js/window) (:width (letter-size))))

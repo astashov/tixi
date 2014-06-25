@@ -14,8 +14,7 @@
             [tixi.utils :refer [p]]
             [tixi.position :as p]
             [tixi.items :as i]
-            [tixi.text-editor :as te]
-            [tixi.drawer :as drawer]))
+            [tixi.text-editor :as te]))
 
 (enable-console-print!)
 

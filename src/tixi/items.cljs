@@ -1,7 +1,6 @@
 (ns tixi.items
   (:require-macros [tixi.utils :refer (b)])
-  (:require [tixi.drawer :as dr]
-            [tixi.geometry :as g]
+  (:require [tixi.geometry :as g]
             [tixi.utils :refer [p]]))
 
 (defprotocol IItemBase
@@ -30,9 +29,13 @@
   (relative-point [this point]))
 
 (defn- render [item]
-  (let [points (dr/sort-data (-parse item))
-        data (dr/generate-data (dimensions item) points)]
-    {:points points :data data}))
+  (let [result (-parse item)
+        points (.-points result)
+        index (.-index result)
+        sorted-points (.sortData js/Drawer points)
+        [width height] (g/values (dimensions item))
+        data (.generateData js/Drawer width height sorted-points)]
+    {:points sorted-points :data data :index index}))
 
 (defn- recache [item rebuild?]
   ((-builder item) {:input (:input item)
@@ -40,21 +43,22 @@
                     :cache (if rebuild? (render item) (:cache item))}))
 
 (defn- parse-line [rect]
-  (dr/build-line (g/values (g/shifted-to-0 rect))))
-
-(defn- concat-and-normalize-lines [rect f]
-  (dr/concat-lines (f (g/values (g/shifted-to-0 rect)))))
+  (let [[x1 y1 x2 y2] (g/values (g/shifted-to-0 rect))]
+    (.buildLine js/Drawer #js [x1 y1 x2 y2])))
 
 (defn- maybe-add-edge-chars [f args]
   (let [result (f)
+        points (.-points result)
+        index (.-index result)
         {:keys [input start-char end-char]} args
-        shifted-input (g/shifted-to-0 input)]
-    (cond
-      (and start-char end-char) (assoc result (:start-point shifted-input) start-char
-                                              (:end-point shifted-input) end-char)
-      start-char (assoc result (:start-point shifted-input) start-char)
-      end-char (assoc result (:end-point shifted-input) end-char)
-      :else result)))
+        shifted-input (g/shifted-to-0 input)
+        [sx sy] (g/values (:start-point shifted-input))
+        [ex ey] (g/values (:end-point shifted-input))]
+    (when start-char
+      (aset (aget index (str sx "_" sy)) "v" start-char))
+    (when end-char
+      (aset (aget index (str ex "_" ey)) "v" end-char))
+    result))
 
 (defrecord Item [input text cache]
   IItemBase
@@ -64,7 +68,8 @@
   (origin [this]
     (g/origin (:input this)))
   (update [this point]
-    (recache ((-builder this) {:input (g/expand (:input this) point) :text (:text this)}) true))
+    (let [new-input (g/expand (:input this) point)]
+      (recache ((-builder this) {:input new-input :text (:text this)}) true)))
   (reposition [this input]
     (let [dimensions-changed? (not= (g/dimensions (:input this)) (g/dimensions input))]
       (recache ((-builder this) {:input input :text (:text this) :cache (:cache this)}) dimensions-changed?)))
@@ -99,13 +104,8 @@
       (kind [this] "rect")
       (-builder [this] build-rect)
       (-parse [this]
-        (if (g/line? input)
-          (parse-line input)
-          (concat-and-normalize-lines input (fn [[nx1 ny1 nx2 ny2]]
-                                              [[nx1 ny1 nx2 ny1]
-                                               [nx1 ny1 nx1 ny2]
-                                               [nx2 ny1 nx2 ny2]
-                                               [nx1 ny2 nx2 ny2]]))))
+        (let [[x1 y1 x2 y2] (g/values (g/shifted-to-0 input))]
+          (.buildRect js/Drawer #js [x1 y1 x2 y2])))
       IItemRelative
       (relative-point [this point]
         (g/relative point (:input this)))
@@ -117,6 +117,17 @@
 (defn- build-rect-line [args]
   (let [{:keys [input text cache]} args]
     (specify (Item. input text cache)
+      IItemBase
+      (update [this point]
+        (let [new-input (g/expand (:input this) point)
+              direction (:direction args)
+              new-direction (or direction
+                                (when (not= input new-input)
+                                  (cond
+                                    (not= (:y point) (get-in input [:end-point :y])) "vertical"
+                                    (not= (:x point) (get-in input [:end-point :x])) "horizontal")))]
+          (recache ((-builder this) {:input new-input :text (:text this) :direction new-direction}) true)))
+
       IItemLine
       (start-char [this] (:start-char args))
       (end-char [this] (:end-char args))
@@ -126,12 +137,9 @@
       (-builder [this]
         (fn [new-args] (build-rect-line (merge args new-args))))
       (-parse [this]
-        (maybe-add-edge-chars #(if (g/line? input)
-                                 (parse-line input)
-                                 (concat-and-normalize-lines input (fn [[nx1 ny1 nx2 ny2]]
-                                                                     [[nx1 ny1 nx1 ny2]
-                                                                      [nx1 ny2 nx2 ny2]])))
-                              args))
+        (let [result (let [[x1 y1 x2 y2] (g/values (g/shifted-to-0 input))]
+                       (.buildRectLine js/Drawer #js [x1 y1 x2 y2] (:direction args)))]
+          (maybe-add-edge-chars (fn [] result) args)))
       IItemLock
       (lockable? [this] false)
       (connector? [this] true))))
@@ -152,7 +160,7 @@
       IItemCustom
       (kind [this] "text")
       (-builder [this] build-text)
-      (-parse [this] {})
+      (-parse [this] #js {:index #js {} :points #js []})
 
       IItemLock
       (lockable? [this] false)

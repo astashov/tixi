@@ -32,9 +32,9 @@
                 :source-map true}}
               {:id "test"
                :source-paths ["src" "test"]
-               :notify-command ["phantomjs" :cljs.test/runner "assets/function-bind-shim.js" "assets/react.js" "assets/raf.js" "tixi_test.js"]
+               :notify-command ["phantomjs" :cljs.test/runner "assets/drawer.js" "assets/function-bind-shim.js" "assets/react.js" "assets/raf.js" "tixi_test.js"]
                :compiler {
                  :output-to "tixi_test.js"
                  :optimizations :whitespace}}]
     :test-commands {"unit"
-      ["phantomjs" :runner "assets/function-bind-shim.js" "assets/react.js" "assets/raf.js" "tixi_test.js"]}})
+      ["phantomjs" :runner "assets/drawer.js" "assets/function-bind-shim.js" "assets/react.js" "assets/raf.js" "tixi_test.js"]}})

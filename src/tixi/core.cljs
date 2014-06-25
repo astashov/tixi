@@ -3,7 +3,6 @@
                    [cljs.core.async.macros :refer [go]])
   (:require [tixi.view :as v]
             [dommy.core :as dommy]
-            [tixi.drawer :as drawer]
             [tixi.channel :refer [channel]]
             [tixi.events :as e]
             [tixi.mutators :as m]
