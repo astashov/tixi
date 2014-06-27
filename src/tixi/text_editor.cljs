@@ -19,12 +19,19 @@
 (defn adjust-height! [install-node node]
   (let [v-padding (padding-top install-node)
         h-padding (padding-left install-node)
-        install-node-height (- (.-offsetHeight install-node) v-padding h-padding)
+        install-node-height (- (.-offsetHeight install-node) (* v-padding 2))
+        install-node-width (- (.-offsetWidth install-node) (* h-padding 2))
         node-height (.-offsetHeight node)
+        node-width (.-offsetWidth node)
         margin-top (* (.floor js/Math (/ (- (/ install-node-height 2) (/ node-height 2))
                                          (:height (p/letter-size))))
-                      (:height (p/letter-size)))]
-    (aset (.-style node) "marginTop" (str margin-top "px"))))
+                      (:height (p/letter-size)))
+
+        margin-left (* (.floor js/Math (/ (- (/ install-node-width 2) (/ node-width 2))
+                                          (:width (p/letter-size))))
+                       (:width (p/letter-size)))]
+    (aset (.-style node) "marginTop" (str margin-top "px"))
+    (aset (.-style node) "marginLeft" (str margin-left "px"))))
 
 (defn- installed? [install-node]
   (boolean (find-node install-node)))

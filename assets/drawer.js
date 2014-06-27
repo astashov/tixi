@@ -22,14 +22,18 @@ window.Drawer = window.Drawer || {};
         result.index[x + "_" + y] = symbol;
     };
 
-    var concat = function (result, other) {
-        result.points = result.points.concat(other.points);
+    var merge = function (object, other) {
         var k;
-        for (k in other.index) {
-            if (other.index.hasOwnProperty(k)) {
-                result.index[k] = other.index[k];
+        for (k in other) {
+            if (other.hasOwnProperty(k)) {
+                object[k] = other[k];
             }
         }
+    };
+
+    var concat = function (result, other) {
+        result.points = result.points.concat(other.points);
+        merge(result.index, other.index);
     };
 
     window.Drawer.buildLine = function (data, firstChar) {
@@ -190,5 +194,101 @@ window.Drawer = window.Drawer || {};
             }
         }
         return result;
+    };
+
+    window.Drawer.buildResult = function (items) {
+        function generateIndex() {
+            var width = 0;
+            var height = 0;
+            var index = {};
+            var i;
+            for (i in items) {
+                if (items.hasOwnProperty(i)) {
+                    width = Math.max(width, items[i].input["start-point"].x, items[i].input["end-point"].x) + 1;
+                    height = Math.max(height, items[i].input["start-point"].y, items[i].input["end-point"].y) + 1;
+                    var k;
+                    for (k in items[i].cache.index) {
+                        if (items[i].cache.index.hasOwnProperty(k)) {
+                            var match = k.match(/(\d+)_(\d+)/);
+                            if (match) {
+                                var x = parseInt(match[1], 10);
+                                var y = parseInt(match[2], 10);
+                                var startX = Math.min(items[i].input["start-point"].x, items[i].input["end-point"].x);
+                                var startY = Math.min(items[i].input["start-point"].y, items[i].input["end-point"].y);
+                                index[(startX + x) + "_" + (startY + y)] = items[i].cache.index[k];
+                            }
+                        }
+                    }
+                }
+            }
+            return {width: width, height: height, index: index};
+        }
+
+        function generatePoints(index) {
+            var points = [];
+            var k;
+            for (k in index) {
+                if (index.hasOwnProperty(k)) {
+                    var match = k.match(/(\d+)_(\d+)/);
+                    if (match) {
+                        var x = parseInt(match[1], 10);
+                        var y = parseInt(match[2], 10);
+                        points.push([[x, y], index[k]]);
+                    }
+                }
+            }
+            return window.Drawer.sortData(points);
+        }
+
+        function stringLength(str) {
+            return str.length;
+        }
+
+        function addText(width, height, data) {
+            var i;
+            for (i = 0; i < items.length; i += 1) {
+                var text = items[i].text;
+                var widthItem = Math.abs(items[i].input["start-point"].x - items[i].input["end-point"].x);
+                var heightItem = Math.abs(items[i].input["start-point"].y - items[i].input["end-point"].y);
+                var startX = Math.min(items[i].input["start-point"].x, items[i].input["end-point"].x);
+                var startY = Math.min(items[i].input["start-point"].y, items[i].input["end-point"].y);
+                var widthCenterItem = startX + widthItem / 2;
+                var heightCenterItem = startY + heightItem / 2;
+                var j;
+                var pos;
+                var line;
+                if (text) {
+                    var textArray = text.split("\n");
+                    if (items[i].type === "text") {
+                        for (j = 0; j < textArray.length; j += 1) {
+                            line = textArray[j];
+                            pos = (startY + j) * (width + 1) + startX;
+                            data = data.substr(0, pos) +
+                                data.substr(pos + 1, line.length).replace(/.*/, line) +
+                                data.substr(pos + line.length, data.length - (pos + line.length));
+                        }
+                    } else {
+                        var widthText = Math.max.apply(null, textArray.map(stringLength));
+                        var heightText = textArray.length;
+                        var startXText = Math.ceil(widthCenterItem - widthText / 2);
+                        var startYText = Math.ceil(heightCenterItem - heightText / 2);
+                        for (j = 0; j < textArray.length; j += 1) {
+                            line = textArray[j];
+                            pos = (startYText + j) * (width + 1) + startXText;
+                            data = data.substr(0, pos) +
+                                data.substr(pos + 1, line.length).replace(/.*/, line) +
+                                data.substr(pos + line.length, data.length - (pos + line.length));
+                        }
+                    }
+                }
+            }
+            return data;
+        }
+
+        var result = generateIndex();
+        var points = generatePoints(result.index);
+        var data = window.Drawer.generateData(result.width, result.height, points);
+        data = addText(result.width, result.height, data);
+        return data;
     };
 }());

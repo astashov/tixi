@@ -60,7 +60,7 @@
       (aset (aget index (str ex "_" ey)) "v" end-char))
     result))
 
-(defrecord Item [input text cache]
+(defrecord Item [input text cache type]
   IItemBase
   (point-like? [this] false)
   (dimensions [this]
@@ -81,7 +81,7 @@
 
 (defn- build-line [args]
   (let [{:keys [input text cache]} args]
-    (specify (Item. input text cache)
+    (specify (Item. input text cache :line)
       IItemLine
       (start-char [this] (:start-char args))
       (end-char [this] (:end-char args))
@@ -99,7 +99,7 @@
 
 (defn- build-rect [args]
   (let [{:keys [input text cache]} args]
-    (specify (Item. input text cache)
+    (specify (Item. input text cache :rect)
       IItemCustom
       (kind [this] "rect")
       (-builder [this] build-rect)
@@ -116,7 +116,7 @@
 
 (defn- build-rect-line [args]
   (let [{:keys [input text cache]} args]
-    (specify (Item. input text cache)
+    (specify (Item. input text cache :rect-line)
       IItemBase
       (update [this point]
         (let [new-input (g/expand (:input this) point)
@@ -146,7 +146,7 @@
 
 (defn- build-text [args]
   (let [{:keys [input text cache]} args]
-    (specify (Item. input text cache)
+    (specify (Item. input text cache :text)
       IItemBase
       (point-like? [this] true)
       (update [this point]

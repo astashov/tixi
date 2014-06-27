@@ -1,8 +1,18 @@
 (ns test.tixi.data
-  (:require-macros [cemerick.cljs.test :as m :refer (is deftest)])
+  (:require-macros [cemerick.cljs.test :as m :refer (is deftest use-fixtures)])
   (:require [cemerick.cljs.test :as test]
             [tixi.data :as d]
-            [tixi.tree :as t]))
+            [tixi.mutators :as m]
+            [tixi.tree :as t]
+            [tixi.geometry :as g]
+            [tixi.utils :refer [p]]
+            [test.tixi.utils :refer [create-layer!]]))
+
+(defn- setup [f]
+  (m/reset-data!)
+  (f))
+
+(use-fixtures :each setup)
 
 (deftest current
   (is (= (d/current {:current "bla"}) "bla")))
@@ -60,3 +70,27 @@
 
 (deftest edit-text-id
   (is (= (d/edit-text-id {:edit-text-id 2}) 2)))
+
+(deftest result
+  (m/set-tool! :line)
+  (let [id1 (create-layer! (g/build-rect 1 10 13 1))]
+    (m/set-tool! :rect)
+    (let [id2 (create-layer! (g/build-rect 9 3 19 9))]
+      (m/set-tool! :text)
+      (let [id3 (create-layer! (g/build-rect 14 1 14 1))]
+        (m/set-text-to-item! id2 "bla\nfoo\nbar")
+        (m/set-text-to-item! id3 "oh\ntext" (g/Size. 4 2))
+        (is (= (d/result)
+               (str "                     \n"
+                    "             -oh     \n"
+                    "            / text   \n"
+                    "         +---------+ \n"
+                    "         |         | \n"
+                    "        /|   bla   | \n"
+                    "      -/ |   foo   | \n"
+                    "     /   |   bar   | \n"
+                    "    /    |         | \n"
+                    "  -/     +---------+ \n"
+                    " /                   \n"
+                    "                     \n"
+                    "                     ")))))))

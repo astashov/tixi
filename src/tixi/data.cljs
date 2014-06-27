@@ -120,3 +120,7 @@
 (defn edit-text-id
   ([] (edit-text-id @data))
   ([data] (:edit-text-id data)))
+
+(defn result
+  ([] (result @data))
+  ([data] (.buildResult js/Drawer (clj->js (vals (completed data))))))

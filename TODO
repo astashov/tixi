@@ -7,9 +7,12 @@
 * Add guides
 * Add a way to change z-indexes of items
 * Add copying/pasting
-* Add a way to flattenize and copy to clipboard
 * Add nice helpers showing the origin/dimensions of an item when you resize/move it around
 * Find a way how to design UI for Undo Tree
 * Remove :cached from app stack (it should be recalculated)
 * Add a way to add line endings (arrows, starts, etc)
 * Set text cursor when text tool is selected
+* Add macros for tixi.data functions
+* Add way to specify text alignment (horizontal and vertical)
+* Figure out how to left-align CodeMirror
+* Fix buggy text editor of 'text' item

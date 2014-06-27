@@ -37,6 +37,7 @@
                (.preventDefault event)
                (m/delete-selected!))
           76 (m/set-tool! :line) ; l
+          81 (*print-fn* (d/result))
           82 (m/set-tool! :rect) ; r
           83 (m/set-tool! :select) ; s
           84 (m/set-tool! :text) ; t
