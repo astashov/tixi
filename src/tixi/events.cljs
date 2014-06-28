@@ -47,9 +47,9 @@
           nil)
     (render)))
 
-(defn handle-mousemove [event]
+(defn- handle-mousemove [event point]
   (reset! select-second-clicked false)
-  (when-let [point (p/event->coords event)]
+  (when point
     (let [previous-point @moving-from
           diff-point (g/sub point previous-point)]
       (cond
@@ -114,12 +114,26 @@
     :edit
     (let [{:keys [id text dimensions]} data]
       (m/edit-text-in-item! nil)
-      (m/set-text-to-item! id text dimensions)))
+      (m/set-text-to-item! id text dimensions))
+
+    :tool
+    (let [{:keys [name]} data]
+      (case name
+        :select (m/set-tool! :select)
+        :line (m/set-tool! :line)
+        :rect-line (m/set-tool! :rect-line)
+        :rect (m/set-tool! :rect)
+        :text (m/set-tool! :text)
+        :undo (m/undo!)
+        :redo (m/redo!)
+        :result (*print-fn* (d/result))
+        :delete (m/delete-selected!)))
+
+    :move
+    (let [{:keys [point event]} data]
+      (handle-mousemove event point)))
 
   (render))
 
 (defn install-keyboard-events []
   (dommy/listen! js/document :keydown handle-keyboard-events))
-
-(defn install-mouse-events []
-  (dommy/listen!  js/document :mousemove handle-mousemove))

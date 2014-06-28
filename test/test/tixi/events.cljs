@@ -107,33 +107,33 @@
   (create-layer! (g/build-rect 2 2 4 4))
   (m/set-tool! :select)
   (e/handle-input-event {:type :down, :data {:action :draw, :point (Point. 1 1), :event (build-keyboard-event 8)}})
-  (e/handle-mousemove (build-mouse-event (p/coords->position (Point. 5 5))))
+  (e/handle-input-event {:type :move, :data {:point (p/coords->position (Point. 5 5))}})
   (e/handle-input-event {:type :up, :data {:action :draw, :point (Point. 5 5)}})
   (is (= (d/selected-ids) [0])))
 
 (deftest handle-mousemove-draw
   (m/set-tool! :line)
   (e/handle-input-event {:type :down, :data {:action :draw, :point (Point. 1 1)}})
-  (e/handle-mousemove (build-mouse-event (p/coords->position (Point. 4 4))))
+  (e/handle-input-event {:type :move, :data {:point (Point. 4 4)}})
   (is (= (:input (:item (d/current))) (g/build-rect 1 1 4 4))))
 
 (deftest handle-mousemove-select-update
   (m/set-tool! :select)
   (e/handle-input-event {:type :down, :data {:action :draw, :point (Point. 1 1), :event (build-mouse-event (Point. 0 0))}})
-  (e/handle-mousemove (build-mouse-event (p/coords->position (Point. 4 4))))
+  (e/handle-input-event {:type :move, :data {:point (Point. 4 4)}})
   (is (= (d/current-selection) (g/build-rect 1 1 4 4))))
 
 (deftest handle-mousemove-select-move
   (create-layer! (g/build-rect 2 2 4 4))
   (m/set-tool! :select)
   (e/handle-input-event {:type :down, :data {:action :draw, :point (Point. 2 2), :event (build-mouse-event (Point. 0 0))}})
-  (e/handle-mousemove (build-mouse-event (p/coords->position (Point. 4 4))))
+  (e/handle-input-event {:type :move, :data {:point (Point. 4 4)}})
   (is (= (d/selection-rect) (g/build-rect 4 4 6 6))))
 
 (deftest handle-mousemove-highlight
   (create-layer! (g/build-rect 2 2 4 4))
   (m/set-tool! :select)
-  (e/handle-mousemove (build-mouse-event (p/coords->position (Point. 2 2))))
+  (e/handle-input-event {:type :move, :data {:point (Point. 2 2), :event (build-mouse-event (Point. 2 2))}})
   (is (= (d/hover-id) 0)))
 
 (deftest handle-mousemove-resize
@@ -141,7 +141,7 @@
   (m/set-tool! :select)
   (e/handle-input-event {:type :down, :data {:action :draw, :point (Point. 2 2), :event (build-keyboard-event 8)}})
   (e/handle-input-event {:type :down, :data {:action :resize-se, :point (Point. 4 4)}})
-  (e/handle-mousemove (build-mouse-event (p/coords->position (Point. 6 6))))
+  (e/handle-input-event {:type :move, :data {:point (Point. 6 6)}})
   (is (= (d/selection-rect) (g/build-rect 2 2 6 6))))
 
 (deftest handle-input-event-edit

@@ -13,7 +13,6 @@
 (enable-console-print!)
 
 (e/install-keyboard-events)
-(e/install-mouse-events)
 
 (e/render)
 

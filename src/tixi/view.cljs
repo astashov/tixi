@@ -23,6 +23,14 @@
         point (p/event->coords nativeEvent)]
     (go (>! channel {:type type :data {:action action :point point :event nativeEvent}}))))
 
+(defn- send-mousemove [event channel]
+  (let [nativeEvent (.-nativeEvent event)
+        point (p/event->coords nativeEvent)]
+    (go (>! channel {:type :move :data {:point point :event nativeEvent}}))))
+
+(defn- send-tool-click [name channel]
+  (go (>! channel {:type :tool :data {:name name}})))
+
 (defn- selection-position [rect]
   (let [normalized-rect (g/normalize rect)
         {left :x top :y} (p/coords->position (g/origin normalized-rect))
@@ -122,13 +130,67 @@
                            (cond
                              (some #{(d/hover-id data)} selected-ids) " is-able-to-move"
                              (d/hover-id data) " is-hover"
-                             :else ""))}
+                             :else ""))
+              :onMouseMove (fn [e] (send-mousemove e channel))}
       (Canvas data channel)
       (when (and (not-empty selected-ids) (not (d/edit-text-id)))
         (Selection data channel))
       (when (and current-selection (> (g/width current-selection) 0) (> (g/height current-selection) 0))
         (CurrentSelection data channel))
       (Tool data))))
+
+(q/defcomponent Sidebar
+  [data channel]
+  (dom/div {:className "sidebar"}
+    (dom/h1 {:className "sidebar--logo"} "Tixi")
+    (dom/div {:className "sidebar--tools"}
+      (dom/button {:className (str "sidebar--tools--button sidebar--tools--button__select"
+                                   (when (= (d/tool data) :select) " is-selected"))
+                   :title "Select [S]"
+                   :onClick (fn [e] (send-tool-click :select channel))}
+        (dom/div {:className "sidebar--tools--button--icon"}))
+      (dom/button {:className (str "sidebar--tools--button sidebar--tools--button__line"
+                                   (when (= (d/tool data) :line) " is-selected"))
+                   :title "Line [L]"
+                   :onClick (fn [e] (send-tool-click :line channel))}
+        (dom/div {:className "sidebar--tools--button--icon"}))
+      (dom/button {:className (str "sidebar--tools--button sidebar--tools--button__rect-line"
+                                   (when (= (d/tool data) :rect-line) " is-selected"))
+                   :title "Rectangle-Line [Y]"
+                   :onClick  (fn [e] (send-tool-click :rect-line channel))}
+        (dom/div {:className "sidebar--tools--button--icon"}))
+    (dom/button {:className (str "sidebar--tools--button sidebar--tools--button__rect"
+                                 (when (= (d/tool data) :rect) " is-selected"))
+                 :title "Rectangle [R]"
+                 :onClick  (fn [e] (send-tool-click :rect channel))}
+        (dom/div {:className "sidebar--tools--button--icon"}))
+      (dom/button {:className (str "sidebar--tools--button sidebar--tools--button__text"
+                                   (when (= (d/tool data) :text) " is-selected"))
+                   :title "Text [T]"
+                   :onClick  (fn [e] (send-tool-click :text channel))}
+        (dom/div {:className "sidebar--tools--button--icon"}))
+      (dom/button {:className "sidebar--tools--button sidebar--tools--button__undo"
+                   :title "Undo [U]"
+                   :onClick (fn [e] (send-tool-click :undo channel))}
+        (dom/div {:className "sidebar--tools--button--icon"}))
+      (dom/button {:className "sidebar--tools--button sidebar--tools--button__redo"
+                   :title "Redo [I]"
+                   :onClick (fn [e] (send-tool-click :redo channel))}
+        (dom/div {:className "sidebar--tools--button--icon"}))
+      (dom/button {:className "sidebar--tools--button sidebar--tools--button__result"
+                   :title "Show Result [Q]"
+                   :onClick (fn [e] (send-tool-click :result channel))}
+        (dom/div {:className "sidebar--tools--button--icon"}))
+      (dom/button {:className "sidebar--tools--button sidebar--tools--button__delete"
+                   :title "Delete [Backspace]"
+                   :onClick (fn [e] (send-tool-click :delete channel))}
+        (dom/div {:className "sidebar--tools--button--icon"})))))
+
+(q/defcomponent Content
+  [data channel]
+  (dom/div {:className "content"}
+    (Sidebar data channel)
+    (Project data channel)))
 
 (defn- dom-content []
   (if-let [content (sel1 :#content)]
@@ -139,4 +201,4 @@
 
 (scm/defn render [data :- s/Data channel]
   "Renders the project"
-  (q/render (Project data channel) (dom-content)))
+  (q/render (Content data channel) (dom-content)))

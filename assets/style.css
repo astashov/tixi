@@ -33,7 +33,11 @@ html, body {
 
 .project {
   overflow: hidden;
-  position: relative;
+  position: absolute;
+  top: 0;
+  left: 5em;
+  right: 0;
+  bottom: 0;
 }
 
 body,
@@ -167,16 +171,6 @@ body,
   cursor: nwse-resize;
 }
 
-.for-focus {
-  position: absolute;
-  top: 0;
-  right: 0;
-  width: 50px;
-  height: 50px;
-  background: gray;
-  z-index: 1;
-}
-
 .selection__text .selection--dot {
   display: none;
 }
@@ -241,4 +235,89 @@ body,
 .CodeMirror-scroll {
   overflow-y: hidden;
   height: auto;
+}
+
+.sidebar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 5em;
+  background: #f8f8f8;
+  border-right: gray;
+}
+
+.sidebar--logo {
+  font-family: Arial, sans-serif;
+  padding: 0.5em;
+  font-size: 1.5em;
+  font-weight: bold;
+  text-align: center;
+}
+
+.sidebar--tools--button {
+  display: block;
+  background: #e6e6e6;
+  width: 4em;
+  height: 4em;
+  margin: 0.5em auto;
+  border: 1px solid gray;
+  cursor: pointer;
+  outline: none;
+}
+
+.sidebar--tools--button--icon {
+  display: block;
+  width: 100%;
+  height: 100%;
+  background-size: 70% 70%;
+  background-position: center center;
+  background-repeat: no-repeat;
+}
+
+.sidebar--tools--button:hover {
+  background: silver;
+}
+
+.sidebar--tools--button:active,
+.sidebar--tools--button.is-selected:hover,
+.sidebar--tools--button.is-selected {
+  background: silver;
+  box-shadow: 0 0 1em gray;
+}
+
+.sidebar--tools--button__select .sidebar--tools--button--icon {
+  background-image: url(/assets/images/select.png)
+}
+
+.sidebar--tools--button__line .sidebar--tools--button--icon {
+  background-image: url(/assets/images/line.png)
+}
+
+.sidebar--tools--button__rect-line .sidebar--tools--button--icon {
+  background-image: url(/assets/images/rect-line.png)
+}
+
+.sidebar--tools--button__rect .sidebar--tools--button--icon {
+  background-image: url(/assets/images/rect.png)
+}
+
+.sidebar--tools--button__undo .sidebar--tools--button--icon {
+  background-image: url(/assets/images/undo.png)
+}
+
+.sidebar--tools--button__redo .sidebar--tools--button--icon {
+  background-image: url(/assets/images/redo.png)
+}
+
+.sidebar--tools--button__text .sidebar--tools--button--icon {
+  background-image: url(/assets/images/text.png)
+}
+
+.sidebar--tools--button__result .sidebar--tools--button--icon {
+  background-image: url(/assets/images/result.png)
+}
+
+.sidebar--tools--button__delete .sidebar--tools--button--icon {
+  background-image: url(/assets/images/delete.png)
 }

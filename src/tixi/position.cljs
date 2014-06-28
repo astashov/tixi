@@ -5,7 +5,8 @@
             [tixi.geometry :as g :refer [Size Rect Point]]
             [tixi.data :as d]
             [tixi.items :as i]
-            [tixi.utils :refer [p]]))
+            [tixi.utils :refer [p]]
+            [goog.style :as style]))
 
 (defn- calculate-letter-size []
   (let [number-of-x 100]
@@ -85,10 +86,11 @@
              (.floor js/Math (* y height))))))
 
 (defn event->coords [event]
-  (let [root (or (sel1 :.canvas) (js-obj "offsetLeft" 0 "offsetTop" 0))]
-    (let [x (- (.-clientX event) (.-offsetLeft root))
-          y (- (.-clientY event) (.-offsetTop root))]
-      (position->coords (Point. x y)))))
+  (let [root (sel1 :.project)
+        offset (if root (style/getPageOffset root) (js-obj "x" 0 "y" 0))
+        x (- (.-clientX event) (.-x offset))
+        y (- (.-clientY event) (.-y offset))]
+    (position->coords (Point. x y))))
 
 (defn items-inside-rect [rect]
   (filter (fn [[_ item]]
