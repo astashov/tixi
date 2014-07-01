@@ -18,6 +18,20 @@
 
 (enable-console-print!)
 
+(def css-transition-group
+  (-> js/React .-addons .-CSSTransitionGroup))
+
+(defn- select-text! [node]
+  (if (-> js/document .-body .-createTextRange)
+    (let [range (-> js/document .-body .createTextRange)]
+      (.moveToElementText range node)
+      (.select range))
+    (let [selection (.getSelection js/window)
+          range (.createRange js/document)]
+      (.selectNodeContents range node)
+      (.removeAllRanges selection)
+      (.addRange selection range))))
+
 (defn- send-event-with-coords [action type event channel]
   (let [nativeEvent (.-nativeEvent event)
         point (p/event->coords nativeEvent)]
@@ -30,6 +44,9 @@
 
 (defn- send-tool-click [name channel]
   (go (>! channel {:type :tool :data {:name name}})))
+
+(defn- close-result [channel]
+  (go (>! channel {:type :close :data {:name :result}})))
 
 (defn- selection-position [rect]
   (let [normalized-rect (g/normalize rect)
@@ -140,32 +157,32 @@
       (Tool data))))
 
 (q/defcomponent Sidebar
-  [data channel]
+  [tool channel]
   (dom/div {:className "sidebar"}
-    (dom/h1 {:className "sidebar--logo"} "Tixi")
+    (dom/h1 {:className "sidebar--logo"} "Textik")
     (dom/div {:className "sidebar--tools"}
       (dom/button {:className (str "sidebar--tools--button sidebar--tools--button__select"
-                                   (when (= (d/tool data) :select) " is-selected"))
+                                   (when (= tool :select) " is-selected"))
                    :title "Select [S]"
                    :onClick (fn [e] (send-tool-click :select channel))}
         (dom/div {:className "sidebar--tools--button--icon"}))
       (dom/button {:className (str "sidebar--tools--button sidebar--tools--button__line"
-                                   (when (= (d/tool data) :line) " is-selected"))
+                                   (when (= tool :line) " is-selected"))
                    :title "Line [L]"
                    :onClick (fn [e] (send-tool-click :line channel))}
         (dom/div {:className "sidebar--tools--button--icon"}))
       (dom/button {:className (str "sidebar--tools--button sidebar--tools--button__rect-line"
-                                   (when (= (d/tool data) :rect-line) " is-selected"))
+                                   (when (= tool :rect-line) " is-selected"))
                    :title "Rectangle-Line [Y]"
                    :onClick  (fn [e] (send-tool-click :rect-line channel))}
         (dom/div {:className "sidebar--tools--button--icon"}))
     (dom/button {:className (str "sidebar--tools--button sidebar--tools--button__rect"
-                                 (when (= (d/tool data) :rect) " is-selected"))
+                                 (when (= tool :rect) " is-selected"))
                  :title "Rectangle [R]"
                  :onClick  (fn [e] (send-tool-click :rect channel))}
         (dom/div {:className "sidebar--tools--button--icon"}))
       (dom/button {:className (str "sidebar--tools--button sidebar--tools--button__text"
-                                   (when (= (d/tool data) :text) " is-selected"))
+                                   (when (= tool :text) " is-selected"))
                    :title "Text [T]"
                    :onClick  (fn [e] (send-tool-click :text channel))}
         (dom/div {:className "sidebar--tools--button--icon"}))
@@ -186,11 +203,39 @@
                    :onClick (fn [e] (send-tool-click :delete channel))}
         (dom/div {:className "sidebar--tools--button--icon"})))))
 
-(q/defcomponent Content
-  [data channel]
-  (dom/div {:className "content"}
-    (Sidebar data channel)
-    (Project data channel)))
+(q/defcomponent Result [data channel] {:key "result"}
+ (let [result (d/result data)
+        text (.-text result)
+        coords-size (Size. (.-width result) (.-height result))
+        position-size (p/coords->position coords-size)]
+    (q/on-render
+      (dom/div {:className "result"}
+        (dom/div {:className "result--overlay" :onClick (fn [e] (close-result channel))})
+        (dom/div {:className "result--popup"}
+          (dom/button {:className "result--close-top" :onClick (fn [e] (close-result channel))})
+          (dom/div {:className "result--content"}
+            (dom/pre {:className "result--content--pre" :style position-size}
+              text))
+          (dom/div {:className "result--bottom"}
+            (dom/div {:className "result--bottom--hint"} "Press Cmd+C (or Ctrl+C) to copy it")
+            (dom/button {:className "result--bottom--close"
+                         :onClick (fn [e] (close-result channel))}
+              "Close"))))
+      (fn [node]
+        (let [popup (sel1 node :.result--popup)
+              pre (sel1 popup :.result--content--pre)]
+          (set! (-> popup .-style .-marginLeft) (-> (.-offsetWidth popup) (/ 2) -))
+          (set! (-> popup .-style .-marginTop) (-> (.-offsetHeight popup) (/ 2) -))
+          (select-text! pre))))))
+
+(q/defcomponent Content [data channel]
+ (dom/div {:className "content"}
+    (Sidebar (d/tool data) channel)
+    (Project data channel)
+    (css-transition-group #js {:transitionName "result"}
+      (if (d/show-result? data)
+        (Result data channel)
+        (dom/div {})))))
 
 (defn- dom-content []
   (if-let [content (sel1 :#content)]

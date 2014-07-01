@@ -6,3 +6,8 @@
 
   ([msg f]
   `(tixi.utils/benchmark ~msg (fn [] ~f))))
+
+(defmacro defdata [name args & bodies]
+  `(defn ~name
+     (~args ~(concat [name `@tixi.data/data] args))
+     ~(concat [(into [] (cons 'data args))] bodies)))

@@ -197,15 +197,13 @@ window.Drawer = window.Drawer || {};
     };
 
     window.Drawer.buildResult = function (items) {
-        function generateIndex() {
+        function generateIndex(viewport) {
             var width = 0;
             var height = 0;
             var index = {};
             var i;
             for (i in items) {
                 if (items.hasOwnProperty(i)) {
-                    width = Math.max(width, items[i].input["start-point"].x, items[i].input["end-point"].x) + 1;
-                    height = Math.max(height, items[i].input["start-point"].y, items[i].input["end-point"].y) + 1;
                     var k;
                     for (k in items[i].cache.index) {
                         if (items[i].cache.index.hasOwnProperty(k)) {
@@ -213,15 +211,15 @@ window.Drawer = window.Drawer || {};
                             if (match) {
                                 var x = parseInt(match[1], 10);
                                 var y = parseInt(match[2], 10);
-                                var startX = Math.min(items[i].input["start-point"].x, items[i].input["end-point"].x);
-                                var startY = Math.min(items[i].input["start-point"].y, items[i].input["end-point"].y);
+                                var startX = Math.min(items[i].input["start-point"].x, items[i].input["end-point"].x) - viewport.startX;
+                                var startY = Math.min(items[i].input["start-point"].y, items[i].input["end-point"].y) - viewport.startY;
                                 index[(startX + x) + "_" + (startY + y)] = items[i].cache.index[k];
                             }
                         }
                     }
                 }
             }
-            return {width: width, height: height, index: index};
+            return index;
         }
 
         function generatePoints(index) {
@@ -242,6 +240,18 @@ window.Drawer = window.Drawer || {};
 
         function stringLength(str) {
             return str.length;
+        }
+
+        function getViewport() {
+            var i;
+            var result = {startX: Infinity, startY: Infinity, endX: 0, endY: 0};
+            for (i = 0; i < items.length; i += 1) {
+                result.startX = Math.min(result.startX, items[i].input["start-point"].x, items[i].input["end-point"].x);
+                result.startY = Math.min(result.startY, items[i].input["start-point"].y, items[i].input["end-point"].y);
+                result.endX = Math.max(result.endX, items[i].input["start-point"].x, items[i].input["end-point"].x);
+                result.endY = Math.max(result.endY, items[i].input["start-point"].y, items[i].input["end-point"].y);
+            }
+            return result;
         }
 
         function addText(width, height, data) {
@@ -285,10 +295,13 @@ window.Drawer = window.Drawer || {};
             return data;
         }
 
-        var result = generateIndex();
-        var points = generatePoints(result.index);
-        var data = window.Drawer.generateData(result.width, result.height, points);
-        data = addText(result.width, result.height, data);
-        return data;
+        var viewport = getViewport();
+        var result = generateIndex(viewport);
+        var points = generatePoints(result);
+        var width = viewport.endX - viewport.startX;
+        var height = viewport.endY - viewport.startY;
+        var text = window.Drawer.generateData(width, height, points);
+        text = addText(result.width, result.height, text);
+        return {width: width, height: height, text: text};
     };
 }());

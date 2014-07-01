@@ -1,4 +1,5 @@
 (ns tixi.data
+  (:require-macros [tixi.utils :refer [defdata]])
   (:require [tixi.utils :refer [seq-contains? p]]
             [tixi.tree :as t :refer [Node]]
             [clojure.zip :as z]))
@@ -23,104 +24,84 @@
                :current nil
                :rel-rects {}}
    :edit-text-id nil
-   :hover-id nil})
+   :hover-id nil
+   :show-result false})
 
 (def data
   (atom initial-data))
 
-(defn current
-  ([] (current @data))
-  ([data] (:current data)))
+(defdata current []
+  (:current data))
 
-(defn state-loc
-  ([] (state-loc @data))
-  ([data] (:state data)))
+(defdata state-loc []
+  (:state data))
 
-(defn state
-  ([] (state @data))
-  ([data] (:value (z/node (state-loc data)))))
+(defdata state []
+  (:value (z/node (state-loc data))))
 
-(defn completed
-  ([] (completed @data))
-  ([data] (:completed (state data))))
+(defdata completed []
+  (:completed (state data)))
 
-(defn locks
-  ([] (locks @data))
-  ([data] (:locks (state data))))
+(defdata locks []
+  (:locks (state data)))
 
-(defn lockable
-  ([lockable-id] (lockable @data lockable-id))
-  ([data lockable-id] (get-in (state data) [:locks :lockables lockable-id] {})))
+(defdata lockable [lockable-id]
+  (get-in (state data) [:locks :lockables lockable-id] {}))
 
-(defn lockable-connector
-  ([lockable-id connector-id] (lockable-connector @data lockable-id connector-id))
-  ([data lockable-id connector-id] (get-in (state data) [:locks :lockables lockable-id connector-id] {})))
+(defdata lockable-connector [lockable-id connector-id]
+  (get-in (state data) [:locks :lockables lockable-id connector-id] {}))
 
-(defn connector-types
-  ([connector-id] (connector-types @data connector-id))
-  ([data connector-id] (get-in (state data) [:locks :connectors connector-id] {})))
+(defdata connector-types [connector-id]
+  (get-in (state data) [:locks :connectors connector-id] {}))
 
-(defn lockable-id-by-connector-id-and-type
-  ([connector-id type] (lockable-id-by-connector-id-and-type @data connector-id type))
-  ([data connector-id type] (get-in (state data) [:locks :connectors connector-id type])))
+(defdata lockable-id-by-connector-id-and-type [connector-id type]
+  (get-in (state data) [:locks :connectors connector-id type]))
 
-(defn completed-item
-  ([id] (completed-item @data id))
-  ([data id] (get-in (state data) [:completed id])))
+(defdata completed-item [id]
+  (get-in (state data) [:completed id]))
 
-(defn tool
-  ([] (tool @data))
-  ([data] (:tool data)))
+(defdata tool []
+  (:tool data))
 
-(defn action
-  ([] (action @data))
-  ([data] (:action data)))
+(defdata action []
+  (:action data))
 
-(defn selection
-  ([] (selection @data))
-  ([data] (:selection data)))
+(defdata selection []
+  (:selection data))
 
-(defn selected-ids
-  ([] (selected-ids @data))
-  ([data] (get-in data [:selection :ids])))
+(defdata selected-ids []
+  (get-in data [:selection :ids]))
 
-(defn selected-rel-rect
-  ([id] (selected-rel-rect @data id))
-  ([data id] (get-in data [:selection :rel-rects id])))
+(defdata selected-rel-rect [id]
+  (get-in data [:selection :rel-rects id]))
 
-(defn selection-rect
-  ([] (selection-rect @data))
-  ([data] (get-in data [:selection :rect])))
+(defdata selection-rect []
+  (get-in data [:selection :rect]))
 
-(defn current-selection
-  ([] (current-selection @data))
-  ([data] (get-in data [:selection :current])))
+(defdata current-selection []
+  (get-in data [:selection :current]))
 
-(defn hover-id
-  ([] (hover-id @data))
-  ([data] (:hover-id data)))
+(defdata hover-id []
+  (:hover-id data))
 
-(defn draw-tool?
-  ([] (draw-tool? @data))
-  ([data] (seq-contains? [:line :rect :rect-line :text] (tool data))))
+(defdata draw-tool? []
+  (seq-contains? [:line :rect :rect-line :text] (tool data)))
 
-(defn select-tool?
-  ([] (select-tool? @data))
-  ([data] (seq-contains? [:select] (tool data))))
+(defdata select-tool? []
+  (seq-contains? [:select] (tool data)))
 
-(defn draw-action?
-  ([] (draw-action? @data))
-  ([data] (seq-contains? [:draw] (action data))))
+(defdata draw-action? []
+  (seq-contains? [:draw] (action data)))
 
-(defn resize-action
-  ([] (resize-action @data))
-  ([data] (when-let [[_ result] (when (action data) (re-matches #"^resize-(.+)" (name (action data))))]
-    (keyword result))))
+(defdata resize-action []
+  (when-let [[_ result] (when (action data) (re-matches #"^resize-(.+)" (name (action data))))]
+    (keyword result)))
 
-(defn edit-text-id
-  ([] (edit-text-id @data))
-  ([data] (:edit-text-id data)))
+(defdata edit-text-id []
+  (:edit-text-id data))
 
-(defn result
-  ([] (result @data))
-  ([data] (.buildResult js/Drawer (clj->js (vals (completed data))))))
+(defdata result []
+  (.buildResult js/Drawer (clj->js (vals (completed data)))))
+
+(defdata show-result? []
+  (boolean (:show-result data)))

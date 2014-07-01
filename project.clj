@@ -4,7 +4,7 @@
 
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [org.clojure/clojurescript "0.0-2202"]
-                 [quiescent "0.1.2"]
+                 [quiescent "0.1.4-1"]
                  [prismatic/dommy "0.1.1"]
                  [org.clojure/core.async "0.1.301.0-deb34a-alpha"]
                  [prismatic/schema "0.2.2"]

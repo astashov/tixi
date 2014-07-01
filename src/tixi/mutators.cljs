@@ -253,3 +253,6 @@
         (add-lock! connector-id connector-item lockable-id lockable-item point type)
         (remove-lock! connector-id connector-item type)))
     connector-item))
+
+(defn show-result! [value]
+  (swap! d/data assoc :show-result value))

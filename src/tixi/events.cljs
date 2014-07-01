@@ -37,7 +37,7 @@
                (.preventDefault event)
                (m/delete-selected!))
           76 (m/set-tool! :line) ; l
-          81 (*print-fn* (d/result))
+          81 (m/show-result! (not (d/show-result?)))
           82 (m/set-tool! :rect) ; r
           83 (m/set-tool! :select) ; s
           84 (m/set-tool! :text) ; t
@@ -126,12 +126,17 @@
         :text (m/set-tool! :text)
         :undo (m/undo!)
         :redo (m/redo!)
-        :result (*print-fn* (d/result))
+        :result (m/show-result! true)
         :delete (m/delete-selected!)))
 
     :move
     (let [{:keys [point event]} data]
-      (handle-mousemove event point)))
+      (handle-mousemove event point))
+
+    :close
+    (let [{:keys [name]} data]
+      (case name
+        :result (m/show-result! false))))
 
   (render))
 
