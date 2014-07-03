@@ -3,6 +3,7 @@
   :url "http://example.com/FIXME"
 
   :dependencies [[org.clojure/clojure "1.5.1"]
+                 [com.facebook/react "0.10.0"]
                  [org.clojure/clojurescript "0.0-2202"]
                  [quiescent "0.1.4-1"]
                  [prismatic/dommy "0.1.1"]
@@ -28,13 +29,26 @@
               :compiler {
                 :output-to "tixi.js"
                 :output-dir "out"
-                :optimizations :none
-                :source-map true}}
+                :preamble ["react/react_with_addons.min.js" "tixi/js/codemirror.js"]
+                :libs ["tixi/js/drawer.js"]
+                :optimizations :whitespace
+                :source-map "tixi.js.map"}}
+              {:id "release"
+               :source-paths ["src"]
+               :compiler {
+                 :output-to "tixi_prod.js"
+                 :optimizations :advanced
+                 :pretty-print false
+                 :preamble ["react/react_with_addons.min.js" "tixi/js/codemirror.min.js"]
+                 :libs ["tixi/js/drawer.js"]
+                 :externs ["react/externs/react.js" "tixi/js/externs.js"]}}
               {:id "test"
                :source-paths ["src" "test"]
-               :notify-command ["phantomjs" :cljs.test/runner "assets/drawer.js" "assets/function-bind-shim.js" "assets/react.js" "assets/raf.js" "tixi_test.js"]
+               :notify-command ["phantomjs" :cljs.test/runner "resources/tixi/js/function-bind-shim.js" "resources/tixi/js/raf.js" "tixi_test.js"]
                :compiler {
+                 :preamble ["react/react_with_addons.min.js" "tixi/js/codemirror.js"]
+                 :libs ["tixi/js/drawer.js"]
                  :output-to "tixi_test.js"
                  :optimizations :whitespace}}]
     :test-commands {"unit"
-      ["phantomjs" :runner "assets/drawer.js" "assets/function-bind-shim.js" "assets/react.js" "assets/raf.js" "tixi_test.js"]}})
+      ["phantomjs" :runner "resources/tixi/js/function-bind-shim.js" "resources/tixi/js/raf.js" "tixi_test.js"]}})

@@ -80,17 +80,16 @@
       (let [id3 (create-layer! (g/build-rect 14 1 14 1))]
         (m/set-text-to-item! id2 "bla\nfoo\nbar")
         (m/set-text-to-item! id3 "oh\ntext" (g/Size. 4 2))
-        (is (= (d/result)
-               (str "                     \n"
-                    "             -oh     \n"
-                    "            / text   \n"
-                    "         +---------+ \n"
-                    "         |         | \n"
-                    "        /|   bla   | \n"
-                    "      -/ |   foo   | \n"
-                    "     /   |   bar   | \n"
-                    "    /    |         | \n"
-                    "  -/     +---------+ \n"
-                    " /                   \n"
-                    "                     \n"
-                    "                     ")))))))
+        (is (= (.-width (d/result)) 19))
+        (is (= (.-height (d/result)) 10))
+        (is (= (.-content (d/result))
+               (str "            -oh    \n"
+                    "           / text  \n"
+                    "        +---------+\n"
+                    "        |         |\n"
+                    "       /|   bla   |\n"
+                    "     -/ |   foo   |\n"
+                    "    /   |   bar   |\n"
+                    "   /    |         |\n"
+                    " -/     +---------+\n"
+                    "/                  ")))))))

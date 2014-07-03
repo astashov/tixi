@@ -11,14 +11,14 @@
     (.removeChild (.-parentNode node) node)))
 
 (defn- padding-top [node]
-  (.parseInt js/window (.-paddingTop (.getComputedStyle js/window node)) 10))
+  (js/parseInt (.-paddingTop (.getComputedStyle js/window node)) 10))
 
 (defn- padding-left [node]
-  (.parseInt js/window (.-paddingLeft (.getComputedStyle js/window node)) 10))
+  (js/parseInt (.-paddingLeft (.getComputedStyle js/window node)) 10))
 
 (defn adjust-height! [install-node node]
-  (let [v-padding (padding-top install-node)
-        h-padding (padding-left install-node)
+  (let [v-padding (padding-top install-node) 
+        h-padding (padding-left install-node) 
         install-node-height (- (.-offsetHeight install-node) (* v-padding 2))
         install-node-width (- (.-offsetWidth install-node) (* h-padding 2))
         node-height (.-offsetHeight node)
@@ -37,7 +37,7 @@
   (boolean (find-node install-node)))
 
 (defn- get-instance [install-node]
-  (.-CodeMirror (find-node install-node)))
+  (aget (find-node install-node) "CodeMirror"))
 
 (defn- set-text! [instance text]
   (.setValue instance text))
@@ -53,7 +53,7 @@
     (on-completed-callback value size)))
 
 (defn- install! [install-node on-completed-callback]
-  (let [instance (.CodeMirror js/window install-node #js {:lineWrapping true})
+  (let [instance (js/CodeMirror install-node #js {:lineWrapping true})
         node (find-node install-node)]
     (.on instance "change" (fn [] (adjust-height! install-node node)))
     (.on instance "blur" (fn [] (commit instance node on-completed-callback)))

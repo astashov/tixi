@@ -105,7 +105,7 @@
           element-at-client-point (.elementFromPoint js/document x y)
           [_, id-str] (re-find #"^text-content-(\d+)" (.-id element-at-client-point))]
       (when id-str
-        (let [id (.parseInt js/window id-str 10)]
+        (let [id (js/parseInt id-str 10)]
           [id (d/completed-item id)])))))
 
 (defn items-at-point

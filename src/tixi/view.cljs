@@ -1,6 +1,5 @@
 (ns tixi.view
   (:require-macros [dommy.macros :refer (node sel1)]
-                   [schema.macros :as scm]
                    [tixi.utils :refer (b)]
                    [cljs.core.async.macros :refer [go]])
   (:require [quiescent :as q :include-macros true]
@@ -21,6 +20,8 @@
 (def css-transition-group
   (-> js/React .-addons .-CSSTransitionGroup))
 
+(aset js/window "css-transition-group" css-transition-group)
+
 (defn- select-text! [node]
   (if (-> js/document .-body .-createTextRange)
     (let [range (-> js/document .-body .createTextRange)]
@@ -33,14 +34,14 @@
       (.addRange selection range))))
 
 (defn- send-event-with-coords [action type event channel]
-  (let [nativeEvent (.-nativeEvent event)
-        point (p/event->coords nativeEvent)]
-    (go (>! channel {:type type :data {:action action :point point :event nativeEvent}}))))
+  (let [point (p/event->coords event)
+        client-point (g/Point. (.-clientX event) (.-clientY event))]
+    (go (>! channel {:type type :data {:action action :point point :event event :client-point client-point}}))))
 
 (defn- send-mousemove [event channel]
-  (let [nativeEvent (.-nativeEvent event)
-        point (p/event->coords nativeEvent)]
-    (go (>! channel {:type :move :data {:point point :event nativeEvent}}))))
+  (let [point (p/event->coords event)
+        client-point (g/Point. (.-clientX event) (.-clientY event))]
+    (go (>! channel {:type :move :data {:point point :event event :client-point client-point}}))))
 
 (defn- send-tool-click [name channel]
   (go (>! channel {:type :tool :data {:name name}})))
@@ -205,7 +206,7 @@
 
 (q/defcomponent Result [data channel] {:key "result"}
  (let [result (d/result data)
-        text (.-text result)
+        content (.-content result)
         coords-size (Size. (.-width result) (.-height result))
         position-size (p/coords->position coords-size)]
     (q/on-render
@@ -215,7 +216,7 @@
           (dom/button {:className "result--close-top" :onClick (fn [e] (close-result channel))})
           (dom/div {:className "result--content"}
             (dom/pre {:className "result--content--pre" :style position-size}
-              text))
+              content))
           (dom/div {:className "result--bottom"}
             (dom/div {:className "result--bottom--hint"} "Press Cmd+C (or Ctrl+C) to copy it")
             (dom/button {:className "result--bottom--close"
@@ -244,6 +245,6 @@
       (dommy/append! (sel1 :body) [:#content ""])
       (sel1 :#content))))
 
-(scm/defn render [data :- s/Data channel]
+(defn render [data channel]
   "Renders the project"
   (q/render (Content data channel) (dom-content)))

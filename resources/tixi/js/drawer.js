@@ -3,7 +3,7 @@
 // Bresenham's line algorithm
 // http://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm
 
-window.Drawer = window.Drawer || {};
+goog.provide("tixi.drawer");
 
 (function () {
     var repeatString = function (string, times) {
@@ -15,11 +15,12 @@ window.Drawer = window.Drawer || {};
         return result;
     };
 
-    var add = function (result, x, y, char) {
-        var symbol = {v: char};
+    var add = function (result, x, y, character) {
+        var value = {};
+        value["v"] = character;
         var key = [x, y];
-        result.points.push([[x, y], symbol]);
-        result.index[x + "_" + y] = symbol;
+        result.points.push([[x, y], value]);
+        result.index[x + "_" + y] = value;
     };
 
     var merge = function (object, other) {
@@ -36,7 +37,7 @@ window.Drawer = window.Drawer || {};
         merge(result.index, other.index);
     };
 
-    window.Drawer.buildLine = function (data, firstChar) {
+    tixi.drawer.buildLine = function (data, firstChar) {
         var x1 = data[0];
         var y1 = data[1];
         var x2 = data[2];
@@ -82,7 +83,7 @@ window.Drawer = window.Drawer || {};
         return result;
     };
 
-    window.Drawer.buildRect = function (data) {
+    tixi.drawer.buildRect = function (data) {
         var x1 = Math.min(data[0], data[2]);
         var y1 = Math.min(data[1], data[3]);
         var x2 = Math.max(data[0], data[2]);
@@ -99,21 +100,21 @@ window.Drawer = window.Drawer || {};
             add(result, x2, y2, "+");
         }
         if (Math.abs(x2 - x1) > 1) {
-            concat(result, window.Drawer.buildLine([x1 + 1, y1, x2 - 1, y1], "-"));
+            concat(result, tixi.drawer.buildLine([x1 + 1, y1, x2 - 1, y1], "-"));
             if (Math.abs(y2 - y1) > 0) {
-                concat(result, window.Drawer.buildLine([x1 + 1, y2, x2 - 1, y2], "-"));
+                concat(result, tixi.drawer.buildLine([x1 + 1, y2, x2 - 1, y2], "-"));
             }
         }
         if (Math.abs(y2 - y1) > 1) {
-            concat(result, window.Drawer.buildLine([x1, y1 + 1, x1, y2 - 1], "|"));
+            concat(result, tixi.drawer.buildLine([x1, y1 + 1, x1, y2 - 1], "|"));
             if (Math.abs(x2 - x1) > 0) {
-                concat(result, window.Drawer.buildLine([x2, y1 + 1, x2, y2 - 1], "|"));
+                concat(result, tixi.drawer.buildLine([x2, y1 + 1, x2, y2 - 1], "|"));
             }
         }
         return result;
     };
 
-    window.Drawer.buildRectLine = function (data, direction) {
+    tixi.drawer.buildRectLine = function (data, direction) {
         var x1 = data[0];
         var y1 = data[1];
         var x2 = data[2];
@@ -124,25 +125,25 @@ window.Drawer = window.Drawer || {};
         if (direction === "horizontal") {
             add(result, x2, y1, "+");
             if (Math.abs(x2 - x1) > 0) {
-                concat(result, window.Drawer.buildLine([x1, y1, x2 > x1 ? (x2 - 1) : (x2 + 1), y1], "-"));
+                concat(result, tixi.drawer.buildLine([x1, y1, x2 > x1 ? (x2 - 1) : (x2 + 1), y1], "-"));
             }
             if (Math.abs(y2 - y1) > 0) {
-                concat(result, window.Drawer.buildLine([x2, y2 > y1 ? (y1 + 1) : (y1 - 1), x2, y2], "|"));
+                concat(result, tixi.drawer.buildLine([x2, y2 > y1 ? (y1 + 1) : (y1 - 1), x2, y2], "|"));
             }
         } else {
             add(result, x1, y2, "+");
             if (Math.abs(y2 - y1) > 0) {
-                concat(result, window.Drawer.buildLine([x1, y1, x1, y2 > y1 ? (y2 - 1) : (y2 + 1)], "|"));
+                concat(result, tixi.drawer.buildLine([x1, y1, x1, y2 > y1 ? (y2 - 1) : (y2 + 1)], "|"));
             }
             if (Math.abs(x2 - x1) > 0) {
-                concat(result, window.Drawer.buildLine([x2 > x1 ? (x1 + 1) : (x1 - 1), y2, x2, y2], "-"));
+                concat(result, tixi.drawer.buildLine([x2 > x1 ? (x1 + 1) : (x1 - 1), y2, x2, y2], "-"));
             }
         }
         return result;
     };
 
-    window.Drawer.sortData = function (data) {
-        return data.sort(function (a, b) {
+    tixi.drawer.sortData = function (data) {
+        return (data || []).sort(function (a, b) {
             var result;
             if (a[0][1] > b[0][1]) {
                 result = 1;
@@ -161,7 +162,7 @@ window.Drawer = window.Drawer || {};
         });
     };
 
-    window.Drawer.generateData = function (width, height, points) {
+    tixi.drawer.generateData = function (width, height, points) {
         var line = 0;
         var pos = 0;
         var result = "";
@@ -172,7 +173,7 @@ window.Drawer = window.Drawer || {};
                 var point = dataPoint[0];
                 var x = point[0];
                 var y = point[1];
-                var char = dataPoint[1];
+                var character = dataPoint[1];
                 while (y !== line) {
                     result += repeatString(" ", width - pos);
                     result += "\n";
@@ -180,7 +181,7 @@ window.Drawer = window.Drawer || {};
                     line += 1;
                 }
                 result += repeatString(" ", x - pos);
-                result += char.v;
+                result += character["v"];
                 pos = x + 1;
                 line = y;
             }
@@ -196,7 +197,7 @@ window.Drawer = window.Drawer || {};
         return result;
     };
 
-    window.Drawer.buildResult = function (items) {
+    tixi.drawer.buildResult = function (items) {
         function generateIndex(viewport) {
             var width = 0;
             var height = 0;
@@ -205,15 +206,15 @@ window.Drawer = window.Drawer || {};
             for (i in items) {
                 if (items.hasOwnProperty(i)) {
                     var k;
-                    for (k in items[i].cache.index) {
-                        if (items[i].cache.index.hasOwnProperty(k)) {
+                    for (k in items[i]["cache"]["index"]) {
+                        if (items[i]["cache"]["index"].hasOwnProperty(k)) {
                             var match = k.match(/(\d+)_(\d+)/);
                             if (match) {
                                 var x = parseInt(match[1], 10);
                                 var y = parseInt(match[2], 10);
-                                var startX = Math.min(items[i].input["start-point"].x, items[i].input["end-point"].x) - viewport.startX;
-                                var startY = Math.min(items[i].input["start-point"].y, items[i].input["end-point"].y) - viewport.startY;
-                                index[(startX + x) + "_" + (startY + y)] = items[i].cache.index[k];
+                                var startX = Math.min(items[i]["input"]["start-point"].x, items[i]["input"]["end-point"].x) - viewport.startX;
+                                var startY = Math.min(items[i]["input"]["start-point"].y, items[i]["input"]["end-point"].y) - viewport.startY;
+                                index[(startX + x) + "_" + (startY + y)] = items[i]["cache"]["index"][k];
                             }
                         }
                     }
@@ -235,7 +236,7 @@ window.Drawer = window.Drawer || {};
                     }
                 }
             }
-            return window.Drawer.sortData(points);
+            return tixi.drawer.sortData(points);
         }
 
         function stringLength(str) {
@@ -246,22 +247,22 @@ window.Drawer = window.Drawer || {};
             var i;
             var result = {startX: Infinity, startY: Infinity, endX: 0, endY: 0};
             for (i = 0; i < items.length; i += 1) {
-                result.startX = Math.min(result.startX, items[i].input["start-point"].x, items[i].input["end-point"].x);
-                result.startY = Math.min(result.startY, items[i].input["start-point"].y, items[i].input["end-point"].y);
-                result.endX = Math.max(result.endX, items[i].input["start-point"].x, items[i].input["end-point"].x);
-                result.endY = Math.max(result.endY, items[i].input["start-point"].y, items[i].input["end-point"].y);
+                result.startX = Math.min(result.startX, items[i]["input"]["start-point"].x, items[i]["input"]["end-point"].x);
+                result.startY = Math.min(result.startY, items[i]["input"]["start-point"].y, items[i]["input"]["end-point"].y);
+                result.endX = Math.max(result.endX, items[i]["input"]["start-point"].x, items[i]["input"]["end-point"].x);
+                result.endY = Math.max(result.endY, items[i]["input"]["start-point"].y, items[i]["input"]["end-point"].y);
             }
             return result;
         }
 
-        function addText(width, height, data) {
+        function addText(viewport, width, height, data) {
             var i;
             for (i = 0; i < items.length; i += 1) {
                 var text = items[i].text;
-                var widthItem = Math.abs(items[i].input["start-point"].x - items[i].input["end-point"].x);
-                var heightItem = Math.abs(items[i].input["start-point"].y - items[i].input["end-point"].y);
-                var startX = Math.min(items[i].input["start-point"].x, items[i].input["end-point"].x);
-                var startY = Math.min(items[i].input["start-point"].y, items[i].input["end-point"].y);
+                var widthItem = Math.abs(items[i]["input"]["start-point"].x - items[i]["input"]["end-point"].x);
+                var heightItem = Math.abs(items[i]["input"]["start-point"].y - items[i]["input"]["end-point"].y);
+                var startX = Math.min(items[i]["input"]["start-point"].x, items[i]["input"]["end-point"].x) - viewport.startX;
+                var startY = Math.min(items[i]["input"]["start-point"].y, items[i]["input"]["end-point"].y) - viewport.startY;
                 var widthCenterItem = startX + widthItem / 2;
                 var heightCenterItem = startY + heightItem / 2;
                 var j;
@@ -298,10 +299,10 @@ window.Drawer = window.Drawer || {};
         var viewport = getViewport();
         var result = generateIndex(viewport);
         var points = generatePoints(result);
-        var width = viewport.endX - viewport.startX;
-        var height = viewport.endY - viewport.startY;
-        var text = window.Drawer.generateData(width, height, points);
-        text = addText(result.width, result.height, text);
-        return {width: width, height: height, text: text};
+        var width = viewport.endX - viewport.startX + 1;
+        var height = viewport.endY - viewport.startY + 1;
+        var content = tixi.drawer.generateData(width, height, points);
+        content = addText(viewport, width, height, content);
+        return {width: width, height: height, content: content};
     };
 }());

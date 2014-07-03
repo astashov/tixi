@@ -47,7 +47,7 @@
           nil)
     (render)))
 
-(defn- handle-mousemove [event point]
+(defn- handle-mousemove [event point client-point]
   (reset! select-second-clicked false)
   (when point
     (let [previous-point @moving-from
@@ -68,8 +68,7 @@
 
         :else
         (when (d/select-tool?)
-          (let [client-point (Point. (.-clientX event) (.-clientY event))]
-            (m/highlight-layer! (p/item-id-at-point point client-point))))))
+          (m/highlight-layer! (p/item-id-at-point point client-point)))))
 
     (set-moving-from! point)
     (render)))
@@ -77,7 +76,7 @@
 (defn handle-input-event [{:keys [type data]}]
   (case type
     :down
-    (let [{:keys [point action event id]} data]
+    (let [{:keys [point action event id client-point]} data]
       (reset! start-point point)
       (set-moving-from! point)
       (m/set-action! action)
@@ -88,8 +87,7 @@
           (m/initiate-current-layer! point)
 
           (d/select-tool?)
-          (let [client-point (Point. (.-clientX event) (.-clientY event))
-                id (p/item-id-at-point point client-point)]
+          (let [id (p/item-id-at-point point client-point)]
             (when (= (d/selected-ids) [id])
               (reset! select-second-clicked true))
             (m/select-layer! id point (.-shiftKey event))))))
@@ -130,8 +128,8 @@
         :delete (m/delete-selected!)))
 
     :move
-    (let [{:keys [point event]} data]
-      (handle-mousemove event point))
+    (let [{:keys [point event client-point]} data]
+      (handle-mousemove event point client-point))
 
     :close
     (let [{:keys [name]} data]

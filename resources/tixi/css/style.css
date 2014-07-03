@@ -287,39 +287,39 @@ body,
 }
 
 .sidebar--tools--button__select .sidebar--tools--button--icon {
-  background-image: url(/assets/images/select.png)
+  background-image: url(/resources/tixi/images/select.png)
 }
 
 .sidebar--tools--button__line .sidebar--tools--button--icon {
-  background-image: url(/assets/images/line.png)
+  background-image: url(/resources/tixi/images/line.png)
 }
 
 .sidebar--tools--button__rect-line .sidebar--tools--button--icon {
-  background-image: url(/assets/images/rect-line.png)
+  background-image: url(/resources/tixi/images/rect-line.png)
 }
 
 .sidebar--tools--button__rect .sidebar--tools--button--icon {
-  background-image: url(/assets/images/rect.png)
+  background-image: url(/resources/tixi/images/rect.png)
 }
 
 .sidebar--tools--button__undo .sidebar--tools--button--icon {
-  background-image: url(/assets/images/undo.png)
+  background-image: url(/resources/tixi/images/undo.png)
 }
 
 .sidebar--tools--button__redo .sidebar--tools--button--icon {
-  background-image: url(/assets/images/redo.png)
+  background-image: url(/resources/tixi/images/redo.png)
 }
 
 .sidebar--tools--button__text .sidebar--tools--button--icon {
-  background-image: url(/assets/images/text.png)
+  background-image: url(/resources/tixi/images/text.png)
 }
 
 .sidebar--tools--button__result .sidebar--tools--button--icon {
-  background-image: url(/assets/images/result.png)
+  background-image: url(/resources/tixi/images/result.png)
 }
 
 .sidebar--tools--button__delete .sidebar--tools--button--icon {
-  background-image: url(/assets/images/delete.png)
+  background-image: url(/resources/tixi/images/delete.png)
 }
 
 .result {
@@ -396,7 +396,7 @@ body,
   background-position: center center;
   background-repeat: no-repeat;
   background-color: transparent;
-  background-image: url(/assets/images/close.png);
+  background-image: url(/resources/tixi/images/close.png);
   border: none;
   cursor: pointer;
   outline: none;

@@ -1,7 +1,8 @@
 (ns tixi.items
   (:require-macros [tixi.utils :refer (b)])
   (:require [tixi.geometry :as g]
-            [tixi.utils :refer [p]]))
+            [tixi.utils :refer [p]]
+            [tixi.drawer :as dr]))
 
 (defprotocol IItemBase
   (point-like? [this])
@@ -32,9 +33,9 @@
   (let [result (-parse item)
         points (.-points result)
         index (.-index result)
-        sorted-points (.sortData js/Drawer points)
+        sorted-points (dr/sortData points)
         [width height] (g/values (dimensions item))
-        data (.generateData js/Drawer width height sorted-points)]
+        data (dr/generateData width height sorted-points)]
     {:points sorted-points :data data :index index}))
 
 (defn- recache [item rebuild?]
@@ -44,7 +45,7 @@
 
 (defn- parse-line [rect]
   (let [[x1 y1 x2 y2] (g/values (g/shifted-to-0 rect))]
-    (.buildLine js/Drawer #js [x1 y1 x2 y2])))
+    (dr/buildLine #js [x1 y1 x2 y2])))
 
 (defn- maybe-add-edge-chars [f args]
   (let [result (f)
@@ -105,7 +106,7 @@
       (-builder [this] build-rect)
       (-parse [this]
         (let [[x1 y1 x2 y2] (g/values (g/shifted-to-0 input))]
-          (.buildRect js/Drawer #js [x1 y1 x2 y2])))
+          (dr/buildRect #js [x1 y1 x2 y2])))
       IItemRelative
       (relative-point [this point]
         (g/relative point (:input this)))
@@ -138,7 +139,7 @@
         (fn [new-args] (build-rect-line (merge args new-args))))
       (-parse [this]
         (let [result (let [[x1 y1 x2 y2] (g/values (g/shifted-to-0 input))]
-                       (.buildRectLine js/Drawer #js [x1 y1 x2 y2] (:direction args)))]
+                       (dr/buildRectLine #js [x1 y1 x2 y2] (:direction args)))]
           (maybe-add-edge-chars (fn [] result) args)))
       IItemLock
       (lockable? [this] false)

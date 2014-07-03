@@ -2,6 +2,7 @@
   (:require-macros [tixi.utils :refer [defdata]])
   (:require [tixi.utils :refer [seq-contains? p]]
             [tixi.tree :as t :refer [Node]]
+            [tixi.drawer :as dr]
             [clojure.zip :as z]))
 
 (defn zip [root]
@@ -101,7 +102,7 @@
   (:edit-text-id data))
 
 (defdata result []
-  (.buildResult js/Drawer (clj->js (vals (completed data)))))
+  (dr/buildResult (clj->js (vals (completed data)))))
 
 (defdata show-result? []
   (boolean (:show-result data)))
