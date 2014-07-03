@@ -1,0 +1,32 @@
+GIT
+  remote: git@github.com:Mixbook/s3_deployer.git
+  revision: a97b99c6668ea88521f0ecc5c3ffd0990018ae8e
+  tag: 0.5.2
+  specs:
+    s3_deployer (0.5.2)
+      aws-s3
+      json
+      tzinfo
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+    aws-s3 (0.6.3)
+      builder
+      mime-types
+      xml-simple
+    builder (3.2.2)
+    json (1.8.1)
+    mime-types (2.3)
+    rake (10.3.2)
+    thread_safe (0.3.4)
+    tzinfo (1.2.1)
+      thread_safe (~> 0.1)
+    xml-simple (1.1.4)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  rake
+  s3_deployer!

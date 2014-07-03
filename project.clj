@@ -41,7 +41,8 @@
                  :pretty-print false
                  :preamble ["react/react_with_addons.min.js" "tixi/js/codemirror.min.js"]
                  :libs ["tixi/js/drawer.js"]
-                 :externs ["react/externs/react.js" "tixi/js/externs.js"]}}
+                 :externs ["react/externs/react.js" "tixi/js/externs.js"]
+                 :source-map "tixi_prod.js.map"}}
               {:id "test"
                :source-paths ["src" "test"]
                :notify-command ["phantomjs" :cljs.test/runner "resources/tixi/js/function-bind-shim.js" "resources/tixi/js/raf.js" "tixi_test.js"]

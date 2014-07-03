@@ -13,3 +13,9 @@ pom.xml
 .lein-failures
 /*.js
 /*.js.map
+
+/.bundle
+/vendor/bundle
+/dist
+/s3_deployer_config.rb
+/.ruby-version
