@@ -148,7 +148,8 @@
                            (cond
                              (some #{(d/hover-id data)} selected-ids) " is-able-to-move"
                              (d/hover-id data) " is-hover"
-                             :else ""))
+                             :else "")
+                           (if (= (p (d/tool)) :text) " is-text" ""))
               :onMouseMove (fn [e] (send-mousemove e channel))}
       (Canvas data channel)
       (when (and (not-empty selected-ids) (not (d/edit-text-id)))

@@ -31,6 +31,11 @@ html, body {
   cursor: move;
 }
 
+.project.is-text,
+.project.is-text .canvas--content--layer {
+  cursor: text;
+}
+
 .project {
   overflow: hidden;
   position: absolute;
