@@ -21,3 +21,8 @@
 
 (defn get-by-val [coll value]
   (filter (comp #{value} coll) (keys coll)))
+
+(defn item-type [type-or-types item]
+  (if (seqable? type-or-types)
+    (contains? type-or-types (:type item))
+    (= type-or-types (:type item))))

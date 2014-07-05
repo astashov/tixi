@@ -81,7 +81,7 @@
         {:keys [x y]} (p/coords->position (i/origin item))
         {:keys [width height]} (p/coords->position (g/incr (i/dimensions item)))]
     (dom/pre {:className (str "canvas--content--layer"
-                            (str " canvas-content--layer__" (i/kind item))
+                            (str " canvas-content--layer__" (name (:type item)))
                             (if is-selected " is-selected" "")
                             (if is-hover " is-hover" ""))
             :style {:left x :top y :width width :height height}
@@ -114,7 +114,7 @@
         rect (p/items-wrapping-rect selected-ids)
         classes (->> (d/selected-ids data)
                      (map #(d/completed-item %))
-                     (map #(i/kind %))
+                     (map #(:type %))
                      sort
                      (string/join "__"))]
     (apply dom/div {:className (str "selection"
@@ -149,7 +149,7 @@
                              (some #{(d/hover-id data)} selected-ids) " is-able-to-move"
                              (d/hover-id data) " is-hover"
                              :else "")
-                           (if (= (p (d/tool)) :text) " is-text" ""))
+                           (if (= (d/tool) :text) " is-text" ""))
               :onMouseMove (fn [e] (send-mousemove e channel))}
       (Canvas data channel)
       (when (and (not-empty selected-ids) (not (d/edit-text-id)))

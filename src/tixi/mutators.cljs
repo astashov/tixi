@@ -45,7 +45,7 @@
 
 (defn- build-layer! [type content]
   (let [id (:autoincrement @d/data)
-        item (i/build-item type {:input content})]
+        item (i/build-item {:type type :input content})]
     (swap! d/data update-in [:autoincrement] inc)
     {:id id :item item}))
 
@@ -124,7 +124,7 @@
   (when-let [{:keys [id item]} (d/current)]
     (swap! d/data assoc :current nil)
     (update-state! assoc-in [:completed id] item)
-    (if (= (i/kind item) "text")
+    (if (= (:type item) :text)
       (edit-text-in-item! id))))
 
 
@@ -149,7 +149,6 @@
     (doseq [connector-id connector-ids]
       (let [types (get-by-val (d/connector-types connector-id) lockable-id)]
         (doseq [type types]
-          (p [lockable-id connector-id type])
           (let [new-item (remove-lock! connector-id (d/completed-item connector-id) type)]
             (update-state! assoc-in [:completed connector-id] new-item)))))
     (update-state! update-in [:locks :lockables] dissoc lockable-id)))
@@ -211,12 +210,8 @@
     (update-state! assoc-in [:locks :lockables lockable-id connector-id] {:types new-types :rect new-rect})
     (update-state! assoc-in [:locks :connectors connector-id type] lockable-id)
     (if (= type :end)
-      (i/build-item (keyword (i/kind connector-item))
-                    (assoc connector-item :end-char "+"
-                                          :start-char (i/start-char connector-item)))
-      (i/build-item (keyword (i/kind connector-item))
-                    (assoc connector-item :end-char (i/end-char connector-item)
-                                          :start-char "+")))))
+      (i/build-item (assoc connector-item :end-char "+"))
+      (i/build-item (assoc connector-item :start-char "+")))))
 
 (defn remove-lock! [connector-id connector-item type]
   (let [lockable-id (d/lockable-id-by-connector-id-and-type connector-id type)
@@ -238,10 +233,8 @@
         (when (empty? (d/lockable lockable-id))
           (update-state! update-in [:locks :lockables] dissoc lockable-id))
         (if (= type :end)
-          (i/build-item (keyword (i/kind connector-item))
-                        (assoc connector-item :start-char (i/start-char connector-item)))
-          (i/build-item (keyword (i/kind connector-item))
-                        (assoc connector-item :end-char (i/end-char connector-item)))))
+          (i/build-item (dissoc connector-item :end-char))
+          (i/build-item (dissoc connector-item :start-char))))
       connector-item)))
 
 (defn try-to-lock! [connector-item connector-id point type]

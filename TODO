@@ -1,4 +1,3 @@
-* Need to revisit Items inheritance approach, it is now hard to add shared functions to "subclasses"
 * Revisit locking, maybe specify points for every shape where you could lock connectors to.
 * Change how the selection looks for a line - it should just have 2 dots for moving it around (start and end)
 * Add possibility to group/ungroup items
@@ -12,7 +11,8 @@
 * Add a way to add line endings (arrows, starts, etc)
 * Add way to specify text alignment (horizontal and vertical)
 * Figure out how to left-align CodeMirror
-* Fix buggy text editor of 'text' item
+* Fix buggy text editor of 'text' item (like, spaces)
 * Add dispatcher layer for view events
 * Add fills
 * Fix bug of the "Results" view when there is only text in right bottom corner
+* Add tests for deleting locks
