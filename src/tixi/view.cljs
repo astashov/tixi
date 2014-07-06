@@ -35,13 +35,17 @@
 
 (defn- send-event-with-coords [action type event channel]
   (let [point (p/event->coords event)
-        client-point (g/Point. (.-clientX event) (.-clientY event))]
-    (go (>! channel {:type type :data {:action action :point point :event event :client-point client-point}}))))
+        client-point (g/Point. (.-clientX event) (.-clientY event))
+        shift-pressed? (.. event -nativeEvent -shiftKey)]
+    (go (>! channel {:type type :data {:action action
+                                       :point point
+                                       :client-point client-point
+                                       :shift-pressed? shift-pressed?}}))))
 
 (defn- send-mousemove [event channel]
   (let [point (p/event->coords event)
         client-point (g/Point. (.-clientX event) (.-clientY event))]
-    (go (>! channel {:type :move :data {:point point :event event :client-point client-point}}))))
+    (go (>! channel {:type :move :data {:point point :client-point client-point}}))))
 
 (defn- send-tool-click [name channel]
   (go (>! channel {:type :tool :data {:name name}})))
@@ -77,7 +81,7 @@
 (q/defcomponent Layer
   "Displays the layer"
   [{:keys [id item is-hover is-selected edit-text-id]} channel]
-  (let [{:keys [data]} (:cache item)
+  (let [{:keys [data]} (d/item-cache id)
         {:keys [x y]} (p/coords->position (i/origin item))
         {:keys [width height]} (p/coords->position (g/incr (i/dimensions item)))]
     (dom/pre {:className (str "canvas--content--layer"
@@ -114,7 +118,7 @@
         rect (p/items-wrapping-rect selected-ids)
         classes (->> (d/selected-ids data)
                      (map #(d/completed-item %))
-                     (map #(:type %))
+                     (map #(name (:type %)))
                      sort
                      (string/join "__"))]
     (apply dom/div {:className (str "selection"

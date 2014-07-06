@@ -8,8 +8,12 @@
             [tixi.geometry :as g :refer [Size Point]]
             [tixi.utils :refer [p seq-contains? get-by-val]]))
 
+(def ^:private touched-item-ids (atom #{}))
+
 (defn- update-state! [f ks & args]
-  (swap! d/data assoc-in [:state] (z/replace (d/state-loc) (t/update (z/node (d/state-loc)) (apply f (d/state) ks args)))))
+  (swap! d/data assoc-in [:state] (z/replace (d/state-loc)
+                                             (t/update (z/node (d/state-loc))
+                                                       (apply f (d/state) ks args)))))
 
 (defn- absolute-rect [lockable-id connector-id types rect]
   (let [lockable-item (d/completed-item lockable-id)
@@ -28,7 +32,10 @@
                               (try-to-lock! id (:start-point (:input item)) :start)
                               (try-to-lock! id (:end-point (:input item)) :end))]
     (update-state! assoc-in [:completed id] (i/reposition maybe-locked-item rect))
+    (when (not= (g/dimensions rect) (g/dimensions (:input item)))
+      (touch-item! id))
     (doseq [[connector-id {:keys [types rect]}] (d/lockable id)]
+      (touch-item! connector-id)
       (update-state! assoc-in [:completed connector-id]
                               (i/reposition (d/completed-item connector-id)
                                             (absolute-rect id connector-id types rect))))))
@@ -45,7 +52,7 @@
 
 (defn- build-layer! [type content]
   (let [id (:autoincrement @d/data)
-        item (i/build-item {:type type :input content})]
+        item {:type type :input content}]
     (swap! d/data update-in [:autoincrement] inc)
     {:id id :item item}))
 
@@ -180,11 +187,15 @@
 
 (defn undo! []
   (when (can-undo?)
-    (swap! d/data assoc-in [:state] (z/up (d/state-loc)))))
+    (swap! d/data assoc-in [:state] (z/up (d/state-loc)))
+    (doseq [[id _] (d/completed)]
+      (touch-item! id))))
 
 (defn redo! []
   (when (can-redo?)
-    (swap! d/data assoc-in [:state] (z/down (d/state-loc)))))
+    (swap! d/data assoc-in [:state] (z/down (d/state-loc)))
+    (doseq [[id _] (d/completed)]
+      (touch-item! id))))
 
 
 (defn edit-text-in-item! [id]
@@ -210,8 +221,8 @@
     (update-state! assoc-in [:locks :lockables lockable-id connector-id] {:types new-types :rect new-rect})
     (update-state! assoc-in [:locks :connectors connector-id type] lockable-id)
     (if (= type :end)
-      (i/build-item (assoc connector-item :end-char "+"))
-      (i/build-item (assoc connector-item :start-char "+")))))
+      (assoc connector-item :end-char "+")
+      (assoc connector-item :start-char "+"))))
 
 (defn remove-lock! [connector-id connector-item type]
   (let [lockable-id (d/lockable-id-by-connector-id-and-type connector-id type)
@@ -233,8 +244,8 @@
         (when (empty? (d/lockable lockable-id))
           (update-state! update-in [:locks :lockables] dissoc lockable-id))
         (if (= type :end)
-          (i/build-item (dissoc connector-item :end-char))
-          (i/build-item (dissoc connector-item :start-char))))
+          (dissoc connector-item :end-char)
+          (dissoc connector-item :start-char)))
       connector-item)))
 
 (defn try-to-lock! [connector-item connector-id point type]
@@ -249,3 +260,18 @@
 
 (defn show-result! [value]
   (swap! d/data assoc :show-result value))
+
+(defn render-items! []
+  (doseq [[id item] (filter (fn [[id item]]
+                              (or (contains? @touched-item-ids id)
+                                  (not (d/item-cache id))))
+                            (d/completed))]
+    (swap! d/data assoc-in [:cache id] (i/render item)))
+  (when-let [{:keys [id item]} (d/current)]
+    (swap! d/data assoc-in [:cache id] (i/render item))))
+
+(defn reset-touched-items! []
+  (reset! touched-item-ids #{}))
+
+(defn touch-item! [id]
+  (swap! touched-item-ids conj id))

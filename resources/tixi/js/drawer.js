@@ -197,7 +197,7 @@ goog.provide("tixi.drawer");
         return result;
     };
 
-    tixi.drawer.buildResult = function (items) {
+    tixi.drawer.buildResult = function (items, cache) {
         function generateIndex(viewport) {
             var width = 0;
             var height = 0;
@@ -206,15 +206,15 @@ goog.provide("tixi.drawer");
             for (i in items) {
                 if (items.hasOwnProperty(i)) {
                     var k;
-                    for (k in items[i]["cache"]["index"]) {
-                        if (items[i]["cache"]["index"].hasOwnProperty(k)) {
+                    for (k in cache[i]["index"]) {
+                        if (cache[i]["index"].hasOwnProperty(k)) {
                             var match = k.match(/(\d+)_(\d+)/);
                             if (match) {
                                 var x = parseInt(match[1], 10);
                                 var y = parseInt(match[2], 10);
                                 var startX = Math.min(items[i]["input"]["start-point"].x, items[i]["input"]["end-point"].x) - viewport.startX;
                                 var startY = Math.min(items[i]["input"]["start-point"].y, items[i]["input"]["end-point"].y) - viewport.startY;
-                                index[(startX + x) + "_" + (startY + y)] = items[i]["cache"]["index"][k];
+                                index[(startX + x) + "_" + (startY + y)] = cache[i]["index"][k];
                             }
                         }
                     }
@@ -246,49 +246,53 @@ goog.provide("tixi.drawer");
         function getViewport() {
             var i;
             var result = {startX: Infinity, startY: Infinity, endX: 0, endY: 0};
-            for (i = 0; i < items.length; i += 1) {
-                result.startX = Math.min(result.startX, items[i]["input"]["start-point"].x, items[i]["input"]["end-point"].x);
-                result.startY = Math.min(result.startY, items[i]["input"]["start-point"].y, items[i]["input"]["end-point"].y);
-                result.endX = Math.max(result.endX, items[i]["input"]["start-point"].x, items[i]["input"]["end-point"].x);
-                result.endY = Math.max(result.endY, items[i]["input"]["start-point"].y, items[i]["input"]["end-point"].y);
+            for (i in items) {
+                if (items.hasOwnProperty(i)) {
+                    result.startX = Math.min(result.startX, items[i]["input"]["start-point"].x, items[i]["input"]["end-point"].x);
+                    result.startY = Math.min(result.startY, items[i]["input"]["start-point"].y, items[i]["input"]["end-point"].y);
+                    result.endX = Math.max(result.endX, items[i]["input"]["start-point"].x, items[i]["input"]["end-point"].x);
+                    result.endY = Math.max(result.endY, items[i]["input"]["start-point"].y, items[i]["input"]["end-point"].y);
+                }
             }
             return result;
         }
 
         function addText(viewport, width, height, data) {
             var i;
-            for (i = 0; i < items.length; i += 1) {
-                var text = items[i].text;
-                var widthItem = Math.abs(items[i]["input"]["start-point"].x - items[i]["input"]["end-point"].x);
-                var heightItem = Math.abs(items[i]["input"]["start-point"].y - items[i]["input"]["end-point"].y);
-                var startX = Math.min(items[i]["input"]["start-point"].x, items[i]["input"]["end-point"].x) - viewport.startX;
-                var startY = Math.min(items[i]["input"]["start-point"].y, items[i]["input"]["end-point"].y) - viewport.startY;
-                var widthCenterItem = startX + widthItem / 2;
-                var heightCenterItem = startY + heightItem / 2;
-                var j;
-                var pos;
-                var line;
-                if (text) {
-                    var textArray = text.split("\n");
-                    if (items[i].type === "text") {
-                        for (j = 0; j < textArray.length; j += 1) {
-                            line = textArray[j];
-                            pos = (startY + j) * (width + 1) + startX;
-                            data = data.substr(0, pos) +
-                                data.substr(pos + 1, line.length).replace(/.*/, line) +
-                                data.substr(pos + line.length, data.length - (pos + line.length));
-                        }
-                    } else {
-                        var widthText = Math.max.apply(null, textArray.map(stringLength));
-                        var heightText = textArray.length;
-                        var startXText = Math.ceil(widthCenterItem - widthText / 2);
-                        var startYText = Math.ceil(heightCenterItem - heightText / 2);
-                        for (j = 0; j < textArray.length; j += 1) {
-                            line = textArray[j];
-                            pos = (startYText + j) * (width + 1) + startXText;
-                            data = data.substr(0, pos) +
-                                data.substr(pos + 1, line.length).replace(/.*/, line) +
-                                data.substr(pos + line.length, data.length - (pos + line.length));
+            for (i in items) {
+                if (items.hasOwnProperty(i)) {
+                    var text = items[i].text;
+                    var widthItem = Math.abs(items[i]["input"]["start-point"].x - items[i]["input"]["end-point"].x);
+                    var heightItem = Math.abs(items[i]["input"]["start-point"].y - items[i]["input"]["end-point"].y);
+                    var startX = Math.min(items[i]["input"]["start-point"].x, items[i]["input"]["end-point"].x) - viewport.startX;
+                    var startY = Math.min(items[i]["input"]["start-point"].y, items[i]["input"]["end-point"].y) - viewport.startY;
+                    var widthCenterItem = startX + widthItem / 2;
+                    var heightCenterItem = startY + heightItem / 2;
+                    var j;
+                    var pos;
+                    var line;
+                    if (text) {
+                        var textArray = text.split("\n");
+                        if (items[i].type === "text") {
+                            for (j = 0; j < textArray.length; j += 1) {
+                                line = textArray[j];
+                                pos = (startY + j) * (width + 1) + startX;
+                                data = data.substr(0, pos) +
+                                    data.substr(pos + 1, line.length).replace(/.*/, line) +
+                                    data.substr(pos + line.length, data.length - (pos + line.length));
+                            }
+                        } else {
+                            var widthText = Math.max.apply(null, textArray.map(stringLength));
+                            var heightText = textArray.length;
+                            var startXText = Math.ceil(widthCenterItem - widthText / 2);
+                            var startYText = Math.ceil(heightCenterItem - heightText / 2);
+                            for (j = 0; j < textArray.length; j += 1) {
+                                line = textArray[j];
+                                pos = (startYText + j) * (width + 1) + startXText;
+                                data = data.substr(0, pos) +
+                                    data.substr(pos + 1, line.length).replace(/.*/, line) +
+                                    data.substr(pos + line.length, data.length - (pos + line.length));
+                            }
                         }
                     }
                 }

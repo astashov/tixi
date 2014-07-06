@@ -27,8 +27,8 @@
   (let [rect (g/build-rect (i/origin item) (i/dimensions item))]
     (g/inside? rect point)))
 
-(defn- item-has-point? [item point]
-  (let [index (:index (:cache item))
+(defn- item-has-point? [id item point]
+  (let [index (:index (d/item-cache id))
         moved-point (g/sub point (i/origin item))
         [x y] (g/values moved-point)
         k (str x "_" y)]
@@ -115,7 +115,7 @@
       [result]
       (->> (d/completed)
         (filter (fn [[_ item]] (hit-item? item point)))
-        (filter (fn [[_ item]] (item-has-point? item point)))))))
+        (filter (fn [[id item]] (item-has-point? id item point)))))))
 
 (defn item-id-at-point
   ([point] (item-id-at-point point nil))

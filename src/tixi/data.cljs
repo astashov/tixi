@@ -24,6 +24,7 @@
                :rect nil
                :current nil
                :rel-rects {}}
+   :cache {}
    :edit-text-id nil
    :hover-id nil
    :show-result false})
@@ -39,6 +40,9 @@
 
 (defdata state []
   (:value (z/node (state-loc data))))
+
+(defdata previous-state []
+  (:value (z/node (z/up (state-loc data)))))
 
 (defdata completed []
   (:completed (state data)))
@@ -60,6 +64,12 @@
 
 (defdata completed-item [id]
   (get-in (state data) [:completed id]))
+
+(defdata cache []
+  (get data :cache))
+
+(defdata item-cache [id]
+  (get (cache data) id))
 
 (defdata tool []
   (:tool data))
@@ -102,7 +112,7 @@
   (:edit-text-id data))
 
 (defdata result []
-  (dr/buildResult (clj->js (vals (completed data)))))
+  (dr/buildResult (clj->js (completed data)) (clj->js (cache data))))
 
 (defdata show-result? []
   (boolean (:show-result data)))

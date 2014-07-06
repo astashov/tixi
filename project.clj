@@ -31,8 +31,8 @@
                 :output-dir "out"
                 :preamble ["react/react_with_addons.min.js" "tixi/js/codemirror.js"]
                 :libs ["tixi/js/drawer.js"]
-                :optimizations :whitespace
-                :source-map "tixi.js.map"}}
+                :optimizations :none
+                :source-map true}}
               {:id "release"
                :source-paths ["src"]
                :compiler {

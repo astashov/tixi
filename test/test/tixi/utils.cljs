@@ -10,4 +10,5 @@
   (m/initiate-current-layer! (:start-point rect))
   (m/update-current-layer! (:end-point rect))
   (m/finish-current-layer!)
+  (m/render-items!)
   (last (keys (d/completed))))

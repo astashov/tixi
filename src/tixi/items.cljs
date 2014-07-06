@@ -1,6 +1,7 @@
 (ns tixi.items
   (:require-macros [tixi.utils :refer (b defpoly defpoly-)])
   (:require [tixi.geometry :as g]
+            [tixi.data :as d]
             [tixi.utils :refer [p]]
             [tixi.drawer :as dr]))
 
@@ -40,7 +41,7 @@
   :text
   #js {:index #js {} :points #js []})
 
-(defn- render [item]
+(defn render [item]
   (let [result (parse item)
         points (.-points result)
         index (.-index result)
@@ -48,12 +49,6 @@
         [width height] (g/values (dimensions item))
         data (dr/generateData width height sorted-points)]
     {:points sorted-points :data data :index index}))
-
-(defn- recache [item rebuild?]
-  (if rebuild?
-    (assoc item :cache (render item))
-    item))
-
 
 (defn dimensions [item]
   (g/dimensions (:input item)))
@@ -77,29 +72,22 @@
                             (cond
                               (not= (:y point) (get-in input [:end-point :y])) "vertical"
                               (not= (:x point) (get-in input [:end-point :x])) "horizontal")))]
-    (recache (assoc item :input new-input :direction new-direction) true))
+    (assoc item :input new-input :direction new-direction))
 
   :text
   (assoc item :input (g/build-rect point point))
 
   (let [new-input (g/expand (:input item) point)]
-    (recache (assoc item :input new-input) true)))
+    (assoc item :input new-input)))
 
 (defpoly reposition [item input]
-  :text
-  (let [dimensions-changed? (not= (g/dimensions (:input item)) (g/dimensions input))]
-    (if dimensions-changed?
-      item
-      (assoc item :input input)))
-
-  (let [dimensions-changed? (not= (g/dimensions (:input item)) (g/dimensions input))]
-    (recache (assoc item :input input) dimensions-changed?)))
+  (assoc item :input input))
 
 (defn set-text [item text dimensions]
   (let [input (if (point-like? item)
                 (g/build-rect (g/origin (:input item)) (g/decr dimensions))
                 (:input item))]
-    (recache (assoc item :input input :text text) true)))
+    (assoc item :input input :text text)))
 
 (defpoly lockable? [item]
   :rect
@@ -115,6 +103,3 @@
 
 (defn relative-point [item point]
   (g/relative point (:input item)))
-
-(defn build-item [args]
-  (recache args true))

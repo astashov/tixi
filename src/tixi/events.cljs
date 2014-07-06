@@ -21,18 +21,22 @@
 (defn- set-moving-from! [point]
   (reset! moving-from point))
 
-(defn render []
+(defn render [f]
+  (m/reset-touched-items!)
+  (when f (f))
   (when @request-id
     (.cancelAnimationFrame js/window @request-id))
   (let [id (.requestAnimationFrame js/window
              (fn [_]
                (reset! request-id nil)
+               (m/render-items!)
                (v/render @d/data channel)))]
     (reset! request-id id)))
 
 (defn handle-keyboard-events [event]
   (when-not (d/edit-text-id)
-    (case (.-keyCode event)
+    (render (fn []
+      (case (.-keyCode event)
           8  (do ; backspace
                (.preventDefault event)
                (m/delete-selected!))
@@ -42,101 +46,98 @@
           83 (m/set-tool! :select) ; s
           84 (m/set-tool! :text) ; t
           89 (m/set-tool! :rect-line) ; y
+          90 (p @d/data) ; y
           85 (m/undo!) ; u
           73 (m/redo!) ; i
-          nil)
-    (render)))
+          nil)))))
 
-(defn- handle-mousemove [event point client-point]
+(defn- handle-mousemove [point client-point]
   (reset! select-second-clicked false)
   (when point
     (let [previous-point @moving-from
           diff-point (g/sub point previous-point)]
-      (cond
-        (d/draw-action?)
+      (render (fn []
         (cond
-          (d/draw-tool?)
-          (m/update-current-layer! point)
+          (d/draw-action?)
+          (cond
+            (d/draw-tool?)
+            (m/update-current-layer! point)
 
-          (d/select-tool?)
-          (do
-            (m/update-selection! point)
-            (m/move-selection! diff-point)))
+            (d/select-tool?)
+            (do
+              (m/update-selection! point)
+              (m/move-selection! diff-point)))
 
-        (d/resize-action)
-        (m/resize-selection! diff-point (d/resize-action))
+          (d/resize-action)
+          (m/resize-selection! diff-point (d/resize-action))
 
-        :else
-        (when (d/select-tool?)
-          (m/highlight-layer! (p/item-id-at-point point client-point)))))
-
-    (set-moving-from! point)
-    (render)))
+          :else
+          (when (d/select-tool?)
+            (m/highlight-layer! (p/item-id-at-point point client-point))))))
+      (set-moving-from! point))))
 
 (defn handle-input-event [{:keys [type data]}]
-  (case type
-    :down
-    (let [{:keys [point action event id client-point]} data]
-      (reset! start-point point)
-      (set-moving-from! point)
-      (m/set-action! action)
-      (m/snapshot!)
-      (when (= action :draw)
-        (cond
-          (d/draw-tool?)
-          (m/initiate-current-layer! point)
+  (if (= type :move)
+    (let [{:keys [point client-point]} data]
+      (handle-mousemove point client-point))
+    (render (fn []
+      (case type
+        :down
+        (let [{:keys [point action id client-point shift-pressed?]} data]
+          (reset! start-point point)
+          (set-moving-from! point)
+          (m/set-action! action)
+          (m/snapshot!)
+          (when (= action :draw)
+            (cond
+              (d/draw-tool?)
+              (m/initiate-current-layer! point)
 
-          (d/select-tool?)
-          (let [id (p/item-id-at-point point client-point)]
-            (when (= (d/selected-ids) [id])
-              (reset! select-second-clicked true))
-            (m/select-layer! id point (.-shiftKey event))))))
+              (d/select-tool?)
+              (let [id (p/item-id-at-point point client-point)]
+                (when (= (d/selected-ids) [id])
+                  (reset! select-second-clicked true))
+                (m/select-layer! id point shift-pressed?)))))
 
-    :up
-    (let [{:keys [point action]} data]
-      (reset! end-point point)
-      (m/set-action! nil)
-      (when (= action :draw)
-        (cond
-          (d/draw-tool?)
-          (m/finish-current-layer!)
+        :up
+        (let [{:keys [point action]} data]
+          (reset! end-point point)
+          (m/set-action! nil)
+          (when (= action :draw)
+            (cond
+              (d/draw-tool?)
+              (m/finish-current-layer!)
 
-          (d/select-tool?)
-          (do
-            (m/finish-selection!)
-            (when (and @select-second-clicked (= @start-point @end-point))
-              (m/edit-text-in-item! (first (d/selected-ids))))
-            (reset! select-second-clicked false))))
-      (m/undo-if-unchanged!))
+              (d/select-tool?)
+              (do
+                (m/finish-selection!)
+                (when (and @select-second-clicked (= @start-point @end-point))
+                  (m/edit-text-in-item! (first (d/selected-ids))))
+                (reset! select-second-clicked false))))
+          (m/undo-if-unchanged!))
 
-    :edit
-    (let [{:keys [id text dimensions]} data]
-      (m/edit-text-in-item! nil)
-      (m/set-text-to-item! id text dimensions))
+        :edit
+        (let [{:keys [id text dimensions]} data]
+          (m/edit-text-in-item! nil)
+          (m/set-text-to-item! id text dimensions))
 
-    :tool
-    (let [{:keys [name]} data]
-      (case name
-        :select (m/set-tool! :select)
-        :line (m/set-tool! :line)
-        :rect-line (m/set-tool! :rect-line)
-        :rect (m/set-tool! :rect)
-        :text (m/set-tool! :text)
-        :undo (m/undo!)
-        :redo (m/redo!)
-        :result (m/show-result! true)
-        :delete (m/delete-selected!)))
+        :tool
+        (let [{:keys [name]} data]
+          (case name
+            :select (m/set-tool! :select)
+            :line (m/set-tool! :line)
+            :rect-line (m/set-tool! :rect-line)
+            :rect (m/set-tool! :rect)
+            :text (m/set-tool! :text)
+            :undo (m/undo!)
+            :redo (m/redo!)
+            :result (m/show-result! true)
+            :delete (m/delete-selected!)))
 
-    :move
-    (let [{:keys [point event client-point]} data]
-      (handle-mousemove event point client-point))
+        :close
+        (let [{:keys [name]} data]
+          (case name
+            :result (m/show-result! false))))))))
 
-    :close
-    (let [{:keys [name]} data]
-      (case name
-        :result (m/show-result! false))))
-
-  (render))
-
-(defn install-keyboard-events []
-  (dommy/listen! js/document :keydown handle-keyboard-events))
+  (defn install-keyboard-events []
+    (dommy/listen! js/document :keydown handle-keyboard-events))
