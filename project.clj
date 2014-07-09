@@ -33,6 +33,17 @@
                 :libs ["tixi/js/drawer.js"]
                 :optimizations :none
                 :source-map true}}
+              {:id "dev"
+               :source-paths ["src"]
+               :notify-command ["terminal-notifier" "-title" "ClojureScript" "-activate" "com.googlecode.iTerm2" "-message"]
+               :compiler {
+                 :output-to "tixi_dev.js"
+                 :optimizations :whitespace
+                 :pretty-print true
+                 :preamble ["react/react_with_addons.min.js" "tixi/js/codemirror.min.js"]
+                 :libs ["tixi/js/drawer.js"]
+                 :externs ["react/externs/react.js" "tixi/js/externs.js"]
+                 :source-map "tixi_dev.js.map"}}
               {:id "release"
                :source-paths ["src"]
                :compiler {
