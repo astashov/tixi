@@ -1,10 +1,11 @@
 (ns tixi.core
-  (:require-macros [dommy.macros :refer (node sel1)]
+  (:require-macros [tixi.controller :refer (render)]
+                   [dommy.macros :refer (node sel1)]
                    [cljs.core.async.macros :refer [go]])
   (:require [tixi.view :as v]
             [dommy.core :as dommy]
             [tixi.channel :refer [channel]]
-            [tixi.events :as e]
+            [tixi.dispatcher :as di]
             [tixi.mutators :as m]
             [tixi.data :as d]
             [tixi.utils :refer [p]]
@@ -12,9 +13,9 @@
 
 (enable-console-print!)
 
-(e/install-keyboard-events)
+(di/install-keyboard-events)
 
-(e/render)
+(render)
 
 (go (while true
-  (e/handle-input-event (<! channel))))
+  (di/handle-input-event (<! channel))))

@@ -17,3 +17,7 @@
 * Add tests for deleting locks
 * Split tixi.mutators to several sublibs (for locks, selections, items, etc)
 * Disable undo/redo buttons when they are impossible
+* Add tests for locks
+* Fix select/hover via item's text
+* Position items by arrow keys
+* Fix compile-time warnings

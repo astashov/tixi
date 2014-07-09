@@ -13,6 +13,7 @@
             [tixi.utils :refer [p]]
             [tixi.position :as p]
             [tixi.items :as i]
+            [goog.style :as style]
             [tixi.text-editor :as te]))
 
 (enable-console-print!)
@@ -33,19 +34,30 @@
       (.removeAllRanges selection)
       (.addRange selection range))))
 
+(defn- event->position [event]
+  (let [root (sel1 :.project)
+        offset (if root (style/getPageOffset root) (js-obj "x" 0 "y" 0))
+        x (- (.-clientX event) (.-x offset))
+        y (- (.-clientY event) (.-y offset))]
+    (g/Point. x y)))
+
 (defn- send-event-with-coords [action type event channel]
-  (let [point (p/event->coords event)
-        client-point (g/Point. (.-clientX event) (.-clientY event))
-        shift-pressed? (.. event -nativeEvent -shiftKey)]
-    (go (>! channel {:type type :data {:action action
-                                       :point point
-                                       :client-point client-point
-                                       :shift-pressed? shift-pressed?}}))))
+  (when (= (.-button event) 0)
+    (let [point (event->position event)
+          raw-point (g/Point. (.-clientX event) (.-clientY event))
+          shift-pressed? (.. event -nativeEvent -shiftKey)]
+      (go (>! channel {:type type :data {:action action
+                                         :point point
+                                         :raw-point raw-point
+                                         :modifiers {:shift shift-pressed?}}})))))
 
 (defn- send-mousemove [event channel]
-  (let [point (p/event->coords event)
-        client-point (g/Point. (.-clientX event) (.-clientY event))]
-    (go (>! channel {:type :move :data {:point point :client-point client-point}}))))
+  (let [point (event->position event)
+        raw-point (g/Point. (.-clientX event) (.-clientY event))
+        shift-pressed? (.. event -nativeEvent -shiftKey)]
+    (go (>! channel {:type :move :data {:point point
+                                        :raw-point raw-point
+                                        :modifiers {:shift shift-pressed?}}}))))
 
 (defn- send-tool-click [name channel]
   (go (>! channel {:type :tool :data {:name name}})))

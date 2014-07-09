@@ -117,7 +117,6 @@
   (set-selection-rel-rects!)
   (swap! d/data assoc-in [:selection :rect] (p/items-wrapping-rect (d/selected-ids)))))
 
-
 (defn initiate-current-layer! [point]
   (swap! d/data assoc :current (build-layer! (d/tool) (g/build-rect point point))))
 
@@ -204,13 +203,6 @@
 (defn set-text-to-item! [id text dimensions]
   (update-state! assoc-in [:completed id] (i/set-text (d/completed-item id) text dimensions)))
 
-;; 2 - rect
-;; 4 - line
-;; {:locks {:lockables  {2 {4 {:types #{:start :end}
-;;                             :rect rect}}}}
-;;          :connectors {4 {:end 2}}}
-
-;; TODO: Need to cover locking by tests
 
 (defn add-lock! [connector-id connector-item lockable-id lockable-item point type]
   (let [lockable-connector-data (d/lockable-connector lockable-id connector-id)
