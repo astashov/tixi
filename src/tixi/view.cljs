@@ -45,7 +45,7 @@
   (when (= (.-button event) 0)
     (let [point (event->position event)
           raw-point (g/Point. (.-clientX event) (.-clientY event))
-          shift-pressed? (.. event -nativeEvent -shiftKey)]
+          shift-pressed? (aget (aget event "nativeEvent") "shiftKey")]
       (go (>! channel {:type type :data {:action action
                                          :point point
                                          :raw-point raw-point
@@ -54,7 +54,7 @@
 (defn- send-mousemove [event channel]
   (let [point (event->position event)
         raw-point (g/Point. (.-clientX event) (.-clientY event))
-        shift-pressed? (.. event -nativeEvent -shiftKey)]
+        shift-pressed? (aget (aget event "nativeEvent") "shiftKey")]
     (go (>! channel {:type :move :data {:point point
                                         :raw-point raw-point
                                         :modifiers {:shift shift-pressed?}}}))))

@@ -34,7 +34,7 @@
                 :optimizations :none
                 :source-map true}}
               {:id "dev"
-               :source-paths ["src"]
+               :source-paths ["src" "brepl"]
                :notify-command ["terminal-notifier" "-title" "ClojureScript" "-activate" "com.googlecode.iTerm2" "-message"]
                :compiler {
                  :output-to "tixi_dev.js"

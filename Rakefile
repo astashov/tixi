@@ -34,10 +34,11 @@ task :package do
 
   recreate_dir(dist_dir)
   %w{
-    resources index.html tixi_prod.js tixi_prod.js.map
+    resources index_prod.html tixi_prod.js tixi_prod.js.map
   }.each do |file|
     copy_file_or_directory(File.join(build_dir, file), dist_dir)
   end
+  FileUtils.mv(File.join(dist_dir, "index_prod.html"), File.join(dist_dir, "index.html"))
 end
 
 desc "Release"
