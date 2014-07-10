@@ -127,14 +127,15 @@
   "Displays the selection box around the selected item"
   [data channel]
   (let [selected-ids (d/selected-ids data)
-        rect (p/items-wrapping-rect selected-ids)
-        classes (->> (d/selected-ids data)
-                     (map #(d/completed-item %))
+        rect (d/selection-rect data)
+        items (map #(d/completed-item %) (d/selected-ids data))
+        classes (->> items
                      (map #(name (:type %)))
                      sort
                      (string/join "__"))]
     (apply dom/div {:className (str "selection"
                                     (str " selection__" classes)
+                                    (when (= (count items) 1) (str " is-" (i/direction (first items))))
                                     (when (g/flipped-by-x? rect) " is-flipped-x")
                                     (when (g/flipped-by-y? rect) " is-flipped-y"))
                     :style (selection-position rect)}

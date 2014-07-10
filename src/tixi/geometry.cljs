@@ -30,6 +30,12 @@
   (relative [this wrapper])
   (absolute [this wrapper]))
 
+(defprotocol IAspectRatio
+  (aspect-ratio [this])
+  (portrait? [this])
+  (landscape? [this])
+  (square? [this]))
+
 (defrecord Point [x y]
   Object
   (toString [_] (str [x y]))
@@ -84,7 +90,17 @@
   (incr [this]
     (Size. (+ width 1) (+ height 1)))
   (decr [this]
-    (Size. (- width 1) (- height 1))))
+    (Size. (- width 1) (- height 1)))
+
+  IAspectRatio
+  (aspect-ratio [this]
+    (/ width height))
+  (portrait? [this]
+    (< (aspect-ratio this) 1))
+  (landscape? [this]
+    (> (aspect-ratio this) 1))
+  (square? [this]
+    (= (aspect-ratio this) 1)))
 
 (declare build-rect)
 (defrecord Rect [start-point end-point]
@@ -177,10 +193,10 @@
   (relative [this wrapper]
     (let [[x1 y1 x2 y2] (values this)
           [wrx1 wry1 wrx2 wry2] (values (normalize wrapper))
-          relx1 (if (= (width wrapper) 0) 0 (/ (- x1 wrx1) (width wrapper)))
-          rely1 (if (= (height wrapper) 0) 0 (/ (- y1 wry1) (height wrapper)))
-          relx2 (if (= (width wrapper) 0) 1 (/ (- x2 wrx1) (width wrapper)))
-          rely2 (if (= (height wrapper) 0) 1 (/ (- y2 wry1) (height wrapper)))]
+          relx1 (if (= (width wrapper) 0) 0 (/ (if (flipped-by-x? wrapper) (- x2 wrx1) (- x1 wrx1)) (width wrapper)))
+          rely1 (if (= (height wrapper) 0) 0 (/ (if (flipped-by-y? wrapper) (- y2 wry1) (- y1 wry1)) (height wrapper)))
+          relx2 (if (= (width wrapper) 0) 1 (/ (if (flipped-by-x? wrapper) (- x1 wrx1) (- x2 wrx1)) (width wrapper)))
+          rely2 (if (= (height wrapper) 0) 1 (/ (if (flipped-by-y? wrapper) (- y1 wry1) (- y2 wry1)) (height wrapper)))]
       (Rect. (Point. relx1 rely1) (Point. relx2 rely2))))
 
   (absolute [this rel-rect]

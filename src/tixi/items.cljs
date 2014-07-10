@@ -62,6 +62,17 @@
 
   false)
 
+(defpoly direction [item]
+  :rect-line
+  (:direction item)
+
+  :line
+  (if (g/portrait? (dimensions item))
+    "vertical"
+    "horizontal")
+
+  nil)
+
 (defpoly update [item point]
   :rect-line
   (let [input (:input item)

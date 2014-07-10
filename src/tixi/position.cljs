@@ -122,4 +122,7 @@
 
 (defn items-wrapping-rect [ids]
   (when (and ids (not-empty ids))
-    (g/wrapping-rect (map #(:input (d/completed-item %)) ids))))
+    (if (and (= (count ids) 1)
+             (contains? #{:line :rect-line} (:type (d/completed-item (first ids)))))
+      (:input (d/completed-item (first ids)))
+      (g/wrapping-rect (map #(:input (d/completed-item %)) ids)))))

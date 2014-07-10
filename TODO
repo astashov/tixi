@@ -1,6 +1,5 @@
-* Add dispatcher layer for view events
 * Revisit locking, maybe specify points for every shape where you could lock connectors to.
-* Change how the selection looks for a line - it should just have 2 dots for moving it around (start and end)
+* Locks also work incorrectly when items are mirrored
 * Add possibility to group/ungroup items
 * Add grid
 * Add guides
@@ -21,3 +20,5 @@
 * Fix select/hover via item's text
 * Position items by arrow keys
 * Fix compile-time warnings
+* Make sure we always show resize cursors (assign classes to .project)
+* Make sure we clear cache when delete an item

@@ -41,7 +41,10 @@
          (Rect. (Point. 0.2 0.2) (Point. 0.6 0.6))))
   (is (= (g/relative (Rect. (Point. 2 2) (Point. 4 2))
                      (Rect. (Point. 1 2) (Point. 6 2)))
-         (Rect. (Point. 0.2 0) (Point. 0.6 1)))))
+         (Rect. (Point. 0.2 0) (Point. 0.6 1))))
+  (is (= (g/relative (Rect. (Point. 4 4) (Point. 2 2))
+                     (Rect. (Point. 6 6) (Point. 1 1)))
+         (Rect. (Point. 0.2 0.2) (Point. 0.6 0.6)))))
 
 (deftest rect-absolute
   (is (= (g/absolute (Rect. (Point. 1 1) (Point. 6 6))
@@ -99,3 +102,18 @@
 
 (deftest size-decr
   (is (= (g/decr (Size. 3 4)) (Size. 2 3))))
+
+(deftest size-aspect-ratio
+  (is (= (g/aspect-ratio (Size. 1 2)) 0.5)))
+
+(deftest size-portrait?
+  (is (= (g/portrait? (Size. 1 2)) true))
+  (is (= (g/portrait? (Size. 2 1)) false)))
+
+(deftest size-landscape?
+  (is (= (g/landscape? (Size. 2 1)) true))
+  (is (= (g/landscape? (Size. 1 2)) false)))
+
+(deftest size-square?
+  (is (= (g/square? (Size. 1 1)) true))
+  (is (= (g/square? (Size. 2 1)) false)))
