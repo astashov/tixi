@@ -5,6 +5,7 @@
             [tixi.geometry :as g :refer [Size Rect Point]]
             [tixi.data :as d]
             [tixi.items :as i]
+            [goog.style :as style]
             [tixi.utils :refer [p]]))
 
 (defn- calculate-letter-size []

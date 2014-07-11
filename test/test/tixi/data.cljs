@@ -3,6 +3,7 @@
   (:require [cemerick.cljs.test :as test]
             [tixi.data :as d]
             [tixi.mutators :as m]
+            [tixi.mutators.text :as mt]
             [tixi.tree :as t]
             [tixi.geometry :as g]
             [tixi.utils :refer [p]]
@@ -78,8 +79,8 @@
     (let [id2 (create-layer! (g/build-rect 9 3 19 9))]
       (m/set-tool! :text)
       (let [id3 (create-layer! (g/build-rect 14 1 14 1))]
-        (m/set-text-to-item! id2 "bla\nfoo\nbar")
-        (m/set-text-to-item! id3 "oh\ntext" (g/Size. 4 2))
+        (mt/set-text-to-item! id2 "bla\nfoo\nbar")
+        (mt/set-text-to-item! id3 "oh\ntext" (g/Size. 4 2))
         (is (= (.-width (d/result)) 19))
         (is (= (.-height (d/result)) 10))
         (is (= (.-content (d/result))

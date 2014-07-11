@@ -3,7 +3,7 @@
   (:require [cemerick.cljs.test :as test]
             [tixi.utils :refer [p]]
             [tixi.geometry :as g]
-            [tixi.items :as i :refer [Rect Line RectLine]]))
+            [tixi.items :as i]))
 
 (deftest build-line
   (let [rect (g/build-rect 2 3 4 6)

@@ -1,7 +1,6 @@
 (ns tixi.items
   (:require-macros [tixi.utils :refer (b defpoly defpoly-)])
   (:require [tixi.geometry :as g]
-            [tixi.data :as d]
             [tixi.utils :refer [p]]
             [tixi.drawer :as dr]))
 
@@ -94,11 +93,14 @@
 (defpoly reposition [item input]
   (assoc item :input input))
 
-(defn set-text [item text dimensions]
-  (let [input (if (point-like? item)
-                (g/build-rect (g/origin (:input item)) (g/decr dimensions))
-                (:input item))]
-    (assoc item :input input :text text)))
+(defn set-text
+  ([item text]
+    (set-text item text nil))
+  ([item text dimensions]
+    (let [input (if (and (point-like? item) dimensions)
+                  (g/build-rect (g/origin (:input item)) (g/decr dimensions))
+                  (:input item))]
+      (assoc item :input input :text text))))
 
 (defpoly lockable? [item]
   :rect

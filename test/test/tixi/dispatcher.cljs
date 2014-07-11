@@ -5,6 +5,8 @@
             [tixi.geometry :as g :refer [Rect Point Size]]
             [tixi.dispatcher :as di]
             [tixi.mutators :as m]
+            [tixi.mutators.text :as mt]
+            [tixi.mutators.selection :as ms]
             [tixi.position :as p]
             [test.tixi.utils :refer [create-layer!]]
             [tixi.utils :refer [p]]
@@ -44,20 +46,20 @@
   (js-obj "clientX" (:x point) "clientY" (:y point)))
 
 (deftest handle-keyboard-events-tools-ignored
-  (m/edit-text-in-item! 1)
+  (mt/edit-text-in-item! 1)
   (di/handle-keyboard-events (build-keyboard-event 82))
   (is (not= (d/tool) :rect)))
 
 (deftest handle-keyboard-events-delete
   (let [id (create-layer! (g/build-rect (Point. 5 6) (Point. 7 8)))]
-    (m/select-layer! id (Point. 5 6))
+    (ms/select-layer! id (Point. 5 6))
     (di/handle-keyboard-events (build-keyboard-event 8))
     (is (= (vec (keys (d/completed))) []))))
 
 (deftest handle-keyboard-events-ignore-delete
   (let [id (create-layer! (g/build-rect (Point. 5 6) (Point. 7 8)))]
-    (m/select-layer! id (Point. 5 6))
-    (m/edit-text-in-item! id)
+    (ms/select-layer! id (Point. 5 6))
+    (mt/edit-text-in-item! id)
     (di/handle-keyboard-events (build-keyboard-event 8))
     (is (= (vec (keys (d/completed))) [id]))))
 
@@ -148,7 +150,7 @@
   (is (= (d/selection-rect) (g/build-rect 2 2 6 6))))
 
 (deftest handle-input-event-edit
-  (m/edit-text-in-item! 8)
+  (mt/edit-text-in-item! 8)
   (let [id (create-layer! (g/build-rect 2 2 4 4))]
     (di/handle-input-event {:type :edit, :data {:text "bla", :id id}})
     (is (= (d/edit-text-id) nil))

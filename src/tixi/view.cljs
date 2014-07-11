@@ -7,9 +7,8 @@
             [clojure.string :as string]
             [dommy.core :as dommy]
             [cljs.core.async :as async :refer [>!]]
-            [tixi.schemas :as s]
             [tixi.data :as d]
-            [tixi.geometry :as g :refer [Size]]
+            [tixi.geometry :as g]
             [tixi.utils :refer [p]]
             [tixi.position :as p]
             [tixi.items :as i]
@@ -225,7 +224,7 @@
 (q/defcomponent Result [data channel] {:key "result"}
  (let [result (d/result data)
         content (.-content result)
-        coords-size (Size. (.-width result) (.-height result))
+        coords-size (g/Size. (.-width result) (.-height result))
         position-size (p/coords->position coords-size)]
     (q/on-render
       (dom/div {:className "result"}

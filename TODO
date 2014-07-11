@@ -14,11 +14,10 @@
 * Add fills
 * Fix bug of the "Results" view when there is only text in right bottom corner
 * Add tests for deleting locks
-* Split tixi.mutators to several sublibs (for locks, selections, items, etc)
 * Disable undo/redo buttons when they are impossible
 * Add tests for locks
 * Fix select/hover via item's text
 * Position items by arrow keys
-* Fix compile-time warnings
 * Make sure we always show resize cursors (assign classes to .project)
 * Make sure we clear cache when delete an item
+* Add a way to align items relatively to each other
