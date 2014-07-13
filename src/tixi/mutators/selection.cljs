@@ -2,20 +2,22 @@
   (:require [tixi.data :as d]
             [tixi.items :as i]
             [tixi.geometry :as g]
+            [tixi.mutators :as m]
             [tixi.mutators.shared :as ms]
             [tixi.mutators.render :as mr]
             [tixi.mutators.locks :as ml]
+            [tixi.utils :refer [p]]
             [tixi.position :as p]))
 
-(defn- absolute-rect [lockable-id connector-id types rect]
-  (let [lockable-item (d/completed-item lockable-id)
+(defn- absolute-rect [outlet-id connector-id connector-edge outlet]
+  (let [outlet-item (d/completed-item outlet-id)
         connector-item (d/completed-item connector-id)
-        start-point (if (contains? types :start)
-                      (g/absolute (:start-point rect) (:input lockable-item))
-                      (:start-point (:input connector-item)))
-        end-point (if (contains? types :end)
-                      (g/absolute (:end-point rect) (:input lockable-item))
-                      (:end-point (:input connector-item)))]
+        start-point (if (= connector-edge :start)
+                      (g/absolute outlet (:input outlet-item))
+                      (:start (:input connector-item)))
+        end-point (if (= connector-edge :end)
+                      (g/absolute outlet (:input outlet-item))
+                      (:end (:input connector-item)))]
     (g/build-rect start-point end-point)))
 
 (defn set-selection-rel-rects! []
@@ -46,19 +48,19 @@
     (swap! d/data assoc :hover-id id)
     (swap! d/data assoc :hover-id nil)))
 
- (defn- reposition-item! [id rect]
+(defn- reposition-item! [id rect]
   (let [item (d/completed-item id)
         maybe-locked-item (-> item
-                              (ml/try-to-lock! id (:start-point (:input item)) :start)
-                              (ml/try-to-lock! id (:end-point (:input item)) :end))]
+                              (ml/try-to-lock! id :start (:start rect))
+                              (ml/try-to-lock! id :end (:end rect)))]
     (ms/update-state! assoc-in [:completed id] (i/reposition maybe-locked-item rect))
     (when (not= (g/dimensions rect) (g/dimensions (:input item)))
       (mr/touch-item! id))
-    (doseq [[connector-id {:keys [types rect]}] (d/lockable id)]
+    (doseq [[[connector-id connector-edge] outlet] (d/outlet id)]
       (mr/touch-item! connector-id)
       (ms/update-state! assoc-in [:completed connector-id]
                                  (i/reposition (d/completed-item connector-id)
-                                               (absolute-rect id connector-id types rect))))))
+                                               (absolute-rect id connector-id connector-edge outlet))))))
 
 (defn- adjust-layers-to-selection! []
   (let [sel-rect (d/selection-rect)]
@@ -67,6 +69,9 @@
         (reposition-item! id (g/absolute sel-rect rel-rect))))))
 
 (defn- update-selection-rect! [new-rect]
+  (when (and (= (count (d/selected-ids)) 1)
+                (i/connector? (first (d/selected-items))))
+    (m/set-connecting-id! (first (d/selected-ids))))
   (swap! d/data assoc-in [:selection :rect] new-rect)
   (adjust-layers-to-selection!))
 

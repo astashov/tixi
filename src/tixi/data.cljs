@@ -2,6 +2,7 @@
   (:require-macros [tixi.utils :refer [defdata]])
   (:require [tixi.utils :refer [seq-contains? p]]
             [tixi.tree :as t :refer [Node]]
+            [tixi.items :as i]
             [tixi.drawer :as dr]
             [clojure.zip :as z]))
 
@@ -12,11 +13,15 @@
     #(assoc %1 :children %2)
     root))
 
+;; :connectors {connector-id {:start outlet-id
+;;                            :end outlet-id2}}
+;; :outlets {outlet-id {[connector-id :start] outlet}}
+
 (def initial-data
   {:current nil
    :state (zip (t/node {:completed {}
                         :locks {:connectors {}
-                                :lockables {}}}))
+                                :outlets {}}}))
    :tool :line
    :action nil
    :autoincrement 0
@@ -27,6 +32,7 @@
    :cache {}
    :edit-text-id nil
    :hover-id nil
+   :connecting-id nil
    :show-result false})
 
 (def data
@@ -50,17 +56,11 @@
 (defdata locks []
   (:locks (state data)))
 
-(defdata lockable [lockable-id]
-  (get-in (state data) [:locks :lockables lockable-id] {}))
+(defdata outlet [outlet-id]
+  (get-in (state data) [:locks :outlets outlet-id] {}))
 
-(defdata lockable-connector [lockable-id connector-id]
-  (get-in (state data) [:locks :lockables lockable-id connector-id] {}))
-
-(defdata connector-types [connector-id]
-  (get-in (state data) [:locks :connectors connector-id] {}))
-
-(defdata lockable-id-by-connector-id-and-type [connector-id type]
-  (get-in (state data) [:locks :connectors connector-id type]))
+(defdata outlet-id [connector-id connector-edge]
+  (get-in (state data) [:locks :connectors connector-id connector-edge]))
 
 (defdata completed-item [id]
   (get-in (state data) [:completed id]))
@@ -82,6 +82,9 @@
 
 (defdata selected-ids []
   (get-in data [:selection :ids]))
+
+(defdata selected-items []
+  (map #(completed-item data %) (selected-ids data)))
 
 (defdata selected-rel-rect [id]
   (get-in data [:selection :rel-rects id]))
@@ -116,3 +119,6 @@
 
 (defdata show-result? []
   (boolean (:show-result data)))
+
+(defdata connecting-id []
+  (:connecting-id data))

@@ -4,7 +4,7 @@
 
 (defn p [& values]
   "Prints the value, and then returns it"
-  (*print-fn* (apply pr-str values))
+  (.log js/console (apply pr-str values))
   (last values))
 
 (defn seq-contains? [coll target]

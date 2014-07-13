@@ -8,7 +8,7 @@
 
 (deftest rect-expand
   (is (= (g/expand (rect) (Point. 6 7))
-         (g/build-rect (:start-point (rect)) (Point. 6 7)))))
+         (g/build-rect (:start (rect)) (Point. 6 7)))))
 
 (deftest rect-width
   (is (= (g/width (rect)) 3)))
@@ -98,7 +98,18 @@
          (Point. 0.2 0.2)))
   (is (= (g/relative (Point. 2 2)
                      (Rect. (Point. 1 2) (Point. 6 2)))
-         (Point. 0.2 0))))
+         (Point. 0.2 0)))
+  (is (= (g/relative (Point. 5 5)
+                     (Rect. (Point. 6 6) (Point. 1 1)))
+         (Point. 0.2 0.2))))
+
+(deftest point-absolute
+  (is (= (g/absolute (Point. 0.2 0.2)
+                     (Rect. (Point. 1 1) (Point. 6 6)))
+         (Point. 2 2)))
+  (is (= (g/absolute (Point. 0.2 0.2)
+                     (Rect. (Point. 6 6) (Point. 1 1)))
+         (Point. 5 5))))
 
 (deftest size-decr
   (is (= (g/decr (Size. 3 4)) (Size. 2 3))))

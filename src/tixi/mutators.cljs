@@ -1,6 +1,7 @@
 (ns tixi.mutators
   (:require-macros [tixi.utils :refer (b)])
-  (:require [tixi.data :as d]))
+  (:require [tixi.data :as d]
+            [tixi.utils :refer [p]]))
 
 (defn reset-data! []
   (reset! d/data d/initial-data))
@@ -13,3 +14,6 @@
 
 (defn show-result! [value]
   (swap! d/data assoc :show-result value))
+
+(defn set-connecting-id! [id]
+  (swap! d/data assoc :connecting-id id))

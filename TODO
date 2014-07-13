@@ -1,5 +1,3 @@
-* Revisit locking, maybe specify points for every shape where you could lock connectors to.
-* Locks also work incorrectly when items are mirrored
 * Add possibility to group/ungroup items
 * Add grid
 * Add guides
@@ -21,3 +19,6 @@
 * Make sure we always show resize cursors (assign classes to .project)
 * Make sure we clear cache when delete an item
 * Add a way to align items relatively to each other
+* Draw straight/square items with 'Shift'
+* Make item/layer names consistent - name everything as 'items'
+* Add Travis support

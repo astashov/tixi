@@ -62,3 +62,10 @@
   (let [id1 (create-layer! (g/build-rect (Point. 2 2) (Point. 3 4)))
         id2 (create-layer! (g/build-rect (Point. 2 2) (Point. 3 5)))]
     (is (= (p/item-id-at-point (Point. 2 2)) id1))))
+
+(deftest items-with-outlet-at-point
+  (m/set-tool! :rect)
+  (let [id1 (create-layer! (g/build-rect 2 2 6 6))]
+    (is (= (p/items-with-outlet-at-point nil (Point. 4 2))
+           (list [id1 (d/completed-item id1) (Point. 0.5 0)])))
+    (is (= (p/items-with-outlet-at-point nil (Point. 4 3)) '()))))

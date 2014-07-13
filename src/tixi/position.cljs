@@ -117,6 +117,15 @@
         (filter (fn [[_ item]] (hit-item? item point)))
         (filter (fn [[id item]] (item-has-point? id item point)))))))
 
+(defn items-with-outlet-at-point [connector-id point]
+  (->> (items-at-point point)
+       (keep (fn [[id item]]
+               (when (not= id connector-id)
+                 (when-let [used-outlet (first (filter (fn [rel-outlet]
+                                                         (= point (g/absolute rel-outlet (:input item))))
+                                                       (i/outlets item)))]
+                   [id item used-outlet]))))))
+
 (defn item-id-at-point
   ([point] (item-id-at-point point nil))
   ([point client-point] (first (first (items-at-point point client-point)))))

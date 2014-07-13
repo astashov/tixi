@@ -76,6 +76,7 @@
             (when (and @select-second-clicked (= start-point point))
               (mt/edit-text-in-item! (first (d/selected-ids))))
             (reset! select-second-clicked false)))))
+      (m/set-connecting-id! nil)
       (mu/undo-if-unchanged!)))
 
 (defn mouse-drag [start-client-point previous-client-point client-point modifiers payload]

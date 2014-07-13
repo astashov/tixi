@@ -5,6 +5,7 @@
             [tixi.geometry :as g :refer [Rect Point Size]]
             [tixi.mutators :as m]
             [tixi.mutators.current :as mc]
+            [tixi.mutators.selection :as ms]
             [test.tixi.utils :refer [create-layer!]]
             [tixi.utils :refer [p]]
             [tixi.data :as d]))
@@ -31,3 +32,13 @@
     (mc/finish-current-layer!)
     (is (= (d/current) nil))
     (is (= (d/completed-item id) item))))
+
+(deftest locking
+  (m/set-tool! :rect)
+  (let [id1 (create-layer! (g/build-rect 3 3 13 13))]
+    (m/set-tool! :line)
+    (let [id2 (create-layer! (g/build-rect 2 2 3 3))]
+      (ms/select-layer! id1)
+      (ms/move-selection! (g/Size. 2 2))
+      (is (= (:input (d/completed-item id1)) (g/build-rect 5 5 15 15)))
+      (is (= (:input (d/completed-item id2)) (g/build-rect 2 2 5 5))))))

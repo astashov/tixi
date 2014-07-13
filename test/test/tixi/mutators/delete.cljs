@@ -6,7 +6,7 @@
             [tixi.mutators :as m]
             [tixi.mutators.selection :as ms]
             [tixi.mutators.delete :as md]
-            [test.tixi.utils :refer [create-layer! create-sample-layer!]]
+            [test.tixi.utils :refer [create-layer! create-sample-layer! create-locked-layers!]]
             [tixi.utils :refer [p]]
             [tixi.data :as d]))
 
@@ -27,3 +27,18 @@
     (is (= (d/selection-rect) nil))
     (is (= (d/current-selection) nil))
     (is (= (vec (keys (d/completed))) [id3]))))
+
+(deftest delete-locked-connector
+  (let [[id1 id2 id3] (create-locked-layers!)]
+    (ms/select-layer! id2)
+    (md/delete-selected!)
+    (is (empty? (get-in (d/state) [:locks :connectors id2])))
+    (is (empty? (get-in (d/state) [:locks :outlets id1 [id2 :end]])))))
+
+(deftest delete-locked-outlet
+  (let [[id1 id2 id3] (create-locked-layers!)]
+    (ms/select-layer! id1)
+    (md/delete-selected!)
+    (is (empty? (get-in (d/state) [:locks :connectors id2 :end])))
+    (is (empty? (get-in (d/state) [:locks :connectors id3 :end])))
+    (is (empty? (get-in (d/state) [:locks :outlets id1])))))

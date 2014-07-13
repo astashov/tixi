@@ -212,8 +212,8 @@ goog.provide("tixi.drawer");
                             if (match) {
                                 var x = parseInt(match[1], 10);
                                 var y = parseInt(match[2], 10);
-                                var startX = Math.min(items[i]["input"]["start-point"].x, items[i]["input"]["end-point"].x) - viewport.startX;
-                                var startY = Math.min(items[i]["input"]["start-point"].y, items[i]["input"]["end-point"].y) - viewport.startY;
+                                var startX = Math.min(items[i]["input"]["start"].x, items[i]["input"]["end"].x) - viewport.startX;
+                                var startY = Math.min(items[i]["input"]["start"].y, items[i]["input"]["end"].y) - viewport.startY;
                                 index[(startX + x) + "_" + (startY + y)] = cache[i]["index"][k];
                             }
                         }
@@ -248,10 +248,10 @@ goog.provide("tixi.drawer");
             var result = {startX: Infinity, startY: Infinity, endX: 0, endY: 0};
             for (i in items) {
                 if (items.hasOwnProperty(i)) {
-                    result.startX = Math.min(result.startX, items[i]["input"]["start-point"].x, items[i]["input"]["end-point"].x);
-                    result.startY = Math.min(result.startY, items[i]["input"]["start-point"].y, items[i]["input"]["end-point"].y);
-                    result.endX = Math.max(result.endX, items[i]["input"]["start-point"].x, items[i]["input"]["end-point"].x);
-                    result.endY = Math.max(result.endY, items[i]["input"]["start-point"].y, items[i]["input"]["end-point"].y);
+                    result.startX = Math.min(result.startX, items[i]["input"]["start"].x, items[i]["input"]["end"].x);
+                    result.startY = Math.min(result.startY, items[i]["input"]["start"].y, items[i]["input"]["end"].y);
+                    result.endX = Math.max(result.endX, items[i]["input"]["start"].x, items[i]["input"]["end"].x);
+                    result.endY = Math.max(result.endY, items[i]["input"]["start"].y, items[i]["input"]["end"].y);
                 }
             }
             return result;
@@ -262,10 +262,10 @@ goog.provide("tixi.drawer");
             for (i in items) {
                 if (items.hasOwnProperty(i)) {
                     var text = items[i].text;
-                    var widthItem = Math.abs(items[i]["input"]["start-point"].x - items[i]["input"]["end-point"].x);
-                    var heightItem = Math.abs(items[i]["input"]["start-point"].y - items[i]["input"]["end-point"].y);
-                    var startX = Math.min(items[i]["input"]["start-point"].x, items[i]["input"]["end-point"].x) - viewport.startX;
-                    var startY = Math.min(items[i]["input"]["start-point"].y, items[i]["input"]["end-point"].y) - viewport.startY;
+                    var widthItem = Math.abs(items[i]["input"]["start"].x - items[i]["input"]["end"].x);
+                    var heightItem = Math.abs(items[i]["input"]["start"].y - items[i]["input"]["end"].y);
+                    var startX = Math.min(items[i]["input"]["start"].x, items[i]["input"]["end"].x) - viewport.startX;
+                    var startY = Math.min(items[i]["input"]["start"].y, items[i]["input"]["end"].y) - viewport.startY;
                     var widthCenterItem = startX + widthItem / 2;
                     var heightCenterItem = startY + heightItem / 2;
                     var j;

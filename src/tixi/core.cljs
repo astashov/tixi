@@ -3,6 +3,7 @@
                    [cljs.core.async.macros :refer [go]])
   (:require [tixi.channel :refer [channel]]
             [tixi.dispatcher :as di]
+            [tixi.utils :refer [p]]
             [cljs.core.async :as async :refer [<!]]))
 
 (enable-console-print!)

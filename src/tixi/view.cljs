@@ -70,6 +70,10 @@
         {:keys [width height]} (p/coords->position (g/incr (g/dimensions normalized-rect)))]
     {:left (str left "px") :top (str top "px") :width (str width "px") :height (str height "px")}))
 
+(defn- outlet-position [item point]
+  (let [position (p/coords->position (g/absolute point (g/shifted-to-0 (:input item))))]
+    {:left (str (:x position) "px") :top (str (:y position) "px")}))
+
 (defn- letter-size []
   (str (:height (p/letter-size)) "px " (:width (p/letter-size)) "px"))
 
@@ -89,20 +93,30 @@
         (when-let [content (sel1 install-node :.text--wrapper--content)]
           (te/adjust-height! install-node content))))))
 
+(q/defcomponent Outlets
+  [{:keys [item points]}]
+  (apply dom/div {:className "outlets"}
+         (map
+           (fn [point]
+             (dom/div {:style (outlet-position item point) :className "outlets--point"} ""))
+           points)))
+
 (q/defcomponent Layer
   "Displays the layer"
-  [{:keys [id item is-hover is-selected edit-text-id]} channel]
+  [{:keys [id item is-hover is-selected edit-text-id connecting-id]} channel]
   (let [{:keys [data]} (d/item-cache id)
         {:keys [x y]} (p/coords->position (i/origin item))
         {:keys [width height]} (p/coords->position (g/incr (i/dimensions item)))]
     (dom/pre {:className (str "canvas--content--layer"
-                            (str " canvas-content--layer__" (name (:type item)))
-                            (if is-selected " is-selected" "")
-                            (if is-hover " is-hover" ""))
-            :style {:left x :top y :width width :height height}
-            :id (str "layer-" id)}
-      (Text {:id id :item item :edit-text-id edit-text-id} channel)
-      data)))
+                              (str " canvas-content--layer__" (name (:type item)))
+                              (if is-selected " is-selected" "")
+                              (if is-hover " is-hover" ""))
+              :style {:left x :top y :width width :height height}
+              :id (str "layer-" id)}
+             (Text {:id id :item item :edit-text-id edit-text-id} channel)
+             (when (and connecting-id (not= connecting-id id))
+               (Outlets {:item item :points (i/outlets item)}))
+             data)))
 
 (q/defcomponent Canvas
   "Displays the canvas"
@@ -116,7 +130,8 @@
                                      :item item
                                      :is-hover (= id (:hover-id data))
                                      :is-selected (some #{id} (d/selected-ids data))
-                                     :edit-text-id (d/edit-text-id data)}
+                                     :edit-text-id (d/edit-text-id data)
+                                     :connecting-id (d/connecting-id data)}
                                     channel))
              (if-let [{:keys [id item]} (:current data)]
                (assoc (d/completed data) id item)

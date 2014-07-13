@@ -60,18 +60,18 @@
   (relative [this wrapper]
     (let [[x y] (values this)
           [wrx1 wry1 wrx2 wry2] (values (normalize wrapper))
-          relx (if (= (width wrapper) 0) 0 (/ (- x wrx1) (width wrapper)))
-          rely (if (= (height wrapper) 0) 0 (/ (- y wry1) (height wrapper)))]
+          relx (if (= (width wrapper) 0) 0 (/ (if (flipped-by-x? wrapper) (- wrx2 x) (- x wrx1)) (width wrapper)))
+          rely (if (= (height wrapper) 0) 0 (/ (if (flipped-by-y? wrapper) (- wry2 y) (- y wry1)) (height wrapper)))]
       (Point. relx rely)))
 
   (absolute [this wrapper]
-    (let [[wrx wry] (values (:start-point wrapper))
+    (let [[wrx1 wry1 wrx2 wry2] (values wrapper)
           [x y] (values this)
-          new-x (.round js/Math (+ wrx (* (width wrapper) x)))
-          new-y (.round js/Math (+ wry (* (height wrapper) y)))]
+          abs-x (* (width wrapper) x)
+          abs-y (* (height wrapper) y)
+          new-x (.round js/Math (if (flipped-by-x? wrapper) (- wrx1 abs-x) (+ wrx1 abs-x)))
+          new-y (.round js/Math (if (flipped-by-y? wrapper) (- wry1 abs-y) (+ wry1 abs-y)))]
       (Point. new-x new-y))))
-
-
 
 (defrecord Size [width height]
   Object
@@ -103,63 +103,63 @@
     (= (aspect-ratio this) 1)))
 
 (declare build-rect)
-(defrecord Rect [start-point end-point]
+(defrecord Rect [start end]
   Object
-  (toString [_] (str (values start-point) (values end-point)))
+  (toString [_] (str (values start) (values end)))
 
   IRect
   (expand [this point]
-    (build-rect start-point point))
+    (build-rect start point))
 
   (shrink [this point]
-    (build-rect point end-point))
+    (build-rect point end))
 
   (width [this]
-    (.abs js/Math (- (:x start-point) (:x end-point))))
+    (.abs js/Math (- (:x start) (:x end))))
 
   (height [this]
-    (.abs js/Math (- (:y start-point) (:y end-point))))
+    (.abs js/Math (- (:y start) (:y end))))
 
   (dimensions [this]
     (Size. (width this) (height this)))
 
   (normalize [this]
-    (let [min-x (min (:x start-point) (:x end-point))
-          min-y (min (:y start-point) (:y end-point))
-          max-x (max (:x start-point) (:x end-point))
-          max-y (max (:y start-point) (:y end-point))]
+    (let [min-x (min (:x start) (:x end))
+          min-y (min (:y start) (:y end))
+          max-x (max (:x start) (:x end))
+          max-y (max (:y start) (:y end))]
       (build-rect (Point. min-x min-y) (Point. max-x max-y))))
 
   (origin [this]
-    (:start-point (normalize this)))
+    (:start (normalize this)))
 
   (shifted-to-0 [this]
     (let [org (origin this)]
-      (build-rect (Point. (- (:x start-point) (:x org))
-                     (- (:y start-point) (:y org)))
-             (Point. (- (:x end-point) (:x org))
-                     (- (:y end-point) (:y org))))))
+      (build-rect (Point. (- (:x start) (:x org))
+                     (- (:y start) (:y org)))
+             (Point. (- (:x end) (:x org))
+                     (- (:y end) (:y org))))))
 
   (line? [this]
-    (or (= (:x start-point) (:x end-point)
-           (:y start-point) (:y end-point))))
+    (or (= (:x start) (:x end)
+           (:y start) (:y end))))
 
   (inside? [this point-or-rect]
     (cond
       (instance? Point point-or-rect)
       (let [r (normalize this)]
-        (and (>= (:x point-or-rect) (:x (:start-point r)))
-             (<= (:x point-or-rect) (:x (:end-point r)))
-             (>= (:y point-or-rect) (:y (:start-point r)))
-             (<= (:y point-or-rect) (:y (:end-point r)))))
+        (and (>= (:x point-or-rect) (:x (:start r)))
+             (<= (:x point-or-rect) (:x (:end r)))
+             (>= (:y point-or-rect) (:y (:start r)))
+             (<= (:y point-or-rect) (:y (:end r)))))
 
       (instance? Rect point-or-rect)
         (let [wrap (normalize this)
               rect (normalize point-or-rect)]
-          (and (>= (:x (:start-point rect)) (:x (:start-point wrap)))
-               (<= (:x (:end-point rect)) (:x (:end-point wrap)))
-               (>= (:y (:start-point rect)) (:y (:start-point wrap)))
-               (<= (:y (:end-point rect)) (:y (:end-point wrap)))))))
+          (and (>= (:x (:start rect)) (:x (:start wrap)))
+               (<= (:x (:end rect)) (:x (:end wrap)))
+               (>= (:y (:start rect)) (:y (:start wrap)))
+               (<= (:y (:end rect)) (:y (:end wrap)))))))
 
   (move [this diff]
     (let [[x1 y1 x2 y2] (values this)
@@ -184,10 +184,10 @@
                   (Point. new-x2 new-y2))))
 
   (flipped-by-x? [this]
-    (> (:x start-point) (:x end-point)))
+    (> (:x start) (:x end)))
 
   (flipped-by-y? [this]
-    (> (:y start-point) (:y end-point)))
+    (> (:y start) (:y end)))
 
   IRelative
   (relative [this wrapper]
@@ -212,22 +212,22 @@
 
   IValues
   (values [this]
-    (vec (flatten [(values (:start-point this)) (values (:end-point this))]))))
+    (vec (flatten [(values (:start this)) (values (:end this))]))))
 
 
 (defn build-rect
   ([x1 y1 x2 y2]
   (build-rect (Point. x1 y1) (Point. x2 y2)))
 
-  ([start-point end-point-or-size]
+  ([start end-or-size]
   (cond
-    (instance? Point end-point-or-size)
-    (Rect. start-point end-point-or-size)
+    (instance? Point end-or-size)
+    (Rect. start end-or-size)
 
-    (instance? Size end-point-or-size)
-    (let [end-point (Point. (+ (:x start-point) (:width end-point-or-size))
-                            (+ (:y start-point) (:height end-point-or-size)))]
-      (Rect. start-point end-point)))))
+    (instance? Size end-or-size)
+    (let [end (Point. (+ (:x start) (:width end-or-size))
+                            (+ (:y start) (:height end-or-size)))]
+      (Rect. start end)))))
 
 (defn wrapping-rect [rects]
   (when (seqable? rects)

@@ -6,7 +6,7 @@
             [tixi.utils :refer [p]]))
 
 (def ^:private default-state {:start-action nil
-                              :start-point (Point. -1 -1)
+                              :start (Point. -1 -1)
                               :previous-point (Point. -1 -1)
                               :mouse-down? false})
 
@@ -19,15 +19,15 @@
   (swap! state assoc key value))
 
 (defn- mouse-up [point modifiers]
-  (c/mouse-up (:start-point @state) point modifiers {:action (:start-action @state)})
+  (c/mouse-up (:start @state) point modifiers {:action (:start-action @state)})
   (reset-state!))
 
 (defn- handle-mousemove [point raw-point modifiers payload]
   (when point
-    (if (not= (:start-point @state) (:start-point default-state))
+    (if (not= (:start @state) (:start default-state))
       (if (not (:mouse-down? @state))
         (mouse-up point modifiers)
-        (c/mouse-drag (:start-point @state) (:previous-point @state) point modifiers payload))
+        (c/mouse-drag (:start @state) (:previous-point @state) point modifiers payload))
       (c/mouse-move (:previous-point @state) point raw-point modifiers payload))
     (set-state! :previous-point point)))
 
@@ -52,7 +52,7 @@
   (case type
     :down
     (let [{:keys [point raw-point modifiers action]} data]
-      (set-state! :start-point point)
+      (set-state! :start point)
       (set-state! :start-action action)
       (set-state! :previous-point point)
       (set-state! :mouse-down? true)
