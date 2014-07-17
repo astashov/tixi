@@ -278,7 +278,7 @@ goog.provide("tixi.drawer");
                                 line = textArray[j];
                                 pos = (startY + j) * (width + 1) + startX;
                                 data = data.substr(0, pos) +
-                                    data.substr(pos + 1, line.length).replace(/.*/, line) +
+                                    data.substr(pos, line.length).replace(/.*/, line) +
                                     data.substr(pos + line.length, data.length - (pos + line.length));
                             }
                         } else {

@@ -1,6 +1,4 @@
-* Fix select/hover via item's text
 * Add way to specify text alignment (horizontal and vertical)
-* Fix bug of the "Results" view when there is only text in right bottom corner
 * Correct text items sizes after resize
 * Add possibility to group/ungroup items
 * Add grid
@@ -20,3 +18,6 @@
 * Make item/layer names consistent - name everything as 'items'
 * Add Travis support
 * Check why we recreate letter-size helper so often
+* Add Rollbar support
+* Check if I could publish it as a Google Chrome app.
+* Add some visual confirmation when you reach some outlet by a connector

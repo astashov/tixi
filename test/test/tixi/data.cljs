@@ -94,3 +94,14 @@
                     "   /    |         |\n"
                     " -/     +---------+\n"
                     "/                  ")))))))
+
+(deftest result-text-only
+  (m/set-tool! :text)
+  (let [id (create-layer! (g/build-rect 0 0 6 2))]
+    (mt/set-text-to-item! id (str "foo\n\nbar") (g/Size. 3 3))
+    (is (= (.-width (d/result)) 3))
+    (is (= (.-height (d/result)) 3))
+    (is (= (.-content (d/result))
+           (str "foo\n"
+                "   \n"
+                "bar")))))

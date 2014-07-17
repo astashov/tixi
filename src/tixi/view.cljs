@@ -93,7 +93,7 @@
             (go (>! channel {:type :edit :data {:text value :id id :dimensions (p/position->coords dimensions)}})))
           (i/text? item))
         (when-let [content (sel1 install-node :.text--wrapper--content)]
-          (te/adjust-height! install-node content false (i/text? item)))))))
+          (te/adjust-position! install-node content false (i/text? item)))))))
 
 (q/defcomponent Outlets
   [{:keys [item points]}]

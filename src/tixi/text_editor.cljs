@@ -27,7 +27,7 @@
         (apply max (map #(count (.-textContent %)) (sel node :.text--wrapper--content--line))))
       0))
 
-(defn adjust-height! [install-node node editor? text?]
+(defn adjust-position! [install-node node editor? text?]
   (let [v-padding (padding-top install-node)
         h-padding (padding-left install-node)
         install-node-height (- (.-offsetHeight install-node) (* v-padding 2))
@@ -41,10 +41,15 @@
                                           (:width (p/letter-size))))
                             (:width (p/letter-size)))
                          0)]
-    (when-not text?
-      (aset (.-style node) "maxWidth" (str (inc install-node-width) "px"))
-      (aset (.-style node) "marginTop" (str margin-top "px"))
-      (aset (.-style node) "marginLeft" (str margin-left "px")))
+    (if text?
+      (do
+        (aset (.-style node) "maxWidth" "none")
+        (aset (.-style node) "marginTop" "0")
+        (aset (.-style node) "marginLeft" "0"))
+      (do
+        (aset (.-style node) "maxWidth" (str (inc install-node-width) "px"))
+        (aset (.-style node) "marginTop" (str margin-top "px"))
+        (aset (.-style node) "marginLeft" (str margin-left "px"))))
     (aset (.-style node) "width" (str (if editor? (+ text-width codemirror-sizer-width) text-width) "px"))))
 
 (defn- installed? [install-node]
@@ -70,11 +75,11 @@
 (defn- install! [install-node on-completed-callback text?]
   (let [instance (js/CodeMirror install-node #js {:lineWrapping true :mode "text/plain" :smartIndent false :electricChars false})
         node (find-node install-node)]
-    (.on instance "change" (fn [] (adjust-height! install-node node true text?)))
+    (.on instance "change" (fn [] (adjust-position! install-node node true text?)))
     (.on instance "blur" (fn [] (commit instance node on-completed-callback)))
     (.on instance "keyHandled" (fn [_ _ event] (when (= (.-keyCode event) 27) ; Esc
                                                  (.blur (.getInputField instance)))))
-    (js/setTimeout #(adjust-height! install-node node true text?) 0)))
+    (js/setTimeout #(adjust-position! install-node node true text?) 0)))
 
 (defn install-or-remove! [install? install-node text on-completed-callback text?]
   (if install?
