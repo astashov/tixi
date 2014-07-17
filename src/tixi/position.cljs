@@ -34,9 +34,21 @@
         k (str x "_" y)]
     (boolean (aget index k))))
 
+(defn width->position [width]
+  (.floor js/Math (* width (:width (letter-size)))))
+
+(defn position->width [pos]
+  (.floor js/Math (/ pos (:width (letter-size)))))
+
+(defn height->position [height]
+  (.floor js/Math (* height (:height (letter-size)))))
+
+(defn position->height [pos]
+  (.floor js/Math (/ pos (:height (letter-size)))))
+
 (defn canvas-size []
-  (Size. (.floor js/Math (/ (.-innerWidth js/window) (:width (letter-size))))
-         (.floor js/Math (/ (.-innerHeight js/window) (:height (letter-size))))))
+  (Size. (position->width (.-innerWidth js/window))
+         (position->height (.-innerHeight js/window))))
 
 (defprotocol IConvert
   (position->coords [this])
@@ -47,43 +59,35 @@
   (position->coords [this]
     (let [{:keys [width height]} (letter-size)
           [x1 y1 x2 y2] (g/values this)]
-      (Rect. (Point. (.floor js/Math (/ x1 width))
-                     (.floor js/Math (/ y1 height)))
-             (Point. (.floor js/Math (/ x2 width))
-                     (.floor js/Math (/ y2 height))))))
+      (Rect. (Point. (position->width x1) (position->height y1))
+             (Point. (position->width x2) (position->height y2)))))
   (coords->position [this]
     (let [{:keys [width height]} (letter-size)
           [x1 y1 x2 y2] (g/values this)]
-      (Rect. (Point. (.floor js/Math (* x1 width))
-                     (.floor js/Math (* y1 height)))
-             (Point. (.floor js/Math (* x2 width))
-                     (.floor js/Math (* y2 height)))))))
+      (Rect. (Point. (width->position x1) (height->position y1))
+             (Point. (width->position x2) (height->position y2))))))
 
 (extend-type Point
   IConvert
   (position->coords [this]
     (let [{:keys [width height]} (letter-size)
           [x y] (g/values this)]
-      (Point. (.floor js/Math (/ x width))
-              (.floor js/Math (/ y height)))))
+      (Point. (position->width x) (position->height y))))
   (coords->position [this]
     (let [{:keys [width height]} (letter-size)
          [x y] (g/values this)]
-      (Point. (.floor js/Math (* x width))
-              (.floor js/Math (* y height))))))
+      (Point. (width->position x) (height->position y)))))
 
 (extend-type Size
   IConvert
   (position->coords [this]
     (let [{:keys [width height]} (letter-size)
           [x y] (g/values this)]
-      (Size. (.floor js/Math (/ x width))
-             (.floor js/Math (/ y height)))))
+      (Size. (position->width x) (position->height y))))
   (coords->position [this]
     (let [{:keys [width height]} (letter-size)
          [x y] (g/values this)]
-      (Size. (.floor js/Math (* x width))
-             (.floor js/Math (* y height))))))
+      (Size. (width->position x) (height->position y)))))
 
 (defn event->coords [event]
   (let [root (sel1 :.project)
@@ -103,7 +107,7 @@
   (when client-point
     (let [[x y] (g/values client-point)
           element-at-client-point (.elementFromPoint js/document x y)
-          [_, id-str] (re-find #"^text-content-(\d+)" (.-id element-at-client-point))]
+          [_, id-str] (re-find #"^text-content-(\d+)" (.-id (.-parentNode element-at-client-point)))]
       (when id-str
         (let [id (js/parseInt id-str 10)]
           [id (d/completed-item id)])))))

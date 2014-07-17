@@ -1,3 +1,7 @@
+* Fix select/hover via item's text
+* Add way to specify text alignment (horizontal and vertical)
+* Fix bug of the "Results" view when there is only text in right bottom corner
+* Correct text items sizes after resize
 * Add possibility to group/ungroup items
 * Add grid
 * Add guides
@@ -6,15 +10,8 @@
 * Add nice helpers showing the origin/dimensions of an item when you resize/move it around
 * Find a way how to design UI for Undo Tree
 * Add a way to add line endings (arrows, starts, etc)
-* Add way to specify text alignment (horizontal and vertical)
-* Figure out how to left-align CodeMirror
-* Fix buggy text editor of 'text' item (like, spaces)
 * Add fills
-* Fix bug of the "Results" view when there is only text in right bottom corner
-* Add tests for deleting locks
 * Disable undo/redo buttons when they are impossible
-* Add tests for locks
-* Fix select/hover via item's text
 * Position items by arrow keys
 * Make sure we always show resize cursors (assign classes to .project)
 * Make sure we clear cache when delete an item
@@ -22,3 +19,4 @@
 * Draw straight/square items with 'Shift'
 * Make item/layer names consistent - name everything as 'items'
 * Add Travis support
+* Check why we recreate letter-size helper so often

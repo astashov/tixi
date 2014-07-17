@@ -83,15 +83,21 @@
     (dom/div {:ref "text" :className "text" :id (str "text-" id)}
       (dom/div {:className "text--wrapper" :style {:padding (letter-size)}}
         (when (not= id edit-text-id)
-          (dom/div {:className "text--wrapper--content" :id (str "text-content-" id)} (:text item)))))
+          (apply dom/div {:className "text--wrapper--content" :id (str "text-content-" id)}
+            (flatten (map (fn [s]
+                   [(dom/span {:className "text--wrapper--content--line"}
+                      (string/replace s " " '\xA0))
+                    (dom/br)])
+                 (string/split (:text item) "\n")))))))
     (fn [node]
       (let [install-node (sel1 node :.text--wrapper)]
         (te/install-or-remove!
           (= id edit-text-id) install-node (or (:text item) "")
           (fn [value dimensions]
-            (go (>! channel {:type :edit :data {:text value :id id :dimensions (p/position->coords dimensions)}}))))
+            (go (>! channel {:type :edit :data {:text value :id id :dimensions (p/position->coords dimensions)}})))
+          (i/text? item))
         (when-let [content (sel1 install-node :.text--wrapper--content)]
-          (te/adjust-height! install-node content))))))
+          (te/adjust-height! install-node content false (i/text? item)))))))
 
 (q/defcomponent Outlets
   [{:keys [item points]}]

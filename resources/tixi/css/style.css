@@ -269,10 +269,14 @@ body,
 }
 
 .text--wrapper--content {
-  background: white;
   word-wrap: break-word;
   display: inline-block;
   max-width: 100%;
+}
+
+.text--wrapper--content--line {
+  background: white;
+  white-space: normal;
 }
 
 .canvas-content--layer__text .text--wrapper {
@@ -290,20 +294,29 @@ body,
 .canvas-content--layer__text .CodeMirror {
   text-align: left;
   padding-right: 1px;
+  max-width: none !important;
 }
 
 .CodeMirror {
   height: auto;
-  background: white;
+  background: transparent;
   border: none;
   pointer-events: none;
   line-height: inherit;
-  text-align: center;
+  text-align: left;
+}
+
+.CodeMirror-code span {
+  background: white;
 }
 
 .CodeMirror-scroll {
   overflow-y: hidden;
   height: auto;
+}
+
+div.CodeMirror-cursors {
+  z-index: 3;
 }
 
 .sidebar {
