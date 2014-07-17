@@ -22,13 +22,13 @@
   (c/mouse-up (:start @state) point modifiers {:action (:start-action @state)})
   (reset-state!))
 
-(defn- handle-mousemove [point raw-point modifiers payload]
+(defn- handle-mousemove [point modifiers payload]
   (when point
     (if (not= (:start @state) (:start default-state))
       (if (not (:mouse-down? @state))
         (mouse-up point modifiers)
         (c/mouse-drag (:start @state) (:previous-point @state) point modifiers payload))
-      (c/mouse-move (:previous-point @state) point raw-point modifiers payload))
+      (c/mouse-move (:previous-point @state) point modifiers payload))
     (set-state! :previous-point point)))
 
 (defn handle-keyboard-events [event]
@@ -51,20 +51,20 @@
 (defn handle-input-event [{:keys [type data]}]
   (case type
     :down
-    (let [{:keys [point raw-point modifiers action]} data]
+    (let [{:keys [point modifiers action]} data]
       (set-state! :start point)
       (set-state! :start-action action)
       (set-state! :previous-point point)
       (set-state! :mouse-down? true)
-      (c/mouse-down point raw-point modifiers {:action action}))
+      (c/mouse-down point modifiers {:action action}))
 
     :up
     (let [{:keys [point modifiers]} data]
       (mouse-up point modifiers))
 
     :move
-    (let [{:keys [point modifiers raw-point]} data]
-      (handle-mousemove point raw-point modifiers {:action (:start-action @state)}))
+    (let [{:keys [point modifiers]} data]
+      (handle-mousemove point modifiers {:action (:start-action @state)}))
 
     :edit
     (c/edit-text data)

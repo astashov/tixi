@@ -42,7 +42,7 @@
       :result (m/show-result! (not (d/show-result?)))
       :delete (md/delete-selected!))))
 
-(defn mouse-down [client-point raw-client-point modifiers payload]
+(defn mouse-down [client-point modifiers payload]
   (render
     (let [{:keys [action]} payload
           point (p/position->coords client-point)]
@@ -54,7 +54,7 @@
           (mc/initiate-current-layer! point)
 
           (d/select-tool?)
-          (let [id (p/item-id-at-point point raw-client-point)]
+          (let [id (p/item-id-at-point point)]
             (when (= (d/selected-ids) [id])
               (reset! select-second-clicked true))
             (ms/select-layer! id point (:shift modifiers))))))))
@@ -100,11 +100,11 @@
         (d/resize-action)
         (ms/resize-selection! diff-point (d/resize-action))))))
 
-(defn mouse-move [previous-client-point client-point raw-client-point modifiers payload]
+(defn mouse-move [previous-client-point client-point modifiers payload]
   (render
     (let [point (p/position->coords client-point)]
       (when (d/select-tool?)
-        (ms/highlight-layer! (p/item-id-at-point point raw-client-point))))))
+        (ms/highlight-layer! (p/item-id-at-point point))))))
 
 (defn edit-text [data]
   (render

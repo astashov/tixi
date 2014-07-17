@@ -5,6 +5,7 @@
             [tixi.geometry :as g :refer [Rect Point Size]]
             [tixi.position :as p]
             [tixi.mutators :as m]
+            [tixi.mutators.text :as mt]
             [test.tixi.utils :refer [create-layer!]]
             [tixi.utils :refer [p]]
             [tixi.data :as d]))
@@ -52,6 +53,11 @@
         id3 (create-layer! (g/build-rect (Point. 3 5) (Point. 4 6)))]
     (is (= (vec (keys (p/items-at-point (Point. 2 2)))) [id1 id2]))))
 
+(deftest items-at-point-with-text
+  (let [id1 (create-layer! (g/build-rect (Point. 2 1) (Point. 14 7)))]
+    (mt/set-text-to-item! id1 "blabla\n\nfoo\nbar")
+    (is (= (vec (keys (p/items-at-point (Point. 6 3)))) [id1]))))
+
 (deftest items-wrapping-rect
   (let [id1 (create-layer! (g/build-rect (Point. 2 2) (Point. 3 4)))
         id2 (create-layer! (g/build-rect (Point. 2 2) (Point. 3 5)))
@@ -61,7 +67,7 @@
 (deftest item-id-at-point
   (let [id1 (create-layer! (g/build-rect (Point. 2 2) (Point. 3 4)))
         id2 (create-layer! (g/build-rect (Point. 2 2) (Point. 3 5)))]
-    (is (= (p/item-id-at-point (Point. 2 2)) id1))))
+    (is (= (p/item-id-at-point (Point. 2 2)) id2))))
 
 (deftest items-with-outlet-at-point
   (m/set-tool! :rect)

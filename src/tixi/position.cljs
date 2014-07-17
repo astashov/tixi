@@ -5,6 +5,7 @@
             [tixi.geometry :as g :refer [Size Rect Point]]
             [tixi.data :as d]
             [tixi.items :as i]
+            [clojure.string :as string]
             [goog.style :as style]
             [tixi.utils :refer [p]]))
 
@@ -33,6 +34,19 @@
         [x y] (g/values moved-point)
         k (str x "_" y)]
     (boolean (aget index k))))
+
+(defn- item-text-has-point? [id item point]
+  (let [text (:text item)
+        center (g/center (:input item))
+        lines (clojure.string/split text "\n")
+        max-width (apply max (map count lines))
+        center-char-num (/ max-width 2)
+        center-line-num (/ (count lines) 2)
+        x (.floor js/Math (+ center-char-num (- (:x point) (:x center))))
+        y (.floor js/Math (+ center-line-num (- (:y point) (:y center))))]
+    (and (>= y 0)
+         (< y (count lines))
+         (nth (nth lines y) x))))
 
 (defn width->position [width]
   (.floor js/Math (* width (:width (letter-size)))))
@@ -103,23 +117,12 @@
               (g/inside? sel-rect input-rect)))
           (d/completed)))
 
-(defn- item-at-client-point [client-point]
-  (when client-point
-    (let [[x y] (g/values client-point)
-          element-at-client-point (.elementFromPoint js/document x y)
-          [_, id-str] (re-find #"^text-content-(\d+)" (.-id (.-parentNode element-at-client-point)))]
-      (when id-str
-        (let [id (js/parseInt id-str 10)]
-          [id (d/completed-item id)])))))
-
-(defn items-at-point
-  ([point] (items-at-point point nil))
-  ([point client-point]
-    (if-let [result (item-at-client-point client-point)]
-      [result]
-      (->> (d/completed)
-        (filter (fn [[_ item]] (hit-item? item point)))
-        (filter (fn [[id item]] (item-has-point? id item point)))))))
+(defn items-at-point [point]
+  (->> (d/completed)
+       (filter (fn [[_ item]] (hit-item? item point)))
+       (filter (fn [[id item]]
+                 (or (item-has-point? id item point)
+                     (item-text-has-point? id item point))))))
 
 (defn items-with-outlet-at-point [connector-id point]
   (->> (items-at-point point)
@@ -130,9 +133,8 @@
                                                        (i/outlets item)))]
                    [id item used-outlet]))))))
 
-(defn item-id-at-point
-  ([point] (item-id-at-point point nil))
-  ([point client-point] (first (first (items-at-point point client-point)))))
+(defn item-id-at-point [point]
+  (first (last (items-at-point point))))
 
 (defn items-wrapping-rect [ids]
   (when (and ids (not-empty ids))

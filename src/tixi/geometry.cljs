@@ -8,11 +8,11 @@
   (height [this])
   (dimensions [this])
   (normalize [this])
+  (center [this])
   (origin [this])
   (shifted-to-0 [this])
   (inside? [this point])
   (line? [this])
-  (move [this diff])
   (resize [this diff type])
   (flipped-by-x? [this])
   (flipped-by-y? [this]))
@@ -25,6 +25,9 @@
 
 (defprotocol IValues
   (values [this]))
+
+(defprotocol IMove
+  (move [this diff]))
 
 (defprotocol IRelative
   (relative [this wrapper])
@@ -71,7 +74,13 @@
           abs-y (* (height wrapper) y)
           new-x (.round js/Math (if (flipped-by-x? wrapper) (- wrx1 abs-x) (+ wrx1 abs-x)))
           new-y (.round js/Math (if (flipped-by-y? wrapper) (- wry1 abs-y) (+ wry1 abs-y)))]
-      (Point. new-x new-y))))
+      (Point. new-x new-y)))
+
+  IMove
+  (move [this diff]
+    (let [[x y] (values this)
+          [dx dy] (values diff)]
+      (Point. (+ x dx) (+ y dy)))))
 
 (defrecord Size [width height]
   Object
@@ -123,6 +132,11 @@
   (dimensions [this]
     (Size. (width this) (height this)))
 
+  (center [this]
+    (move (Point. (/ (width this) 2)
+                  (/ (height this) 2))
+          (origin this)))
+
   (normalize [this]
     (let [min-x (min (:x start) (:x end))
           min-y (min (:y start) (:y end))
@@ -160,12 +174,6 @@
                (<= (:x (:end rect)) (:x (:end wrap)))
                (>= (:y (:start rect)) (:y (:start wrap)))
                (<= (:y (:end rect)) (:y (:end wrap)))))))
-
-  (move [this diff]
-    (let [[x1 y1 x2 y2] (values this)
-          [dx dy] (values diff)]
-      (build-rect (Point. (+ x1 dx) (+ y1 dy))
-                  (Point. (+ x2 dx) (+ y2 dy)))))
 
   (resize [this diff type]
     (let [[x1 y1 x2 y2] (values this)
@@ -212,8 +220,14 @@
 
   IValues
   (values [this]
-    (vec (flatten [(values (:start this)) (values (:end this))]))))
+    (vec (flatten [(values (:start this)) (values (:end this))])))
 
+  IMove
+  (move [this diff]
+    (let [[x1 y1 x2 y2] (values this)
+          [dx dy] (values diff)]
+      (build-rect (Point. (+ x1 dx) (+ y1 dy))
+                  (Point. (+ x2 dx) (+ y2 dy))))))
 
 (defn build-rect
   ([x1 y1 x2 y2]

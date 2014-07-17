@@ -111,6 +111,10 @@
                      (Rect. (Point. 6 6) (Point. 1 1)))
          (Point. 5 5))))
 
+(deftest point-move
+  (is (= (g/move (Point. 3 4) (Size. 3 5))
+         (Point. 6 9))))
+
 (deftest size-decr
   (is (= (g/decr (Size. 3 4)) (Size. 2 3))))
 
