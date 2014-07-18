@@ -45,7 +45,8 @@
       89 (c/keypress :rect-line) ; y
       90 (p @d/data) ; y
       85 (c/keypress :undo) ; u
-      73 (c/keypress :redo) ; i
+      78 (c/keypress :z-inc) ; n
+      77 (c/keypress :z-dec) ; m
       nil)))
 
 (defn handle-input-event [{:keys [type data]}]

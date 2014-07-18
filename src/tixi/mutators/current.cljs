@@ -10,7 +10,7 @@
 
 (defn- build-layer! [type content]
   (let [id (:autoincrement @d/data)
-        item {:type type :input content}]
+        item {:type type :input content :z 0}]
     (swap! d/data update-in [:autoincrement] inc)
     {:id id :item item}))
 

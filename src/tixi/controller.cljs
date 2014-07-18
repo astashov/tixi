@@ -40,7 +40,10 @@
       :undo (mu/undo!)
       :redo (mu/redo!)
       :result (m/show-result! (not (d/show-result?)))
-      :delete (md/delete-selected!))))
+      :delete (md/delete-selected!)
+      :z-inc (m/z-inc! (d/selected-ids))
+      :z-dec (m/z-dec! (d/selected-ids))
+      :z-show (m/z-show! (not (d/show-z-indexes?))))))
 
 (defn mouse-down [client-point modifiers payload]
   (render

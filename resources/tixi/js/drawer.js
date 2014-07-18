@@ -198,24 +198,35 @@ goog.provide("tixi.drawer");
     };
 
     tixi.drawer.buildResult = function (items, cache) {
+        var values = [];
+        var key;
+        for (key in items) {
+            if (items.hasOwnProperty(key)) {
+                values.push([key, items[key], cache[key]]);
+            }
+        }
+        values = values.sort(function (a, b) {
+            return parseInt(a[1]["z"], 10) - parseInt(b[1]["z"], 10);
+        });
+
         function generateIndex(viewport) {
             var width = 0;
             var height = 0;
             var index = {};
             var i;
-            for (i in items) {
-                if (items.hasOwnProperty(i)) {
-                    var k;
-                    for (k in cache[i]["index"]) {
-                        if (cache[i]["index"].hasOwnProperty(k)) {
-                            var match = k.match(/(\d+)_(\d+)/);
-                            if (match) {
-                                var x = parseInt(match[1], 10);
-                                var y = parseInt(match[2], 10);
-                                var startX = Math.min(items[i]["input"]["start"].x, items[i]["input"]["end"].x) - viewport.startX;
-                                var startY = Math.min(items[i]["input"]["start"].y, items[i]["input"]["end"].y) - viewport.startY;
-                                index[(startX + x) + "_" + (startY + y)] = cache[i]["index"][k];
-                            }
+            for (i = 0; i < values.length; i += 1) {
+                item = values[i][1];
+                cache = values[i][2];
+                var k;
+                for (k in cache["index"]) {
+                    if (cache["index"].hasOwnProperty(k)) {
+                        var match = k.match(/(\d+)_(\d+)/);
+                        if (match) {
+                            var x = parseInt(match[1], 10);
+                            var y = parseInt(match[2], 10);
+                            var startX = Math.min(item["input"]["start"].x, item["input"]["end"].x) - viewport.startX;
+                            var startY = Math.min(item["input"]["start"].y, item["input"]["end"].y) - viewport.startY;
+                            index[(startX + x) + "_" + (startY + y)] = cache["index"][k];
                         }
                     }
                 }
@@ -246,53 +257,51 @@ goog.provide("tixi.drawer");
         function getViewport() {
             var i;
             var result = {startX: Infinity, startY: Infinity, endX: 0, endY: 0};
-            for (i in items) {
-                if (items.hasOwnProperty(i)) {
-                    result.startX = Math.min(result.startX, items[i]["input"]["start"].x, items[i]["input"]["end"].x);
-                    result.startY = Math.min(result.startY, items[i]["input"]["start"].y, items[i]["input"]["end"].y);
-                    result.endX = Math.max(result.endX, items[i]["input"]["start"].x, items[i]["input"]["end"].x);
-                    result.endY = Math.max(result.endY, items[i]["input"]["start"].y, items[i]["input"]["end"].y);
-                }
+            for (i = 0; i < values.length; i += 1) {
+                var item = values[i][1];
+                result.startX = Math.min(result.startX, item["input"]["start"].x, item["input"]["end"].x);
+                result.startY = Math.min(result.startY, item["input"]["start"].y, item["input"]["end"].y);
+                result.endX = Math.max(result.endX, item["input"]["start"].x, item["input"]["end"].x);
+                result.endY = Math.max(result.endY, item["input"]["start"].y, item["input"]["end"].y);
             }
             return result;
         }
 
         function addText(viewport, width, height, data) {
             var i;
-            for (i in items) {
-                if (items.hasOwnProperty(i)) {
-                    var text = items[i].text;
-                    var widthItem = Math.abs(items[i]["input"]["start"].x - items[i]["input"]["end"].x);
-                    var heightItem = Math.abs(items[i]["input"]["start"].y - items[i]["input"]["end"].y);
-                    var startX = Math.min(items[i]["input"]["start"].x, items[i]["input"]["end"].x) - viewport.startX;
-                    var startY = Math.min(items[i]["input"]["start"].y, items[i]["input"]["end"].y) - viewport.startY;
-                    var widthCenterItem = startX + widthItem / 2;
-                    var heightCenterItem = startY + heightItem / 2;
-                    var j;
-                    var pos;
-                    var line;
-                    if (text) {
-                        var textArray = text.split("\n");
-                        if (items[i].type === "text") {
-                            for (j = 0; j < textArray.length; j += 1) {
-                                line = textArray[j];
-                                pos = (startY + j) * (width + 1) + startX;
-                                data = data.substr(0, pos) +
-                                    data.substr(pos, line.length).replace(/.*/, line) +
-                                    data.substr(pos + line.length, data.length - (pos + line.length));
-                            }
-                        } else {
-                            var widthText = Math.max.apply(null, textArray.map(stringLength));
-                            var heightText = textArray.length;
-                            var startXText = Math.ceil(widthCenterItem - widthText / 2);
-                            var startYText = Math.ceil(heightCenterItem - heightText / 2);
-                            for (j = 0; j < textArray.length; j += 1) {
-                                line = textArray[j];
-                                pos = (startYText + j) * (width + 1) + startXText;
-                                data = data.substr(0, pos) +
-                                    data.substr(pos + 1, line.length).replace(/.*/, line) +
-                                    data.substr(pos + line.length, data.length - (pos + line.length));
-                            }
+            for (i = 0; i < values.length; i += 1) {
+                var item = values[i][1];
+                var text = item.text;
+                var widthItem = Math.abs(item["input"]["start"].x - item["input"]["end"].x);
+                var heightItem = Math.abs(item["input"]["start"].y - item["input"]["end"].y);
+                var startX = Math.min(item["input"]["start"].x, item["input"]["end"].x) - viewport.startX;
+                var startY = Math.min(item["input"]["start"].y, item["input"]["end"].y) - viewport.startY;
+                var widthCenterItem = startX + widthItem / 2;
+                var heightCenterItem = startY + heightItem / 2;
+                var j;
+                var pos;
+                var line;
+                if (text) {
+                    var textArray = text.split("\n");
+                    if (item.type === "text") {
+                        for (j = 0; j < textArray.length; j += 1) {
+                            line = textArray[j];
+                            pos = (startY + j) * (width + 1) + startX;
+                            data = data.substr(0, pos) +
+                                data.substr(pos, line.length).replace(/.*/, line) +
+                                data.substr(pos + line.length, data.length - (pos + line.length));
+                        }
+                    } else {
+                        var widthText = Math.max.apply(null, textArray.map(stringLength));
+                        var heightText = textArray.length;
+                        var startXText = Math.ceil(widthCenterItem - widthText / 2);
+                        var startYText = Math.ceil(heightCenterItem - heightText / 2);
+                        for (j = 0; j < textArray.length; j += 1) {
+                            line = textArray[j];
+                            pos = (startYText + j) * (width + 1) + startXText;
+                            data = data.substr(0, pos) +
+                                data.substr(pos + 1, line.length).replace(/.*/, line) +
+                                data.substr(pos + line.length, data.length - (pos + line.length));
                         }
                     }
                 }

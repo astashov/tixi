@@ -105,3 +105,13 @@
            (str "foo\n"
                 "   \n"
                 "bar")))))
+
+(deftest result-z-index
+  (m/set-tool! :text)
+  (let [id1 (create-layer! (g/build-rect 0 0 6 2))
+        id2 (create-layer! (g/build-rect 0 0 6 2))]
+    (mt/set-text-to-item! id1 (str "foo\n\nbar") (g/Size. 3 3))
+    (mt/set-text-to-item! id2 (str "zuu\n\nwoo") (g/Size. 3 3))
+    (is (= (.-content (d/result)) (str "zuu\n" "   \n" "woo")))
+    (m/z-inc! [id1])
+    (is (= (.-content (d/result)) (str "foo\n" "   \n" "bar")))))

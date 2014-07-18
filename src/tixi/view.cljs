@@ -105,19 +105,23 @@
 
 (q/defcomponent Layer
   "Displays the layer"
-  [{:keys [id item is-hover is-selected edit-text-id connecting-id]} channel]
+  [{:keys [id item is-hover is-selected edit-text-id connecting-id show-z-indexes?]} channel]
   (let [{:keys [data]} (d/item-cache id)
+        z-index (:z item)
         {:keys [x y]} (p/coords->position (i/origin item))
         {:keys [width height]} (p/coords->position (g/incr (i/dimensions item)))]
     (dom/pre {:className (str "canvas--content--layer"
                               (str " canvas-content--layer__" (name (:type item)))
                               (if is-selected " is-selected" "")
                               (if is-hover " is-hover" ""))
-              :style {:left x :top y :width width :height height}
+              :style {:left x :top y :width width :height height :zIndex z-index}
               :id (str "layer-" id)}
              (Text {:id id :item item :edit-text-id edit-text-id} channel)
              (when (and connecting-id (not= connecting-id id))
                (Outlets {:item item :points (i/outlets item)}))
+             (when show-z-indexes?
+               (dom/div {:className "canvas--content--layer--z-index"
+                         :title "z-index"} z-index))
              data)))
 
 (q/defcomponent Canvas
@@ -133,7 +137,8 @@
                                      :is-hover (= id (:hover-id data))
                                      :is-selected (some #{id} (d/selected-ids data))
                                      :edit-text-id (d/edit-text-id data)
-                                     :connecting-id (d/connecting-id data)}
+                                     :connecting-id (d/connecting-id data)
+                                     :show-z-indexes? (d/show-z-indexes? data)}
                                     channel))
              (if-let [{:keys [id item]} (:current data)]
                (assoc (d/completed data) id item)
@@ -196,47 +201,67 @@
   (dom/div {:className "sidebar"}
     (dom/h1 {:className "sidebar--logo"} "Textik")
     (dom/div {:className "sidebar--tools"}
-      (dom/button {:className (str "sidebar--tools--button sidebar--tools--button__select"
+      (dom/button {:className (str "button sidebar--tools--button sidebar--tools--button__select"
                                    (when (= tool :select) " is-selected"))
                    :title "Select [S]"
                    :onClick (fn [e] (send-tool-click :select channel))}
-        (dom/div {:className "sidebar--tools--button--icon"}))
-      (dom/button {:className (str "sidebar--tools--button sidebar--tools--button__line"
+        (dom/div {:className "button--icon sidebar--tools--button--icon"}))
+      (dom/button {:className (str "button sidebar--tools--button sidebar--tools--button__line"
                                    (when (= tool :line) " is-selected"))
                    :title "Line [L]"
                    :onClick (fn [e] (send-tool-click :line channel))}
-        (dom/div {:className "sidebar--tools--button--icon"}))
-      (dom/button {:className (str "sidebar--tools--button sidebar--tools--button__rect-line"
+        (dom/div {:className "button--icon sidebar--tools--button--icon"}))
+      (dom/button {:className (str "button sidebar--tools--button sidebar--tools--button__rect-line"
                                    (when (= tool :rect-line) " is-selected"))
                    :title "Rectangle-Line [Y]"
                    :onClick  (fn [e] (send-tool-click :rect-line channel))}
-        (dom/div {:className "sidebar--tools--button--icon"}))
-    (dom/button {:className (str "sidebar--tools--button sidebar--tools--button__rect"
+        (dom/div {:className "button--icon sidebar--tools--button--icon"}))
+    (dom/button {:className (str "button sidebar--tools--button sidebar--tools--button__rect"
                                  (when (= tool :rect) " is-selected"))
                  :title "Rectangle [R]"
                  :onClick  (fn [e] (send-tool-click :rect channel))}
-        (dom/div {:className "sidebar--tools--button--icon"}))
-      (dom/button {:className (str "sidebar--tools--button sidebar--tools--button__text"
+        (dom/div {:className "button--icon sidebar--tools--button--icon"}))
+      (dom/button {:className (str "button sidebar--tools--button sidebar--tools--button__text"
                                    (when (= tool :text) " is-selected"))
                    :title "Text [T]"
                    :onClick  (fn [e] (send-tool-click :text channel))}
-        (dom/div {:className "sidebar--tools--button--icon"}))
-      (dom/button {:className "sidebar--tools--button sidebar--tools--button__undo"
+        (dom/div {:className "button--icon sidebar--tools--button--icon"}))
+      (dom/button {:className "button sidebar--tools--button sidebar--tools--button__undo"
                    :title "Undo [U]"
                    :onClick (fn [e] (send-tool-click :undo channel))}
-        (dom/div {:className "sidebar--tools--button--icon"}))
-      (dom/button {:className "sidebar--tools--button sidebar--tools--button__redo"
+        (dom/div {:className "button--icon sidebar--tools--button--icon"}))
+      (dom/button {:className "button sidebar--tools--button sidebar--tools--button__redo"
                    :title "Redo [I]"
                    :onClick (fn [e] (send-tool-click :redo channel))}
-        (dom/div {:className "sidebar--tools--button--icon"}))
-      (dom/button {:className "sidebar--tools--button sidebar--tools--button__result"
+        (dom/div {:className "button--icon sidebar--tools--button--icon"}))
+      (dom/button {:className "button sidebar--tools--button sidebar--tools--button__result"
                    :title "Show Result [Q]"
                    :onClick (fn [e] (send-tool-click :result channel))}
-        (dom/div {:className "sidebar--tools--button--icon"}))
-      (dom/button {:className "sidebar--tools--button sidebar--tools--button__delete"
+        (dom/div {:className "button--icon sidebar--tools--button--icon"}))
+      (dom/button {:className "button sidebar--tools--button sidebar--tools--button__delete"
                    :title "Delete [Backspace]"
                    :onClick (fn [e] (send-tool-click :delete channel))}
-        (dom/div {:className "sidebar--tools--button--icon"})))))
+        (dom/div {:className "button--icon sidebar--tools--button--icon"})))))
+
+(q/defcomponent Topbar
+  [{:keys [tool show-z-indexes?]} channel]
+  (apply dom/div {:className "topbar"}
+    (case tool
+      :select
+      [(dom/button {:className "button topbar--button topbar--button__z-inc"
+                    :title "Bring forward"
+                    :onClick (fn [e] (send-tool-click :z-inc channel))}
+         (dom/div {:className "button--icon topbar--button--icon"}))
+       (dom/button {:className "button topbar--button topbar--button__z-dec"
+                    :title "Bring backward"
+                    :onClick (fn [e] (send-tool-click :z-dec channel))}
+         (dom/div {:className "button--icon topbar--button--icon"}))
+       (dom/button {:className (str "button topbar--button topbar--button__z-show"
+                                    (when show-z-indexes? " is-selected"))
+                    :title "Show z-indexes"
+                    :onClick (fn [e] (send-tool-click :z-show channel))}
+         "Show z-indexes")]
+      [])))
 
 (q/defcomponent Result [data channel] {:key "result"}
  (let [result (d/result data)
@@ -264,8 +289,9 @@
           (select-text! pre))))))
 
 (q/defcomponent Content [data channel]
- (dom/div {:className "content"}
+  (dom/div {:className "content"}
     (Sidebar (d/tool data) channel)
+    (Topbar {:tool (d/tool data) :show-z-indexes? (d/show-z-indexes? data)} channel)
     (Project data channel)
     (css-transition-group #js {:transitionName "result"}
       (if (d/show-result? data)

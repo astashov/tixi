@@ -3,7 +3,6 @@
 * Add possibility to group/ungroup items
 * Add grid
 * Add guides
-* Add a way to change z-indexes of items
 * Add copying/pasting
 * Add nice helpers showing the origin/dimensions of an item when you resize/move it around
 * Find a way how to design UI for Undo Tree
@@ -21,3 +20,7 @@
 * Add Rollbar support
 * Check if I could publish it as a Google Chrome app.
 * Add some visual confirmation when you reach some outlet by a connector
+* Check if we could avoid setting dimensions to text item from outside, by calculating them based on given text
+* Instrument the app with Google Analytics events
+* Refactor drawer.js
+* Add support of larger canvases (larger than the current screen size)

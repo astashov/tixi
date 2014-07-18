@@ -33,7 +33,8 @@
    :edit-text-id nil
    :hover-id nil
    :connecting-id nil
-   :show-result false})
+   :show-result false
+   :show-z-indexes? false})
 
 (def data
   (atom initial-data))
@@ -119,6 +120,9 @@
 
 (defdata show-result? []
   (boolean (:show-result data)))
+
+(defdata show-z-indexes? []
+  (boolean (:show-z-indexes? data)))
 
 (defdata connecting-id []
   (:connecting-id data))
