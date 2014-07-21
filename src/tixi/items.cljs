@@ -2,6 +2,7 @@
   (:require-macros [tixi.utils :refer (b defpoly defpoly-)])
   (:require [tixi.geometry :as g]
             [tixi.utils :refer [p]]
+            [clojure.string :as string]
             [tixi.drawer :as dr]))
 
 (declare dimensions)
@@ -10,21 +11,43 @@
   (let [[x1 y1 x2 y2] (g/values (g/shifted-to-0 rect))]
     (dr/buildLine #js [x1 y1 x2 y2])))
 
-(defn- maybe-add-edge-chars [cache item]
+(defn- start-char-replacements [item chr]
+  (case chr
+    :connect "+"
+    :arrow (if (= (direction item) "vertical")
+             (if (g/flipped-by-y? (:input item)) "v" "^")
+             (if (g/flipped-by-x? (:input item)) ">" "<"))))
+
+(defn- end-char-replacements [item chr]
+  (case chr
+    :connect "+"
+    :arrow (if (= (direction item) (if (rect-line? item) "horizontal" "vertical"))
+             (if (g/flipped-by-y? (:input item)) "^" "v")
+             (if (g/flipped-by-x? (:input item)) "<" ">"))))
+
+(defn- replace-char-in-cache! [item cache edge i f]
+  (when (edge (:chars item))
+    (let [index (.-index cache)
+          points (.-points cache)
+          point [(-> points (aget i) (aget 0) (aget 0))
+                 (-> points (aget i) (aget 0) (aget 1))]]
+      (aset (aget index (string/join "_" point)) "v" (f item (edge (:chars item)))))))
+
+(defn- maybe-add-edge-chars [item cache]
   (let [index (.-index cache)
-        {:keys [input chars]} item
-        shifted-input (g/shifted-to-0 input)
-        [sx sy] (g/values (:start shifted-input))
-        [ex ey] (g/values (:end shifted-input))]
-    (when (:start chars)
-      (aset (aget index (str sx "_" sy)) "v" (:start chars)))
-    (when (:end chars)
-      (aset (aget index (str ex "_" ey)) "v" (:end chars)))
+        points (.-points cache)
+        {:keys [input chars]} item]
+    (replace-char-in-cache! item cache :start 0 start-char-replacements)
+    (when (> (count points) 1)
+      (replace-char-in-cache! item cache :pre-start 1 start-char-replacements))
+    (when (> (count points) 1)
+      (replace-char-in-cache! item cache :pre-end (-> points count dec dec) end-char-replacements))
+    (replace-char-in-cache! item cache :end (-> points count dec) end-char-replacements)
     cache))
 
 (defpoly- parse [item]
   :line
-  (maybe-add-edge-chars (parse-line (:input item)) item)
+  (maybe-add-edge-chars item (parse-line (:input item)))
 
   :rect
   (let [[x1 y1 x2 y2] (g/values (g/shifted-to-0 (:input item)))]
@@ -33,7 +56,7 @@
   :rect-line
   (let [result (let [[x1 y1 x2 y2] (g/values (g/shifted-to-0 (:input item)))]
                  (dr/buildRectLine #js [x1 y1 x2 y2] (:direction item)))]
-    (maybe-add-edge-chars result item))
+    (maybe-add-edge-chars item result))
 
   :text
   #js {:index #js {} :points #js []})
@@ -124,6 +147,9 @@
 
 (defn line? [item]
   (= (:type item) :line))
+
+(defn rect-line? [item]
+  (= (:type item) :rect-line))
 
 (defn text? [item]
   (= (:type item) :text))

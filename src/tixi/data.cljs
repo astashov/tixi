@@ -17,6 +17,9 @@
 ;;                            :end outlet-id2}}
 ;; :outlets {outlet-id {[connector-id :start] outlet}}
 
+(def line-edge-chars
+  [nil :arrow])
+
 (def initial-data
   {:current nil
    :state (zip (t/node {:completed {}
@@ -34,7 +37,9 @@
    :hover-id nil
    :connecting-id nil
    :show-result false
-   :show-z-indexes? false})
+   :show-z-indexes? false
+   :line-edges {:start (first line-edge-chars)
+                  :end (first line-edge-chars)}})
 
 (def data
   (atom initial-data))
@@ -126,3 +131,6 @@
 
 (defdata connecting-id []
   (:connecting-id data))
+
+(defdata line-edges []
+  (:line-edges data))

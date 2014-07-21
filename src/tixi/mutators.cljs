@@ -2,7 +2,7 @@
   (:require-macros [tixi.utils :refer (b)])
   (:require [tixi.data :as d]
             [tixi.mutators.shared :as ms]
-            [tixi.utils :refer [p]]))
+            [tixi.utils :refer [p next-of]]))
 
 (defn reset-data! []
   (reset! d/data d/initial-data))
@@ -37,3 +37,6 @@
 
 (defn z-show! [bool]
   (swap! d/data assoc :show-z-indexes? bool))
+
+(defn cycle-line-edge! [edge]
+  (swap! d/data assoc-in [:line-edges edge] (next-of d/line-edge-chars (edge (d/line-edges)))))

@@ -73,6 +73,9 @@
     :tool
     (c/click-toolbar data)
 
+    :line-edge
+    (c/change-line-edge data)
+
     :close
     (c/close data)))
 

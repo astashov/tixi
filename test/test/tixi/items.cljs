@@ -147,3 +147,20 @@
     (is (= (:input item-with-text) (g/build-rect 2 3 4 6)))
     (is (= (:text item-with-text) "bla"))
     (is (= (js->clj (i/render item-with-text)) {:points [], :data "  \n  \n  ", :index {}}))))
+
+(deftest build-line-with-edges
+  (let [rect (g/build-rect 2 2 7 5)
+        item {:type :line :input rect :chars {:start :connect :pre-start :arrow :pre-end :arrow :end :connect}}]
+    (is (= (js->clj (i/render item)) {:points [[[0 0] {"v" "+"}]
+                                               [[1 1] {"v" "<"}]
+                                               [[2 1] {"v" "\\"}]
+                                               [[3 2] {"v" "-"}]
+                                               [[4 2] {"v" ">"}]
+                                               [[5 3] {"v" "+"}]]
+                                      :data "+    \n <\\  \n   ->\n     +"
+                                      :index {"0_0" {"v" "+"}
+                                              "1_1" {"v" "<"}
+                                              "2_1" {"v" "\\"}
+                                              "3_2" {"v" "-"}
+                                              "4_2" {"v" ">"}
+                                              "5_3" {"v" "+"}}}))))

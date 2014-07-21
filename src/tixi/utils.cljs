@@ -26,3 +26,13 @@
   (if (seqable? type-or-types)
     (contains? type-or-types (:type item))
     (= type-or-types (:type item))))
+
+(defn indexes [coll item]
+  (map first
+       (filter #(= (second %) item)
+               (map-indexed vector coll))))
+
+(defn next-of [coll item]
+  (let [cycled-coll (take (inc (count coll)) (cycle coll))]
+    (when-let [index (first (indexes cycled-coll item))]
+      (nth cycled-coll (inc index)))))

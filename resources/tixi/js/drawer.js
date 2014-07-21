@@ -123,18 +123,18 @@ goog.provide("tixi.drawer");
 
         var result = {points: [], index: {}};
         if (direction === "horizontal") {
-            add(result, x2, y1, "+");
             if (Math.abs(x2 - x1) > 0) {
                 concat(result, tixi.drawer.buildLine([x1, y1, x2 > x1 ? (x2 - 1) : (x2 + 1), y1], "-"));
             }
+            add(result, x2, y1, "+");
             if (Math.abs(y2 - y1) > 0) {
                 concat(result, tixi.drawer.buildLine([x2, y2 > y1 ? (y1 + 1) : (y1 - 1), x2, y2], "|"));
             }
         } else {
-            add(result, x1, y2, "+");
             if (Math.abs(y2 - y1) > 0) {
                 concat(result, tixi.drawer.buildLine([x1, y1, x1, y2 > y1 ? (y2 - 1) : (y2 + 1)], "|"));
             }
+            add(result, x1, y2, "+");
             if (Math.abs(x2 - x1) > 0) {
                 concat(result, tixi.drawer.buildLine([x2 > x1 ? (x1 + 1) : (x1 - 1), y2, x2, y2], "-"));
             }

@@ -51,3 +51,12 @@
 (deftest z-show!
   (m/z-show! true)
   (is (= (d/show-z-indexes?) true)))
+
+(deftest cycle-line-edge!
+  (is (= (d/line-edges) {:start nil :end nil}))
+  (m/cycle-line-edge! :start)
+  (is (= (d/line-edges) {:start :arrow :end nil}))
+  (m/cycle-line-edge! :end)
+  (is (= (d/line-edges) {:start :arrow :end :arrow}))
+  (m/cycle-line-edge! :start)
+  (is (= (d/line-edges) {:start nil :end :arrow})))

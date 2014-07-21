@@ -124,3 +124,8 @@
     (let [{:keys [name]} data]
       (case name
         :result (m/show-result! false)))))
+
+(defn change-line-edge [data]
+  (render
+    (let [{:keys [edge]} data]
+      (m/cycle-line-edge! edge))))

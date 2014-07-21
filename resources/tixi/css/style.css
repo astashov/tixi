@@ -370,6 +370,12 @@ div.CodeMirror-cursors {
   box-shadow: 0 0 1em gray;
 }
 
+.button__text {
+  width: auto;
+  padding: 0 1em;
+  text-transform: uppercase;
+}
+
 .button--icon {
   display: block;
   width: 100%;
@@ -551,10 +557,13 @@ div.CodeMirror-cursors {
 
 .topbar--button {
   display: inline-block;
-  width: 3em;
   height: 3em;
   margin: 0.5em;
   vertical-align: top;
+}
+
+.topbar--button__icon {
+  width: 3em;
 }
 
 .topbar--button__z-inc .topbar--button--icon {
@@ -562,10 +571,4 @@ div.CodeMirror-cursors {
 }
 .topbar--button__z-dec .topbar--button--icon {
   background-image: url(../images/z-dec.png)
-}
-.topbar--button__z-show {
-  width: auto;
-  padding: 0 1em;
-  vertical-align: top;
-  text-transform: uppercase;
 }
