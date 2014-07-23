@@ -76,6 +76,9 @@
     :line-edge
     (c/change-line-edge data)
 
+    :selection-edges
+    (c/change-selection-edges data)
+
     :close
     (c/close data)))
 

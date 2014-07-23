@@ -4,6 +4,7 @@
             [tixi.data :as d]
             [tixi.mutators :as m]
             [tixi.mutators.text :as mt]
+            [tixi.mutators.selection :as ms]
             [tixi.tree :as t]
             [tixi.geometry :as g]
             [tixi.utils :refer [p]]
@@ -115,3 +116,26 @@
     (is (= (.-content (d/result)) (str "zuu\n" "   \n" "woo")))
     (m/z-inc! [id1])
     (is (= (.-content (d/result)) (str "foo\n" "   \n" "bar")))))
+
+(deftest next-selected-edge-value
+  (m/set-tool! :line)
+  (let [id1 (create-layer! (g/build-rect 0 0 2 3))
+        id2 (create-layer! (g/build-rect 5 5 10 10))
+        id3 (create-layer! (g/build-rect 7 7 13 13))]
+    (m/set-tool! :rect)
+    (let [id4 (create-layer! (g/build-rect 8 8 20 20))]
+      (ms/select-layer! id1)
+      (ms/select-layer! id4 nil true)
+      (is (= (d/next-selected-edge-value :start) :arrow))
+
+      (m/cycle-selection-edges! :start)
+      (is (= (d/next-selected-edge-value :start) nil))
+
+      (ms/select-layer! id2 nil true)
+      (is (= (d/next-selected-edge-value :start) nil))
+
+      (m/cycle-selection-edges! :start)
+      (is (= (d/next-selected-edge-value :start) :arrow))
+
+      (m/cycle-selection-edges! :start)
+      (is (= (d/next-selected-edge-value :start) nil)))))

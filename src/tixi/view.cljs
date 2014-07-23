@@ -9,7 +9,7 @@
             [cljs.core.async :as async :refer [>!]]
             [tixi.data :as d]
             [tixi.geometry :as g]
-            [tixi.utils :refer [p]]
+            [tixi.utils :refer [p next-of]]
             [tixi.position :as p]
             [tixi.items :as i]
             [goog.style :as style]
@@ -62,6 +62,9 @@
 
 (defn- send-line-edge-click [edge channel]
   (go (>! channel {:type :line-edge :data {:edge edge}})))
+
+(defn- send-selection-edges-click [edge channel]
+  (go (>! channel {:type :selection-edges :data {:edge edge}})))
 
 (defn- selection-position [rect]
   (let [normalized-rect (g/normalize rect)
@@ -246,39 +249,56 @@
                    :onClick (fn [e] (send-tool-click :delete channel))}
         (dom/div {:className "button--icon sidebar--tools--button--icon"})))))
 
-(q/defcomponent Topbar
-  [{:keys [tool show-z-indexes? line-edges]} channel]
-  (apply dom/div {:className "topbar"}
-    (case tool
-      :select
-      [(dom/button {:className "button topbar--button topbar--button__icon topbar--button__z-inc"
-                    :title "Bring forward"
-                    :onClick (fn [e] (send-tool-click :z-inc channel))}
-         (dom/div {:className "button--icon topbar--button--icon"}))
-       (dom/button {:className "button topbar--button topbar--button__icon topbar--button__z-dec"
-                    :title "Bring backward"
-                    :onClick (fn [e] (send-tool-click :z-dec channel))}
-         (dom/div {:className "button--icon topbar--button--icon"}))
-       (dom/button {:className (str "button button__text topbar--button topbar--button__z-show"
-                                    (when show-z-indexes? " is-selected"))
-                    :title "Show z-indexes"
-                    :onClick (fn [e] (send-tool-click :z-show channel))}
-         "Show z-indexes")]
+(q/defcomponent Topbar [data channel]
+  (let [tool (d/tool data)
+        show-z-indexes? (d/show-z-indexes? data)
+        line-edges (d/line-edges data)
+        selection-edges-disabled? (empty? (filter #(i/connector? %) (d/selected-items)))]
+    (apply dom/div {:className "topbar"}
+      (case tool
+        :select
+        [(dom/button {:className "button topbar--button topbar--button__icon topbar--button__z-inc"
+                      :title "Bring forward"
+                      :onClick (fn [e] (send-tool-click :z-inc channel))}
+           (dom/div {:className "button--icon topbar--button--icon"}))
+         (dom/button {:className "button topbar--button topbar--button__icon topbar--button__z-dec"
+                      :title "Bring backward"
+                      :onClick (fn [e] (send-tool-click :z-dec channel))}
+           (dom/div {:className "button--icon topbar--button--icon"}))
+         (dom/button {:className (str "button button__text topbar--button topbar--button__z-show"
+                                      (when show-z-indexes? " is-selected"))
+                      :title "Show z-indexes"
+                      :onClick (fn [e] (send-tool-click :z-show channel))}
+           "Show z-indexes")
+         (dom/button {:className "button button__text topbar--button topbar--button__edge"
+                      :title "Connector's start"
+                      :onClick (fn [e] (send-selection-edges-click :start channel))
+                      :disabled selection-edges-disabled?}
+           (case (d/next-selected-edge-value :start)
+             nil "-"
+             :arrow "<"))
+         (dom/button {:className "button button__text topbar--button topbar--button__edge"
+                      :title "Connector's end"
+                      :onClick (fn [e] (send-selection-edges-click :end channel))
+                      :disabled selection-edges-disabled?}
+           (case (d/next-selected-edge-value :end)
+             nil "-"
+             :arrow ">"))]
 
-      (:line :rect-line)
-      [(dom/button {:className "button button__text topbar--button topbar--button__edge"
-                    :title "Connector's start"
-                    :onClick (fn [e] (send-line-edge-click :start channel))}
-         (case (:start line-edges)
-           nil "-"
-           :arrow "<"))
-       (dom/button {:className "button button__text topbar--button topbar--button__edge"
-                    :title "Connector's end"
-                    :onClick (fn [e] (send-line-edge-click :end channel))}
-         (case (:end line-edges)
-           nil "-"
-           :arrow ">"))]
-      [])))
+        (:line :rect-line)
+        [(dom/button {:className "button button__text topbar--button topbar--button__edge"
+                      :title "Connector's start"
+                      :onClick (fn [e] (send-line-edge-click :start channel))}
+           (case (:start line-edges)
+             nil "-"
+             :arrow "<"))
+         (dom/button {:className "button button__text topbar--button topbar--button__edge"
+                      :title "Connector's end"
+                      :onClick (fn [e] (send-line-edge-click :end channel))}
+           (case (:end line-edges)
+             nil "-"
+             :arrow ">"))]
+        []))))
 
 (q/defcomponent Result [data channel] {:key "result"}
  (let [result (d/result data)
@@ -308,10 +328,7 @@
 (q/defcomponent Content [data channel]
   (dom/div {:className "content"}
     (Sidebar (d/tool data) channel)
-    (Topbar {:tool (d/tool data)
-             :show-z-indexes? (d/show-z-indexes? data)
-             :line-edges (d/line-edges)}
-            channel)
+    (Topbar data channel)
     (Project data channel)
     (css-transition-group #js {:transitionName "result"}
       (if (d/show-result? data)

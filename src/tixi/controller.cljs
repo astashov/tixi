@@ -129,3 +129,8 @@
   (render
     (let [{:keys [edge]} data]
       (m/cycle-line-edge! edge))))
+
+(defn change-selection-edges [data]
+  (render
+    (let [{:keys [edge]} data]
+      (m/cycle-selection-edges! edge))))

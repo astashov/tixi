@@ -11,38 +11,40 @@
   (let [[x1 y1 x2 y2] (g/values (g/shifted-to-0 rect))]
     (dr/buildLine #js [x1 y1 x2 y2])))
 
-(defn- start-char-replacements [item chr]
-  (case chr
-    :connect "+"
-    :arrow (if (= (direction item) "vertical")
-             (if (g/flipped-by-y? (:input item)) "v" "^")
-             (if (g/flipped-by-x? (:input item)) ">" "<"))))
+(defn- arrow-char [item edge]
+  (when (= (get-in item [:edges edge]) :arrow)
+    (case edge
+      :start
+      (if (= (direction item) "vertical")
+        (if (g/flipped-by-y? (:input item)) "v" "^")
+        (if (g/flipped-by-x? (:input item)) ">" "<"))
+      :end
+      (if (= (direction item) (if (rect-line? item) "horizontal" "vertical"))
+        (if (g/flipped-by-y? (:input item)) "^" "v")
+        (if (g/flipped-by-x? (:input item)) "<" ">")))))
 
-(defn- end-char-replacements [item chr]
-  (case chr
-    :connect "+"
-    :arrow (if (= (direction item) (if (rect-line? item) "horizontal" "vertical"))
-             (if (g/flipped-by-y? (:input item)) "^" "v")
-             (if (g/flipped-by-x? (:input item)) "<" ">"))))
-
-(defn- replace-char-in-cache! [item cache edge i f]
-  (when (edge (:chars item))
+(defn- replace-char-in-cache! [item cache i chr]
+  (when chr
     (let [index (.-index cache)
           points (.-points cache)
           point [(-> points (aget i) (aget 0) (aget 0))
                  (-> points (aget i) (aget 0) (aget 1))]]
-      (aset (aget index (string/join "_" point)) "v" (f item (edge (:chars item)))))))
+      (aset (aget index (string/join "_" point)) "v" chr))))
 
 (defn- maybe-add-edge-chars [item cache]
   (let [index (.-index cache)
         points (.-points cache)
         {:keys [input chars]} item]
-    (replace-char-in-cache! item cache :start 0 start-char-replacements)
-    (when (> (count points) 1)
-      (replace-char-in-cache! item cache :pre-start 1 start-char-replacements))
-    (when (> (count points) 1)
-      (replace-char-in-cache! item cache :pre-end (-> points count dec dec) end-char-replacements))
-    (replace-char-in-cache! item cache :end (-> points count dec) end-char-replacements)
+    (if (contains? (or (:connected item) #{}) :start)
+      (do
+        (replace-char-in-cache! item cache 0 "+")
+        (replace-char-in-cache! item cache 1 (arrow-char item :start)))
+      (replace-char-in-cache! item cache 0 (arrow-char item :start)))
+    (if (contains? (or (:connected item) #{}) :end)
+      (do
+        (replace-char-in-cache! item cache (-> points count dec) "+")
+        (replace-char-in-cache! item cache (-> points count dec dec) (arrow-char item :end)))
+      (replace-char-in-cache! item cache (-> points count dec) (arrow-char item :end)))
     cache))
 
 (defpoly- parse [item]
@@ -153,3 +155,10 @@
 
 (defn text? [item]
   (= (:type item) :text))
+
+(defn pre-edge [edge]
+  (keyword (str "pre-" (name edge))))
+
+(defn edge-value [item edge]
+  (or (get-in item [:chars (pre-edge edge)])
+      (get-in item [:chars edge])))

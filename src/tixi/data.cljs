@@ -1,6 +1,6 @@
 (ns tixi.data
   (:require-macros [tixi.utils :refer [defdata]])
-  (:require [tixi.utils :refer [seq-contains? p]]
+  (:require [tixi.utils :refer [seq-contains? p next-of]]
             [tixi.tree :as t :refer [Node]]
             [tixi.items :as i]
             [tixi.drawer :as dr]
@@ -134,3 +134,9 @@
 
 (defdata line-edges []
   (:line-edges data))
+
+(defdata next-selected-edge-value [edge]
+  (let [selected-edges (distinct (map #(get-in % [:edges edge]) (filter #(i/connector? %) (selected-items data))))]
+    (if (and (= (count selected-edges) 1))
+      (next-of line-edge-chars (first selected-edges))
+      (first line-edge-chars))))

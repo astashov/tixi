@@ -370,6 +370,14 @@ div.CodeMirror-cursors {
   box-shadow: 0 0 1em gray;
 }
 
+.button[disabled] {
+  background: #e6e6e6;
+  border: 1px solid gray;
+  box-shadow: none;
+  cursor: default;
+  opacity: 0.6;
+}
+
 .button__text {
   width: auto;
   padding: 0 1em;

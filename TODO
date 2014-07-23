@@ -1,4 +1,3 @@
-* Add a way to change line edges in the already created items
 * Add way to specify text alignment (horizontal and vertical)
 * Correct text items sizes after resize
 * Add possibility to group/ungroup items
@@ -26,6 +25,8 @@
 * Add support of larger canvases (larger than the current screen size)
 * It seems like sometimes cache is not updated before rendering - mispositioned items. Need to figure out why and fix
 * Maybe custom colorize the items?
+* Add post-deploy task to attach timestamps to the assets URLs
+* Make it cross-browser - now it only works fine in Chrome, other browsers experience CSS issues.
 * Add comments here and there, document the architecture of the app
 * Think how would it be possible to implement collaboration
   - Could try Firebase, the problem - serializing. tixi.sync should know a lot,

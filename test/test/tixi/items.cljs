@@ -150,7 +150,7 @@
 
 (deftest build-line-with-edges
   (let [rect (g/build-rect 2 2 7 5)
-        item {:type :line :input rect :chars {:start :connect :pre-start :arrow :pre-end :arrow :end :connect}}]
+        item {:type :line :input rect :edges {:start :arrow :end :arrow} :connected #{:start :end}}]
     (is (= (js->clj (i/render item)) {:points [[[0 0] {"v" "+"}]
                                                [[1 1] {"v" "<"}]
                                                [[2 1] {"v" "\\"}]

@@ -6,28 +6,24 @@
             [tixi.position :as p]
             [tixi.utils :refer [p get-by-val]]))
 
-(defn- pre-edge [edge]
-  (keyword (str "pre-" (name edge))))
+
+(declare update-item-chars)
 
 (defn- remove-lock! [connector-id connector-item connector-edge]
   (if-let [outlet-id (d/outlet-id connector-id connector-edge)]
     (do
       (ms/update-state! update-in [:locks :outlets outlet-id] dissoc [connector-id connector-edge])
       (ms/update-state! update-in [:locks :connectors connector-id] dissoc connector-edge)
-      (-> connector-item
-          (update-in [:chars] assoc connector-edge ((pre-edge connector-edge) (:chars connector-item)))
-          (update-in [:chars] dissoc (pre-edge connector-edge))))
+      (assoc connector-item :connected (disj (or (:connected connector-item) #{}) connector-edge)))
     connector-item))
 
 (defn- add-lock! [connector-id connector-item outlet-id outlet-item outlet connector-edge]
-  (ms/update-state! assoc-in [:locks :outlets outlet-id [connector-id connector-edge]] outlet)
-  (ms/update-state! assoc-in [:locks :connectors connector-id connector-edge] outlet-id)
-  (let [current-char (get-in connector-item [:chars connector-edge])]
-    (if (not= current-char :connect)
-      (-> connector-item
-          (assoc-in [:chars connector-edge] :connect)
-          (assoc-in [:chars (pre-edge connector-edge)] current-char))
-      connector-item)))
+  (if-let [outlet-id (d/outlet-id connector-id connector-edge)]
+    connector-item
+    (do
+      (ms/update-state! assoc-in [:locks :outlets outlet-id [connector-id connector-edge]] outlet)
+      (ms/update-state! assoc-in [:locks :connectors connector-id connector-edge] outlet-id)
+      (assoc connector-item :connected (conj (or (:connected connector-item) #{}) connector-edge)))))
 
 (defn delete-from-locks! [id item]
   (remove-lock! id item :start)

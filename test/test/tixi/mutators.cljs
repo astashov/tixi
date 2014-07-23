@@ -4,6 +4,7 @@
   (:require [cemerick.cljs.test :as test]
             [tixi.geometry :as g :refer [Rect Point Size]]
             [tixi.mutators :as m]
+            [tixi.mutators.selection :as ms]
             [test.tixi.utils :refer [create-layer! create-sample-layer!]]
             [tixi.utils :refer [p]]
             [tixi.data :as d]))
@@ -60,3 +61,26 @@
   (is (= (d/line-edges) {:start :arrow :end :arrow}))
   (m/cycle-line-edge! :start)
   (is (= (d/line-edges) {:start nil :end :arrow})))
+
+
+(deftest cycle-selection-edges!
+  (m/set-tool! :line)
+  (let [id1 (create-layer! (g/build-rect 0 0 2 3))
+        id2 (create-layer! (g/build-rect 5 5 10 10))
+        id3 (create-layer! (g/build-rect 7 7 13 13))]
+    (m/set-tool! :rect)
+    (let [id4 (create-layer! (g/build-rect 8 8 20 20))]
+      (ms/select-layer! id1)
+      (ms/select-layer! id4 nil true)
+      (m/cycle-selection-edges! :start)
+      (is (= (:edges (d/completed-item id1)) {:start :arrow :end nil}))
+      (is (= (:edges (d/completed-item id4)) {:start nil :end nil}))
+
+      (ms/select-layer! id2 nil true)
+      (m/cycle-selection-edges! :start)
+      (is (= (:edges (d/completed-item id1)) {:start nil :end nil}))
+      (is (= (:edges (d/completed-item id2)) {:start nil :end nil}))
+
+      (m/cycle-selection-edges! :start)
+      (is (= (:edges (d/completed-item id1)) {:start :arrow :end nil}))
+      (is (= (:edges (d/completed-item id2)) {:start :arrow :end nil})))))
