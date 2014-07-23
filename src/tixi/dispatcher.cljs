@@ -44,7 +44,7 @@
       83 (c/keypress :select) ; s
       84 (c/keypress :text) ; t
       89 (c/keypress :rect-line) ; y
-      90 (p @d/data) ; y
+      90 (p @d/data) ; z
       85 (c/keypress :undo) ; u
       78 (c/keypress :z-inc) ; n
       77 (c/keypress :z-dec) ; m

@@ -16,7 +16,6 @@
 * Draw straight/square items with 'Shift'
 * Make item/layer names consistent - name everything as 'items'
 * Add Travis support
-* Add Rollbar support
 * Check if I could publish it as a Google Chrome app.
 * Add some visual confirmation when you reach some outlet by a connector
 * Check if we could avoid setting dimensions to text item from outside, by calculating them based on given text
@@ -25,7 +24,6 @@
 * Add support of larger canvases (larger than the current screen size)
 * It seems like sometimes cache is not updated before rendering - mispositioned items. Need to figure out why and fix
 * Maybe custom colorize the items?
-* Add post-deploy task to attach timestamps to the assets URLs
 * Add comments here and there, document the architecture of the app
 * Think how would it be possible to implement collaboration
   - Could try Firebase, the problem - serializing. tixi.sync should know a lot,

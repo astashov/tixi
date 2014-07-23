@@ -18,6 +18,7 @@ GEM
     builder (3.2.2)
     json (1.8.1)
     mime-types (2.3)
+    multipart-post (2.0.0)
     rake (10.3.2)
     thread_safe (0.3.4)
     tzinfo (1.2.1)
@@ -28,5 +29,6 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  multipart-post
   rake
   s3_deployer!
