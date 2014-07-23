@@ -11,18 +11,24 @@
 
 (defn- calculate-letter-size []
   (let [number-of-x 100]
-    (dommy/append! (sel1 :body)
-                   [:.calculate-letter-size (apply str (repeat number-of-x "X"))])
+    (when (not (sel1 :.calculate-letter-size))
+      (dommy/append! (sel1 :body) [:.calculate-letter-size])
+      (dommy/set-html! (sel1 :.calculate-letter-size) (str (apply str (repeat number-of-x "X"))
+                                                           (apply str (repeat (dec number-of-x) "<br />X")))))
     (let [calculator (sel1 :.calculate-letter-size)
           width (.-offsetWidth calculator)
           height (.-offsetHeight calculator)
-          result (Size. (.round js/Math (/ width number-of-x)) height)]
+          result (Size. (/ width number-of-x) (/  height number-of-x))]
       (dommy/remove! calculator)
       result)))
 
-;; TODO: Sometimes it forgets it?
-(defn- letter-size []
-  ((memoize calculate-letter-size)))
+(defn set-letter-size! []
+  (swap! d/data assoc :letter-size (calculate-letter-size)))
+
+(defn letter-size []
+  (when-not (d/letter-size)
+    (set-letter-size!))
+  (d/letter-size))
 
 (defn- hit-item? [item point]
   (let [rect (g/build-rect (i/origin item) (i/dimensions item))]
@@ -49,13 +55,13 @@
          (nth (nth lines y) x))))
 
 (defn width->position [width]
-  (.floor js/Math (* width (:width (letter-size)))))
+  (.ceil js/Math (* width (:width (letter-size)))))
 
 (defn position->width [pos]
   (.floor js/Math (/ pos (:width (letter-size)))))
 
 (defn height->position [height]
-  (.floor js/Math (* height (:height (letter-size)))))
+  (.ceil js/Math (* height (:height (letter-size)))))
 
 (defn position->height [pos]
   (.floor js/Math (/ pos (:height (letter-size)))))

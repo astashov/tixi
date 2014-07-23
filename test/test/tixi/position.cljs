@@ -28,13 +28,13 @@
 
 (deftest rect-coords->position
   (is (= (p/coords->position (g/build-rect (Point. 5 2) (Point. 16 4)))
-         (g/build-rect (Point. 20 36) (Point. 64 72)))))
+         (g/build-rect (Point. 20 36) (Point. 62 72)))))
 
 (deftest point-coords->position
-  (is (= (p/coords->position (Point. 16 4)) (Point. 64 72))))
+  (is (= (p/coords->position (Point. 16 4)) (Point. 62 72))))
 
 (deftest size-coords->position
-  (is (= (p/coords->position (Size. 16 4)) (Size. 64 72))))
+  (is (= (p/coords->position (Size. 16 4)) (Size. 62 72))))
 
 (deftest event->coords
   (let [event (js-obj "clientX" 40

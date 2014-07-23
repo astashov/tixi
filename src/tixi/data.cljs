@@ -38,6 +38,7 @@
    :connecting-id nil
    :show-result false
    :show-z-indexes? false
+   :letter-size nil
    :line-edges {:start (first line-edge-chars)
                   :end (first line-edge-chars)}})
 
@@ -58,6 +59,9 @@
 
 (defdata completed []
   (:completed (state data)))
+
+(defdata letter-size []
+  (:letter-size data))
 
 (defdata locks []
   (:locks (state data)))

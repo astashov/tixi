@@ -9,6 +9,7 @@
 (enable-console-print!)
 
 (di/install-keyboard-events)
+(di/install-onresize-event)
 
 (render)
 

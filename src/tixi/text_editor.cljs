@@ -35,10 +35,10 @@
         node-height (.-offsetHeight node)
         text-width (p/width->position (current-text-width install-node node))
         margin-top (* (.floor js/Math (/ (- (/ install-node-height 2) (/ node-height 2))
-                                         (:height (p/letter-size))))
-                      (:height (p/letter-size)))
+                                        (:height (p/letter-size))))
+                     (:height (p/letter-size)))
         margin-left (max (* (.floor js/Math (/ (- (/ install-node-width 2) (/ text-width 2))
-                                          (:width (p/letter-size))))
+                                               (:width (p/letter-size))))
                             (:width (p/letter-size)))
                          0)]
     (if text?

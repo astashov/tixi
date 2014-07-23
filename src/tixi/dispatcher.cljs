@@ -3,6 +3,7 @@
             [tixi.data :as d]
             [tixi.controller :as c]
             [tixi.geometry :as g :refer [Point]]
+            [tixi.position :as p]
             [tixi.utils :refer [p]]))
 
 (def ^:private default-state {:start-action nil
@@ -89,3 +90,7 @@
   (dommy/listen! js/document :mouseup (fn [e]
     (when (= (.-button e) 0)
       (js/setTimeout #(set-state! :mouse-down? false) 0)))))
+
+(defn install-onresize-event []
+  ;; By some reason if attaching with dommy, it fails in PhantomJS
+  (.addEventListener js/window "resize" (fn [_] (p/set-letter-size!))))
