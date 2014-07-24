@@ -4,6 +4,7 @@
             [tixi.mutators.shared :as ms]
             [tixi.items :as i]
             [tixi.position :as p]
+            [tixi.google-analytics :as ga]
             [tixi.utils :refer [p get-by-val]]))
 
 
@@ -21,6 +22,7 @@
   (if-let [outlet-id (d/outlet-id connector-id connector-edge)]
     connector-item
     (do
+      (ga/event! "draw" "add-lock")
       (ms/update-state! assoc-in [:locks :outlets outlet-id [connector-id connector-edge]] outlet)
       (ms/update-state! assoc-in [:locks :connectors connector-id connector-edge] outlet-id)
       (assoc connector-item :connected (conj (or (:connected connector-item) #{}) connector-edge)))))

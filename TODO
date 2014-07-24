@@ -15,11 +15,9 @@
 * Add a way to align items relatively to each other
 * Draw straight/square items with 'Shift'
 * Make item/layer names consistent - name everything as 'items'
-* Add Travis support
 * Check if I could publish it as a Google Chrome app.
 * Add some visual confirmation when you reach some outlet by a connector
 * Check if we could avoid setting dimensions to text item from outside, by calculating them based on given text
-* Instrument the app with Google Analytics events
 * Refactor drawer.js
 * Add support of larger canvases (larger than the current screen size)
 * It seems like sometimes cache is not updated before rendering - mispositioned items. Need to figure out why and fix

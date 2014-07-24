@@ -12,7 +12,8 @@
             [tixi.mutators.selection :as ms]
             [tixi.mutators.text :as mt]
             [tixi.mutators.undo :as mu]
-            [tixi.mutators :as m]))
+            [tixi.mutators :as m]
+            [tixi.google-analytics :as ga]))
 
 (def ^:private request-id (atom nil))
 (def ^:private select-second-clicked (atom false))
@@ -32,18 +33,42 @@
 (defn keypress [name]
   (render
     (case name
-      :select (m/set-tool! :select)
-      :line (m/set-tool! :line)
-      :rect-line (m/set-tool! :rect-line)
-      :rect (m/set-tool! :rect)
-      :text (m/set-tool! :text)
-      :undo (mu/undo!)
-      :redo (mu/redo!)
-      :result (m/show-result! (not (d/show-result?)))
-      :delete (md/delete-selected!)
-      :z-inc (m/z-inc! (d/selected-ids))
-      :z-dec (m/z-dec! (d/selected-ids))
-      :z-show (m/z-show! (not (d/show-z-indexes?))))))
+      :select (do
+                (ga/event! "toolbar" "select")
+                (m/set-tool! :select))
+      :line (do
+              (ga/event! "toolbar" "line")
+              (m/set-tool! :line))
+      :rect-line (do
+                   (ga/event! "toolbar" "rect-line")
+                   (m/set-tool! :rect-line))
+      :rect (do
+              (ga/event! "toolbar" "rect")
+              (m/set-tool! :rect))
+      :text (do
+              (ga/event! "toolbar" "text")
+              (m/set-tool! :text))
+      :undo (do
+              (ga/event! "toolbar" "undo")
+              (mu/undo!))
+      :redo (do
+              (ga/event! "toolbar" "redo")
+              (mu/redo!))
+      :result (do
+                (ga/event! "toolbar" "result")
+                (m/show-result! (not (d/show-result?))))
+      :delete (do
+                (ga/event! "toolbar" "delete")
+                (md/delete-selected!))
+      :z-inc (do
+               (ga/event! "topbar" "z-inc")
+               (m/z-inc! (d/selected-ids)))
+      :z-dec (do
+               (ga/event! "topbar" "z-dec")
+               (m/z-dec! (d/selected-ids)))
+      :z-show (do
+                (ga/event! "topbar" "z-show")
+                (m/z-show! (not (d/show-z-indexes?)))))))
 
 (defn mouse-down [client-point modifiers payload]
   (render
@@ -71,7 +96,9 @@
       (when (= action :draw)
         (cond
           (d/draw-tool?)
-          (mc/finish-current-layer!)
+          (do
+            (ga/event! "draw" (str "finish-" (-> (d/current) :item :type name)))
+            (mc/finish-current-layer!))
 
           (d/select-tool?)
           (do
@@ -111,6 +138,7 @@
 
 (defn edit-text [data]
   (render
+    (ga/event! "draw" "edit-text")
     (let [{:keys [id text dimensions]} data]
       (mt/edit-text-in-item! nil)
       (mt/set-text-to-item! id text dimensions))))
@@ -127,10 +155,12 @@
 
 (defn change-line-edge [data]
   (render
+    (ga/event! "topbar" "change-line-edge")
     (let [{:keys [edge]} data]
       (m/cycle-line-edge! edge))))
 
 (defn change-selection-edges [data]
   (render
+    (ga/event! "topbar" "change-selection-edges")
     (let [{:keys [edge]} data]
       (m/cycle-selection-edges! edge))))
