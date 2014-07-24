@@ -22,7 +22,8 @@
 * Add support of larger canvases (larger than the current screen size)
 * It seems like sometimes cache is not updated before rendering - mispositioned items. Need to figure out why and fix
 * Maybe custom colorize the items?
-* Add comments here and there, document the architecture of the app
+* Add comments here and there
+* Add autoadjusting of the size of items to the inner text size
 * Think how would it be possible to implement collaboration
   - Could try Firebase, the problem - serializing. tixi.sync should know a lot,
     and need to keep it updated when we change the data schema
