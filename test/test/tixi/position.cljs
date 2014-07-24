@@ -28,18 +28,27 @@
 
 (deftest rect-coords->position
   (is (= (p/coords->position (g/build-rect (Point. 5 2) (Point. 16 4)))
-         (g/build-rect (Point. 20 36) (Point. 62 72)))))
+         (g/build-rect (Point. (.ceil js/Math (* 5 (:width (p/letter-size))))
+                               (.ceil js/Math (* 2 (:height (p/letter-size)))))
+                       (Point. (.ceil js/Math (* 16 (:width (p/letter-size))))
+                               (.ceil js/Math (* 4 (:height (p/letter-size)))))))))
 
 (deftest point-coords->position
-  (is (= (p/coords->position (Point. 16 4)) (Point. 62 72))))
+  (is (= (p/coords->position (Point. 16 4))
+         (Point. (.ceil js/Math (* 16 (:width (p/letter-size))))
+                 (.ceil js/Math (* 4 (:height (p/letter-size))))))))
 
 (deftest size-coords->position
-  (is (= (p/coords->position (Size. 16 4)) (Size. 62 72))))
+  (is (= (p/coords->position (Size. 16 4))
+         (Size. (.ceil js/Math (* 16 (:width (p/letter-size))))
+                (.ceil js/Math (* 4 (:height (p/letter-size))))))))
 
 (deftest event->coords
   (let [event (js-obj "clientX" 40
                       "clientY" 60)]
-    (is (= (p/event->coords event) (Point. 10 3)))))
+    (is (= (p/event->coords event)
+           (Point. (.floor js/Math (/ 40 (:width (p/letter-size))))
+                   (.floor js/Math (/ 60 (:height (p/letter-size)))))))))
 
 (deftest items-inside-rect
   (let [id1 (create-layer! (g/build-rect (Point. 2 2) (Point. 3 4)))

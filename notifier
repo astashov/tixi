@@ -1,0 +1,5 @@
+#!/bin/bash
+
+if type "terminal-notifier" &> /dev/null; then
+  terminal-notifier -title ClojureScript -activate com.googlecode.iTerm2 -message "$*"
+fi

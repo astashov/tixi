@@ -5,7 +5,7 @@
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [com.facebook/react "0.10.0"]
                  [org.clojure/clojurescript "0.0-2202"]
-                 [quiescent "0.1.4-1"]
+                 [org.clojars.astashov/quiescent "0.1.4-1-SNAPSHOT"]
                  [prismatic/dommy "0.1.1"]
                  [org.clojure/core.async "0.1.301.0-deb34a-alpha"]
                  [prismatic/schema "0.2.2"]
@@ -35,7 +35,7 @@
                 :source-map true}}
               {:id "dev"
                :source-paths ["src" "brepl"]
-               :notify-command ["terminal-notifier" "-title" "ClojureScript" "-activate" "com.googlecode.iTerm2" "-message"]
+               :notify-command ["./notifier"]
                :compiler {
                  :output-to "tixi_dev.js"
                  :optimizations :whitespace
