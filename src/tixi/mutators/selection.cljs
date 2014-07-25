@@ -4,8 +4,10 @@
             [tixi.geometry :as g]
             [tixi.mutators :as m]
             [tixi.mutators.shared :as ms]
+            [tixi.mutators.delete :as md]
             [tixi.mutators.render :as mr]
             [tixi.mutators.locks :as ml]
+            [tixi.mutators.undo :as mu]
             [tixi.utils :refer [p]]
             [tixi.position :as p]))
 
@@ -98,3 +100,28 @@
         (start-selection! point))))
   (set-selection-rel-rects!)
   (swap! d/data assoc-in [:selection :rect] (p/items-wrapping-rect (d/selected-ids)))))
+
+(defn copy! []
+  (let [items (d/selected-items)]
+    (when (not-empty items)
+      (swap! d/data assoc :clipboard items))))
+
+(defn cut! []
+  (let [ids (d/selected-ids)]
+    (copy!)
+    (select-layer! nil)
+    (md/delete-items! ids)))
+
+(defn paste! []
+  (mu/snapshot!)
+  (select-layer! nil)
+  (doseq [item (d/clipboard)]
+    (let [id (:autoincrement @d/data)]
+      (ms/autoincrement!)
+      (ms/update-state! assoc-in [:completed id] (update-in item [:input] g/move (g/Size. 1 1)))
+      (mr/render-items!)
+      (let [new-item (d/completed-item id)]
+        (when (i/connector? new-item)
+          (ml/try-to-lock! new-item id :start (-> new-item :input :start))
+          (ml/try-to-lock! new-item id :end (-> new-item :input :end)))
+        (select-layer! id nil true)))))

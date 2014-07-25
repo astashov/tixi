@@ -11,7 +11,7 @@
 (defn- build-layer! [type content]
   (let [id (:autoincrement @d/data)
         item {:type type :input content :z 0 :edges (d/line-edges)}]
-    (swap! d/data update-in [:autoincrement] inc)
+    (ms/autoincrement!)
     {:id id :item item}))
 
 (defn initiate-current-layer! [point]

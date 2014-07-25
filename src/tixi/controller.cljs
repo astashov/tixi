@@ -59,7 +59,8 @@
                 (m/show-result! (not (d/show-result?))))
       :delete (do
                 (ga/event! "toolbar" "delete")
-                (md/delete-selected!))
+                (md/delete-items! (d/selected-ids))
+                (ms/select-layer! nil))
       :z-inc (do
                (ga/event! "topbar" "z-inc")
                (m/z-inc! (d/selected-ids)))
@@ -68,7 +69,16 @@
                (m/z-dec! (d/selected-ids)))
       :z-show (do
                 (ga/event! "topbar" "z-show")
-                (m/z-show! (not (d/show-z-indexes?)))))))
+                (m/z-show! (not (d/show-z-indexes?))))
+      :copy (do
+              (ga/event! "topbar" "copy")
+              (ms/copy!))
+      :cut (do
+             (ga/event! "topbar" "cut")
+             (ms/cut!))
+      :paste (do
+               (ga/event! "topbar" "paste")
+               (ms/paste!)))))
 
 (defn mouse-down [client-point modifiers payload]
   (render

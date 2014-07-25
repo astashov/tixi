@@ -38,14 +38,21 @@
       8  (do ; backspace
            (.preventDefault event)
            (c/keypress :delete))
+      67 (when (or (.-metaKey event) (.-ctrlKey event))
+           (c/keypress :copy)) ; c
       76 (c/keypress :line) ; l
       81 (c/keypress :result)
       82 (c/keypress :rect) ; r
       83 (c/keypress :select) ; s
       84 (c/keypress :text) ; t
+      86 (when (or (.-metaKey event) (.-ctrlKey event))
+           (c/keypress :paste)) ; v
+      88 (when (or (.-metaKey event) (.-ctrlKey event))
+           (c/keypress :cut)) ; x
       89 (c/keypress :rect-line) ; y
       90 (p @d/data) ; z
       85 (c/keypress :undo) ; u
+      73 (c/keypress :redo) ; u
       78 (c/keypress :z-inc) ; n
       77 (c/keypress :z-dec) ; m
       nil)))

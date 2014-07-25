@@ -4,7 +4,6 @@
 * Add possibility to group/ungroup items
 * Add grid
 * Add guides
-* Add copying/pasting
 * Add nice helpers showing the origin/dimensions of an item when you resize/move it around
 * Find a way how to design UI for Undo Tree
 * Add fills
@@ -23,8 +22,9 @@
 * It seems like sometimes cache is not updated before rendering - mispositioned items. Need to figure out why and fix
 * Maybe custom colorize the items?
 * Add comments here and there
-* Add autoadjusting of the size of items to the inner text size
+* Add autoadjusting of items' size to the inner text size
 * Add link to Github
+* Fix bug - connectors keep 'connected' edges after deleting item with outlet
 * Add saving of state
 * Think how would it be possible to implement collaboration
   - Could try Firebase, the problem - serializing. tixi.sync should know a lot,

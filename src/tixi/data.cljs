@@ -33,6 +33,7 @@
                :current nil
                :rel-rects {}}
    :cache {}
+   :clipboard []
    :edit-text-id nil
    :hover-id nil
    :connecting-id nil
@@ -44,6 +45,9 @@
 
 (def data
   (atom initial-data))
+
+(defdata clipboard []
+  (:clipboard data))
 
 (defdata current []
   (:current data))

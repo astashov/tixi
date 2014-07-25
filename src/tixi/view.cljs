@@ -81,7 +81,7 @@
 
 (q/defcomponent Text
   [{:keys [id item edit-text-id]} channel]
-  (q/on-update
+  (q/on-render
     (dom/div {:ref "text" :className "text" :id (str "text-" id)}
       (dom/div {:className "text--wrapper" :style {:padding (letter-size)}}
         (when (not= id edit-text-id)

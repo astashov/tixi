@@ -31,3 +31,6 @@
       (ms/select-layer! id3)
       (ms/resize-selection! (g/Size. 3 3) :se)
       [id1 id2 id3])))
+
+(defn item-with-input [input]
+  (first (filter (fn [[id item]] (= (:input item) input)) (d/completed))))

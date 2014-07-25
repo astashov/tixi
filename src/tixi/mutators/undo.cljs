@@ -2,7 +2,8 @@
   (:require [tixi.data :as d]
             [clojure.zip :as z]
             [tixi.mutators.render :as mr]
-            [tixi.tree :as t]))
+            [tixi.tree :as t]
+            [tixi.utils :refer [p]]))
 
 (defn snapshot! []
   (swap! d/data assoc-in [:state] (-> (d/state-loc)

@@ -16,6 +16,7 @@ As a side effect, it appears to be nice and hopefully useful tool. :)
 * You can "lock" lines to rectangles, so if you move/resize rectangle, the line will be moved too
 * You can add arrows to the lines
 * There is undo and redo.
+* There is copy and paste (with regular Cmd+C/Ctrl+C and Cmd+V/Ctrl+V)
 * You can copy the final result to the clipboard, and paste it somewhere in email/docs/comments/etc.
 
 ## Libraries and Frameworks
