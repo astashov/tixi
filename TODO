@@ -24,6 +24,8 @@
 * Maybe custom colorize the items?
 * Add comments here and there
 * Add autoadjusting of the size of items to the inner text size
+* Add link to Github
+* Add saving of state
 * Think how would it be possible to implement collaboration
   - Could try Firebase, the problem - serializing. tixi.sync should know a lot,
     and need to keep it updated when we change the data schema
