@@ -1,7 +1,7 @@
 (ns tixi.data
   (:require-macros [tixi.utils :refer [defdata]])
   (:require [tixi.utils :refer [seq-contains? p next-of]]
-            [tixi.tree :as t :refer [Node]]
+            [tixi.tree :as t]
             [tixi.items :as i]
             [tixi.drawer :as dr]
             [clojure.zip :as z]))
@@ -20,11 +20,14 @@
 (def line-edge-chars
   [nil :arrow])
 
+(def ^:private initial-state
+  {:completed {}
+   :locks {:connectors {}
+           :outlets {}}})
+
 (def initial-data
   {:current nil
-   :state (zip (t/node {:completed {}
-                        :locks {:connectors {}
-                                :outlets {}}}))
+   :state initial-state
    :tool :line
    :action nil
    :autoincrement 0
@@ -33,6 +36,7 @@
                :current nil
                :rel-rects {}}
    :cache {}
+   :stack (zip (t/node initial-state))
    :clipboard []
    :edit-text-id nil
    :hover-id nil
@@ -52,14 +56,17 @@
 (defdata current []
   (:current data))
 
-(defdata state-loc []
+(defdata state []
   (:state data))
 
-(defdata state []
-  (:value (z/node (state-loc data))))
+(defdata stack-loc []
+  (:stack data))
 
-(defdata previous-state []
-  (:value (z/node (z/up (state-loc data)))))
+(defdata stack []
+  (:value (z/node (stack-loc data))))
+
+(defdata previous-stack []
+  (:value (z/node (z/up (stack-loc data)))))
 
 (defdata completed []
   (:completed (state data)))

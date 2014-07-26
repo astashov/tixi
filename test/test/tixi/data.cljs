@@ -20,10 +20,10 @@
   (is (= (d/current {:current "bla"}) "bla")))
 
 (deftest completed
-  (is (= (d/completed {:state (d/zip (t/node {:completed "bla"}))}) "bla")))
+  (is (= (d/completed {:state {:completed "bla"}}) "bla")))
 
 (deftest completed-item
-  (is (= (d/completed-item {:state (d/zip (t/node {:completed {1 "bla"}}))} 1) "bla")))
+  (is (= (d/completed-item {:state {:completed {1 "bla"}}} 1) "bla")))
 
 (deftest tool
   (is (= (d/tool {:tool "bla"}) "bla")))

@@ -7,6 +7,8 @@
   (swap! d/data update-in [:autoincrement] inc))
 
 (defn update-state! [f ks & args]
-  (swap! d/data assoc-in [:state] (z/replace (d/state-loc)
-                                             (t/update (z/node (d/state-loc))
-                                                       (apply f (d/state) ks args)))))
+  (let [new-value (apply f (d/state) ks args)]
+    (swap! d/data assoc-in [:state] new-value)
+    (swap! d/data assoc-in [:stack] (z/replace (d/stack-loc)
+                                               (t/update (z/node (d/stack-loc))
+                                                         new-value)))))

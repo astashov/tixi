@@ -6,30 +6,32 @@
             [tixi.utils :refer [p]]))
 
 (defn snapshot! []
-  (swap! d/data assoc-in [:state] (-> (d/state-loc)
-                                      (z/insert-child (t/node (d/state)))
+  (swap! d/data assoc-in [:stack] (-> (d/stack-loc)
+                                      (z/insert-child (t/node (d/stack)))
                                       z/down)))
 
 (defn- can-undo? []
-  (boolean (z/up (d/state-loc))))
+  (boolean (z/up (d/stack-loc))))
 
 (defn- can-redo? []
-  (boolean (z/node (z/down (d/state-loc)))))
+  (boolean (z/node (z/down (d/stack-loc)))))
 
 (defn undo! []
   (when (can-undo?)
-    (swap! d/data assoc-in [:state] (z/up (d/state-loc)))
+    (swap! d/data assoc-in [:stack] (z/up (d/stack-loc)))
+    (swap! d/data assoc-in [:state] (d/stack))
     (doseq [[id _] (d/completed)]
       (mr/touch-item! id))))
 
 (defn redo! []
   (when (can-redo?)
-    (swap! d/data assoc-in [:state] (z/down (d/state-loc)))
+    (swap! d/data assoc-in [:stack] (z/down (d/stack-loc)))
+    (swap! d/data assoc-in [:state] (d/stack))
     (doseq [[id _] (d/completed)]
       (mr/touch-item! id))))
 
 (defn undo-if-unchanged! []
-  (when (and (z/up (d/state-loc))
-             (= (d/state)
-                (:value (z/node (z/up (d/state-loc))))))
+  (when (and (z/up (d/stack-loc))
+             (= (d/stack)
+                (:value (z/node (z/up (d/stack-loc))))))
     (undo!)))
