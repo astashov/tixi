@@ -69,17 +69,17 @@
 (deftest dimensions
   (let [rect (g/build-rect 2 3 4 6)
         item {:type :line :input rect}]
-    (is (= (i/dimensions item) (g/Size. 2 3)))))
+    (is (= (i/dimensions item) (g/build-size 2 3)))))
 
 (deftest origin
   (let [rect (g/build-rect 2 3 4 6)
         item {:type :line :input rect}]
-    (is (= (i/origin item) (g/Point. 2 3)))))
+    (is (= (i/origin item) (g/build-point 2 3)))))
 
 (deftest update
   (let [rect (g/build-rect 2 3 4 6)
         item {:type :rect-line :input rect}
-        updated-item (i/update item (g/Point. 4 7))]
+        updated-item (i/update item (g/build-point 4 7))]
     (is (= (:input updated-item) (g/build-rect 2 3 4 7)))
     (is (= (:text updated-item) nil))
     (is (= (js->clj (i/render updated-item)) {:points [[[0 0] {"v" "|"}]
@@ -135,7 +135,7 @@
 (deftest update-text
   (let [rect (g/build-rect 2 3 2 3)
         item {:type :text :input rect}
-        updated-item (i/update item (g/Point. 4 5))]
+        updated-item (i/update item (g/build-point 4 5))]
     (is (= (:input updated-item) (g/build-rect 4 5 4 5)))
     (is (= (:text updated-item) nil))
     (is (= (js->clj (i/render updated-item)) {:points [], :data "", :index {}}))))
@@ -143,7 +143,7 @@
 (deftest set-text-with-dimensions
   (let [rect (g/build-rect 2 3 2 3)
         item {:type :text :input rect}
-        item-with-text (i/set-text item "bla" (g/Size. 3 4))]
+        item-with-text (i/set-text item "bla" (g/build-size 3 4))]
     (is (= (:input item-with-text) (g/build-rect 2 3 4 6)))
     (is (= (:text item-with-text) "bla"))
     (is (= (js->clj (i/render item-with-text)) {:points [], :data "  \n  \n  ", :index {}}))))

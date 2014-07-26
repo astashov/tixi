@@ -97,17 +97,17 @@
 
 (defpoly connectors [item]
   #{:line :rect-line}
-  [(g/Point. 0 0) (g/Point. 1 1)]
+  [(g/build-point 0 0) (g/build-point 1 1)]
 
   [])
 
 (defpoly outlets [item]
   :rect
-  #{(g/Point. 0 0)    (g/Point. 0.25 0)    (g/Point. 0.5 0)    (g/Point. 0.75 0)    (g/Point. 1 0)
-    (g/Point. 0 0.25) (g/Point. 1 0.25)
-    (g/Point. 0 0.5)  (g/Point. 1 0.5)
-    (g/Point. 0 0.75) (g/Point. 1 0.75)
-    (g/Point. 0 1)    (g/Point. 0.25 1)    (g/Point. 0.5 1)    (g/Point. 0.75 1)    (g/Point. 1 1)}
+  #{(g/build-point 0 0)    (g/build-point 0.25 0)    (g/build-point 0.5 0)    (g/build-point 0.75 0)    (g/build-point 1 0)
+    (g/build-point 0 0.25) (g/build-point 1 0.25)
+    (g/build-point 0 0.5)  (g/build-point 1 0.5)
+    (g/build-point 0 0.75) (g/build-point 1 0.75)
+    (g/build-point 0 1)    (g/build-point 0.25 1)    (g/build-point 0.5 1)    (g/build-point 0.75 1)    (g/build-point 1 1)}
 
   #{})
 

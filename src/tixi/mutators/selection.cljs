@@ -118,7 +118,7 @@
   (doseq [item (d/clipboard)]
     (let [id (:autoincrement @d/data)]
       (ms/autoincrement!)
-      (ms/update-state! assoc-in [:completed id] (update-in item [:input] g/move (g/Size. 1 1)))
+      (ms/update-state! assoc-in [:completed id] (update-in item [:input] g/move (g/build-size 1 1)))
       (mr/render-items!)
       (let [new-item (d/completed-item id)]
         (when (i/connector? new-item)

@@ -7,8 +7,8 @@
             [tixi.utils :refer [p]]))
 
 (def ^:private default-state {:start-action nil
-                              :start (Point. -1 -1)
-                              :previous-point (Point. -1 -1)
+                              :start (g/build-point -1 -1)
+                              :previous-point (g/build-point -1 -1)
                               :mouse-down? false})
 
 (def ^:private state (atom default-state))

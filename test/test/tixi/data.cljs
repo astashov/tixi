@@ -81,7 +81,7 @@
       (m/set-tool! :text)
       (let [id3 (create-layer! (g/build-rect 14 1 14 1))]
         (mt/set-text-to-item! id2 "bla\nfoo\nbar")
-        (mt/set-text-to-item! id3 "oh\ntext" (g/Size. 4 2))
+        (mt/set-text-to-item! id3 "oh\ntext" (g/build-size 4 2))
         (is (= (.-width (d/result)) 19))
         (is (= (.-height (d/result)) 10))
         (is (= (.-content (d/result))
@@ -99,7 +99,7 @@
 (deftest result-text-only
   (m/set-tool! :text)
   (let [id (create-layer! (g/build-rect 0 0 6 2))]
-    (mt/set-text-to-item! id (str "foo\n\nbar") (g/Size. 3 3))
+    (mt/set-text-to-item! id (str "foo\n\nbar") (g/build-size 3 3))
     (is (= (.-width (d/result)) 3))
     (is (= (.-height (d/result)) 3))
     (is (= (.-content (d/result))
@@ -111,8 +111,8 @@
   (m/set-tool! :text)
   (let [id1 (create-layer! (g/build-rect 0 0 6 2))
         id2 (create-layer! (g/build-rect 0 0 6 2))]
-    (mt/set-text-to-item! id1 (str "foo\n\nbar") (g/Size. 3 3))
-    (mt/set-text-to-item! id2 (str "zuu\n\nwoo") (g/Size. 3 3))
+    (mt/set-text-to-item! id1 (str "foo\n\nbar") (g/build-size 3 3))
+    (mt/set-text-to-item! id2 (str "zuu\n\nwoo") (g/build-size 3 3))
     (is (= (.-content (d/result)) (str "zuu\n" "   \n" "woo")))
     (m/z-inc! [id1])
     (is (= (.-content (d/result)) (str "foo\n" "   \n" "bar")))))

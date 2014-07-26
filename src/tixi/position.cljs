@@ -1,8 +1,8 @@
 (ns tixi.position
   (:require-macros [dommy.macros :refer (node sel1)]
-                   [tixi.utils :refer (b)])
+                   [tixi.utils :refer (b defpoly)])
   (:require [dommy.core :as dommy]
-            [tixi.geometry :as g :refer [Size Rect Point]]
+            [tixi.geometry :as g]
             [tixi.data :as d]
             [tixi.items :as i]
             [clojure.string :as string]
@@ -18,7 +18,7 @@
     (let [calculator (sel1 :.calculate-letter-size)
           width (.-offsetWidth calculator)
           height (.-offsetHeight calculator)
-          result (Size. (/ width number-of-x) (/  height number-of-x))]
+          result (g/build-size (/ width number-of-x) (/  height number-of-x))]
       (dommy/remove! calculator)
       result)))
 
@@ -67,54 +67,47 @@
   (.floor js/Math (/ pos (:height (letter-size)))))
 
 (defn canvas-size []
-  (Size. (position->width (.-innerWidth js/window))
+  (g/build-size (position->width (.-innerWidth js/window))
          (position->height (.-innerHeight js/window))))
 
-(defprotocol IConvert
-  (position->coords [this])
-  (coords->position [this]))
+(defpoly position->coords [this]
+  :rectangle
+  (let [{:keys [width height]} (letter-size)
+        [x1 y1 x2 y2] (g/values this)]
+    (g/build-rect (position->width x1) (position->height y1)
+                  (position->width x2) (position->height y2)))
+  :point
+  (let [{:keys [width height]} (letter-size)
+        [x y] (g/values this)]
+    (g/build-point (position->width x) (position->height y)))
 
-(extend-type Rect
-  IConvert
-  (position->coords [this]
-    (let [{:keys [width height]} (letter-size)
-          [x1 y1 x2 y2] (g/values this)]
-      (Rect. (Point. (position->width x1) (position->height y1))
-             (Point. (position->width x2) (position->height y2)))))
-  (coords->position [this]
-    (let [{:keys [width height]} (letter-size)
-          [x1 y1 x2 y2] (g/values this)]
-      (Rect. (Point. (width->position x1) (height->position y1))
-             (Point. (width->position x2) (height->position y2))))))
+  :size
+  (let [{:keys [width height]} (letter-size)
+        [x y] (g/values this)]
+    (g/build-size (position->width x) (position->height y))))
 
-(extend-type Point
-  IConvert
-  (position->coords [this]
-    (let [{:keys [width height]} (letter-size)
-          [x y] (g/values this)]
-      (Point. (position->width x) (position->height y))))
-  (coords->position [this]
-    (let [{:keys [width height]} (letter-size)
-         [x y] (g/values this)]
-      (Point. (width->position x) (height->position y)))))
+(defpoly coords->position [this]
+  :rectangle
+  (let [{:keys [width height]} (letter-size)
+        [x1 y1 x2 y2] (g/values this)]
+    (g/build-rect (width->position x1) (height->position y1)
+                  (width->position x2) (height->position y2)))
+  :point
+  (let [{:keys [width height]} (letter-size)
+        [x y] (g/values this)]
+    (g/build-point (width->position x) (height->position y)))
 
-(extend-type Size
-  IConvert
-  (position->coords [this]
-    (let [{:keys [width height]} (letter-size)
-          [x y] (g/values this)]
-      (Size. (position->width x) (position->height y))))
-  (coords->position [this]
-    (let [{:keys [width height]} (letter-size)
-         [x y] (g/values this)]
-      (Size. (width->position x) (height->position y)))))
+  :size
+  (let [{:keys [width height]} (letter-size)
+        [x y] (g/values this)]
+    (g/build-size (width->position x) (height->position y))))
 
 (defn event->coords [event]
   (let [root (sel1 :.project)
         offset (if root (style/getPageOffset root) (js-obj "x" 0 "y" 0))
         x (- (.-clientX event) (.-x offset))
         y (- (.-clientY event) (.-y offset))]
-    (position->coords (Point. x y))))
+    (position->coords (g/build-point x y))))
 
 (defn items-inside-rect [rect]
   (filter (fn [[_ item]]

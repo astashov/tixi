@@ -2,7 +2,7 @@
   (:require-macros [cemerick.cljs.test :refer (is deftest use-fixtures)]
                    [tixi.utils :refer (b)])
   (:require [cemerick.cljs.test :as test]
-            [tixi.geometry :as g :refer [Rect Point Size]]
+            [tixi.geometry :as g]
             [tixi.mutators :as m]
             [tixi.mutators.locks :as ml]
             [test.tixi.utils :refer [create-layer!]]

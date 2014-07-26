@@ -38,7 +38,7 @@
         offset (if root (style/getPageOffset root) (js-obj "x" 0 "y" 0))
         x (- (.-clientX event) (.-x offset))
         y (- (.-clientY event) (.-y offset))]
-    (g/Point. x y)))
+    (g/build-point x y)))
 
 (defn- send-event-with-coords [action type event channel]
   (when (= (.-button event) 0)
@@ -303,7 +303,7 @@
 (q/defcomponent Result [data channel] {:key "result"}
  (let [result (d/result data)
         content (.-content result)
-        coords-size (g/Size. (.-width result) (.-height result))
+        coords-size (g/build-size (.-width result) (.-height result))
         position-size (p/coords->position coords-size)]
     (q/on-render
       (dom/div {:className "result"}

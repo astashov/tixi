@@ -2,7 +2,7 @@
   (:require-macros [cemerick.cljs.test :refer (is deftest use-fixtures)]
                    [tixi.utils :refer (b)])
   (:require [cemerick.cljs.test :as test]
-            [tixi.geometry :as g :refer [Rect Point Size]]
+            [tixi.geometry :as g]
             [tixi.mutators :as m]
             [tixi.mutators.text :as mt]
             [test.tixi.utils :refer [create-layer! create-sample-layer!]]
@@ -20,12 +20,12 @@
   (is (= (d/edit-text-id) 3)))
 
 (deftest set-text-to-item!
-  (let [id (create-layer! (g/build-rect (Point. 5 6) (Point. 7 8)))]
+  (let [id (create-layer! (g/build-rect (g/build-point 5 6) (g/build-point 7 8)))]
     (mt/set-text-to-item! id "bla")
     (is (= (:text (d/completed-item id)) "bla"))))
 
 (deftest set-text-to-item-with-dimensions
   (m/set-tool! :text)
-  (let [id (create-layer! (g/build-rect (Point. 5 6) (Point. 5 6)))]
-    (mt/set-text-to-item! id "bla" (Size. 3 3))
+  (let [id (create-layer! (g/build-rect (g/build-point 5 6) (g/build-point 5 6)))]
+    (mt/set-text-to-item! id "bla" (g/build-size 3 3))
     (is (= (:input (d/completed-item id)) (g/build-rect 5 6 7 8)))))

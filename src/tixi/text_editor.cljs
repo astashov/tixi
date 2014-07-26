@@ -67,7 +67,7 @@
   (.execCommand instance "goDocEnd"))
 
 (defn- commit [instance node on-completed-callback]
-  (let [size (g/Size. (- (.-offsetWidth node) codemirror-sizer-width) (.-offsetHeight node))
+  (let [size (g/build-size (- (.-offsetWidth node) codemirror-sizer-width) (.-offsetHeight node))
         value (.getValue instance)]
     (remove! node)
     (on-completed-callback value size)))
