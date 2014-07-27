@@ -22,6 +22,7 @@
 
 (def ^:private initial-state
   {:completed {}
+   :autoincrement 0
    :locks {:connectors {}
            :outlets {}}})
 
@@ -30,7 +31,6 @@
    :state initial-state
    :tool :line
    :action nil
-   :autoincrement 0
    :selection {:ids []
                :rect nil
                :current nil
@@ -70,6 +70,9 @@
 
 (defdata completed []
   (:completed (state data)))
+
+(defdata autoincrement []
+  (:autoincrement (state data)))
 
 (defdata letter-size []
   (:letter-size data))

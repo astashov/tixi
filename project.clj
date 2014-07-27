@@ -30,7 +30,7 @@
                 :output-to "tixi.js"
                 :output-dir "out"
                 :preamble ["react/react_with_addons.min.js" "tixi/js/codemirror.js"]
-                :libs ["tixi/js/drawer.js"]
+                :libs ["tixi/js/drawer.js" "tixi/js/uuid.js" "tixi/js/compress.js"]
                 :optimizations :none
                 :source-map true}}
               {:id "dev"
@@ -41,7 +41,7 @@
                  :optimizations :whitespace
                  :pretty-print true
                  :preamble ["react/react_with_addons.min.js" "tixi/js/codemirror.min.js"]
-                 :libs ["tixi/js/drawer.js"]
+                 :libs ["tixi/js/drawer.js" "tixi/js/uuid.js" "tixi/js/compress.js"]
                  :externs ["react/externs/react.js" "tixi/js/externs.js"]
                  :source-map "tixi_dev.js.map"}}
               {:id "release"
@@ -51,7 +51,7 @@
                  :optimizations :advanced
                  :pretty-print false
                  :preamble ["react/react_with_addons.min.js" "tixi/js/codemirror.min.js"]
-                 :libs ["tixi/js/drawer.js"]
+                 :libs ["tixi/js/drawer.js" "tixi/js/uuid.js" "tixi/js/compress.js"]
                  :externs ["react/externs/react.js" "tixi/js/externs.js"]
                  :source-map "tixi_prod.js.map"}}
               {:id "test"
@@ -59,7 +59,7 @@
                :notify-command ["phantomjs" :cljs.test/runner "resources/tixi/js/function-bind-shim.js" "resources/tixi/js/raf.js" "tixi_test.js"]
                :compiler {
                  :preamble ["react/react_with_addons.min.js" "tixi/js/codemirror.js"]
-                 :libs ["tixi/js/drawer.js"]
+                 :libs ["tixi/js/drawer.js" "tixi/js/uuid.js" "tixi/js/compress.js"]
                  :output-to "tixi_test.js"
                  :optimizations :whitespace}}]
     :test-commands {"unit"

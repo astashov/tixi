@@ -9,7 +9,7 @@
             [tixi.items :as i]))
 
 (defn- build-layer! [type content]
-  (let [id (:autoincrement @d/data)
+  (let [id (d/autoincrement)
         item {:type type :input content :z 0 :edges (d/line-edges)}]
     (ms/autoincrement!)
     {:id id :item item}))

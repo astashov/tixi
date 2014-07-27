@@ -116,7 +116,7 @@
   (mu/snapshot!)
   (select-layer! nil)
   (doseq [item (d/clipboard)]
-    (let [id (:autoincrement @d/data)]
+    (let [id (d/autoincrement)]
       (ms/autoincrement!)
       (ms/update-state! assoc-in [:completed id] (update-in item [:input] g/move (g/build-size 1 1)))
       (mr/render-items!)
