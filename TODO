@@ -25,7 +25,6 @@
 * Add autoadjusting of items' size to the inner text size
 * Add link to Github
 * Fix bug - connectors keep 'connected' edges after deleting item with outlet
-* Add saving of state
 * Think how would it be possible to implement collaboration
   - Could try Firebase, the problem - serializing. tixi.sync should know a lot,
     and need to keep it updated when we change the data schema
