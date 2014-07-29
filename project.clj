@@ -9,13 +9,15 @@
                  [prismatic/dommy "0.1.1"]
                  [org.clojure/core.async "0.1.301.0-deb34a-alpha"]
                  [prismatic/schema "0.2.2"]
-                 [cider/cider-nrepl "0.6.1-SNAPSHOT"]]
+                 [cider/cider-nrepl "0.6.1-SNAPSHOT"]
+                 [figwheel "0.1.3-SNAPSHOT"]]
 
   :jvm-opts ["-Xmx1G"]
 
   :plugins [[lein-cljsbuild "1.0.3"]
             [com.cemerick/austin "0.1.4"]
-            [cider/cider-nrepl "0.6.1-SNAPSHOT"]]
+            [cider/cider-nrepl "0.6.1-SNAPSHOT"]
+            [lein-figwheel "0.1.3-SNAPSHOT"]]
 
   :profiles {
     :dev {
@@ -23,44 +25,38 @@
 
   :source-paths ["src"]
 
+  :figwheel {
+    :http-server-root "public"
+    :port 3449
+    :css-dirs ["resources/public/css"]}
+
   :cljsbuild {
-    :builds [{:id "tixi"
-              :source-paths ["src"]
+    :builds [{:id "dev"
+              :source-paths ["src" "brepl" "figwheel"]
               :compiler {
-                :output-to "tixi.js"
-                :output-dir "out"
-                :preamble ["react/react_with_addons.min.js" "tixi/js/codemirror.js"]
-                :libs ["tixi/js/drawer.js" "tixi/js/uuid.js" "tixi/js/compress.js"]
+                :output-to "resources/public/tixi.js"
+                :output-dir "resources/public/out"
+                :preamble ["react/react_with_addons.min.js" "public/js/codemirror.js"]
+                :libs ["public/js/drawer.js" "public/js/uuid.js" "public/js/compress.js"]
                 :optimizations :none
                 :source-map true}}
-              {:id "dev"
-               :source-paths ["src" "brepl"]
-               :notify-command ["./notifier"]
-               :compiler {
-                 :output-to "tixi_dev.js"
-                 :optimizations :whitespace
-                 :pretty-print true
-                 :preamble ["react/react_with_addons.min.js" "tixi/js/codemirror.min.js"]
-                 :libs ["tixi/js/drawer.js" "tixi/js/uuid.js" "tixi/js/compress.js"]
-                 :externs ["react/externs/react.js" "tixi/js/externs.js"]
-                 :source-map "tixi_dev.js.map"}}
               {:id "release"
                :source-paths ["src"]
                :compiler {
                  :output-to "tixi_prod.js"
                  :optimizations :advanced
                  :pretty-print false
-                 :preamble ["react/react_with_addons.min.js" "tixi/js/codemirror.min.js"]
-                 :libs ["tixi/js/drawer.js" "tixi/js/uuid.js" "tixi/js/compress.js"]
-                 :externs ["react/externs/react.js" "tixi/js/externs.js"]
+                 :preamble ["react/react_with_addons.min.js" "public/js/codemirror.js"]
+                 :libs ["public/js/drawer.js" "public/js/uuid.js" "public/js/compress.js"]
+                 :externs ["react/externs/react.js" "public/js/externs.js"]
                  :source-map "tixi_prod.js.map"}}
               {:id "test"
                :source-paths ["src" "test"]
-               :notify-command ["phantomjs" :cljs.test/runner "resources/tixi/js/function-bind-shim.js" "resources/tixi/js/raf.js" "tixi_test.js"]
+               :notify-command ["phantomjs" :cljs.test/runner "resources/public/js/function-bind-shim.js" "resources/public/js/raf.js" "tixi_test.js"]
                :compiler {
-                 :preamble ["react/react_with_addons.min.js" "tixi/js/codemirror.js"]
-                 :libs ["tixi/js/drawer.js" "tixi/js/uuid.js" "tixi/js/compress.js"]
+                 :preamble ["react/react_with_addons.min.js" "public/js/codemirror.js"]
+                 :libs ["public/js/drawer.js" "public/js/uuid.js" "public/js/compress.js"]
                  :output-to "tixi_test.js"
                  :optimizations :whitespace}}]
     :test-commands {"unit"
-      ["phantomjs" :runner "resources/tixi/js/function-bind-shim.js" "resources/tixi/js/raf.js" "tixi_test.js"]}})
+      ["phantomjs" :runner "resources/public/js/function-bind-shim.js" "resources/public/js/raf.js" "tixi_test.js"]}})

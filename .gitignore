@@ -11,8 +11,11 @@ pom.xml
 .repl
 .nrepl-port
 .lein-failures
+
 /*.js
 /*.js.map
+/resources/public/tixi.js
+/resources/public/out
 
 /.bundle
 /vendor/bundle

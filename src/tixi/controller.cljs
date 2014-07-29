@@ -1,5 +1,6 @@
 (ns tixi.controller
-  (:require-macros [tixi.controller :refer [render]])
+  (:require-macros [tixi.controller :refer [render]]
+                   [tixi.utils :refer [b]])
   (:require [tixi.data :as d]
             [tixi.channel :refer [channel]]
             [tixi.geometry :as g]

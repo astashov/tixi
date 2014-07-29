@@ -124,19 +124,16 @@ of the tree when do "Redo".
 
 ## Running on your machine
 
-Like any other ClojureScript app:
+The most convenient way of doing that is just to run:
 
 ```bash
-$ lein cljsbuild auto dev
+$ lein figwheel dev
 ```
 
-Will compile a JS file, the 'dev' build. Then you'll need to run some server, from the repo root, e.g. like this:
+It will compile a project, and start the figwheel server, which will reload the code in browser every single time
+you change any cljs or CSS file
 
-```bash
-$ python -m SimpleHTTPServer 8000
-```
-
-Now, open http://localhost:8000/index_dev.html in your browser, and you should be able to see it working.
+Now, open http://localhost:3449/index.html in your browser, and you should be able to see it working.
 
 There is also brepl running on 9000 port in dev build, so you could connect to it from REPL.
 

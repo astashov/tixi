@@ -2,7 +2,7 @@
   (:require [dommy.core :as dommy]
             [tixi.data :as d]
             [tixi.controller :as c]
-            [tixi.geometry :as g :refer [Point]]
+            [tixi.geometry :as g]
             [tixi.position :as p]
             [tixi.utils :refer [p]]))
 
