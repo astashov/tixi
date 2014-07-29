@@ -589,3 +589,17 @@ div.CodeMirror-cursors {
 .topbar--button__z-dec .topbar--button--icon {
   background-image: url(../images/z-dec.png)
 }
+.topbar--button__grid .topbar--button--icon {
+  background-image: url(../images/grid.png)
+}
+
+
+.grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: none;
+}
+.grid.is-visible {
+  display: block;
+}

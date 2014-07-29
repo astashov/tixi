@@ -44,6 +44,7 @@
    :show-result false
    :show-z-indexes? false
    :letter-size nil
+   :show-grid? true
    :line-edges {:start (first line-edge-chars)
                   :end (first line-edge-chars)}})
 
@@ -158,3 +159,6 @@
     (if (and (= (count selected-edges) 1))
       (next-of line-edge-chars (first selected-edges))
       (first line-edge-chars))))
+
+(defdata show-grid? []
+  (:show-grid? data))

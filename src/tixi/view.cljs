@@ -79,6 +79,14 @@
 (defn- letter-size []
   (str (:height (p/letter-size)) "px " (:width (p/letter-size)) "px"))
 
+(defn- draw-line-on-canvas [context rect]
+  (.beginPath context)
+  (set! (.-lineWidth context) 1)
+  (.moveTo context (-> rect :start :x) (-> rect :start :y))
+  (.lineTo context (-> rect :end :x) (-> rect :end :y))
+  (set! (.-strokeStyle context) "#ececec")
+  (.stroke context))
+
 (q/defcomponent Text
   [{:keys [id item edit-text-id]} channel]
   (q/on-render
@@ -183,6 +191,30 @@
   [data]
   (dom/div {:className "tool"} (str (:tool data))))
 
+(q/defcomponent Grid [show-grid?]
+  (q/on-render
+    (dom/canvas {:className (str "grid" (when show-grid? " is-visible"))})
+    (fn [canvas]
+      (let [project (sel1 :.project)
+            context (.getContext canvas "2d")
+            width (.-offsetWidth project)
+            height (.-offsetHeight project)
+            letter-width (:width (p/letter-size))
+            letter-height (:height (p/letter-size))]
+        (.setAttribute canvas "width" width)
+        (.setAttribute canvas "height" height)
+        (.translate context 0.5 0.5)
+        (dotimes [i (.floor js/Math (/ width letter-width))]
+          (draw-line-on-canvas
+            context
+            (g/build-rect (* i letter-width) 0
+                          (* i letter-width) height)))
+        (dotimes [i (.floor js/Math (/ height letter-height))]
+          (draw-line-on-canvas
+            context
+            (g/build-rect 0 (* i letter-height)
+                          width (* i letter-height))))))))
+
 (q/defcomponent Project
   "Displays the project"
   [data channel]
@@ -195,6 +227,7 @@
                              :else "")
                            (if (= (d/tool) :text) " is-text" ""))
               :onMouseMove (fn [e] (send-mousemove e channel))}
+      (Grid (d/show-grid? data))
       (Canvas data channel)
       (when (and (not-empty selected-ids) (not (d/edit-text-id)))
         (Selection data channel))
@@ -255,6 +288,10 @@
         line-edges (d/line-edges data)
         selection-edges-disabled? (empty? (filter #(i/connector? %) (d/selected-items)))]
     (apply dom/div {:className "topbar"}
+      (dom/button {:className "button topbar--button topbar--button__icon topbar--button__grid"
+                   :title "Toggle grid"
+                   :onClick (fn [e] (send-tool-click :grid channel))}
+        (dom/div {:className "button--icon topbar--button--icon"}))
       (case tool
         :select
         [(dom/button {:className "button topbar--button topbar--button__icon topbar--button__z-inc"

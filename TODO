@@ -2,7 +2,6 @@
 * Add way to specify text alignment (horizontal and vertical)
 * Correct text items sizes after resize
 * Add possibility to group/ungroup items
-* Add grid
 * Add guides
 * Add nice helpers showing the origin/dimensions of an item when you resize/move it around
 * Find a way how to design UI for Undo Tree
@@ -26,6 +25,7 @@
 * Add link to Github
 * Fix bug - connectors keep 'connected' edges after deleting item with outlet
 * Add "undo previews" - when you hover over the undo button, you will see a preview what gonna happen when you click undo
+* Save user preferences (maybe in local storage?)
 * Think how would it be possible to implement collaboration
   - Could try Firebase, the problem - serializing. tixi.sync should know a lot,
     and need to keep it updated when we change the data schema

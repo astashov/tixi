@@ -41,6 +41,9 @@
 (defn z-show! [bool]
   (swap! d/data assoc :show-z-indexes? bool))
 
+(defn toggle-grid! [bool]
+  (swap! d/data assoc :show-grid? bool))
+
 (defn cycle-line-edge! [edge]
   (swap! d/data assoc-in [:line-edges edge] (next-of d/line-edge-chars (edge (d/line-edges)))))
 

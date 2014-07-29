@@ -79,7 +79,10 @@
              (ms/cut!))
       :paste (do
                (ga/event! "topbar" "paste")
-               (ms/paste!)))))
+               (ms/paste!))
+      :grid (do
+              (ga/event! "topbar" "grid")
+              (m/toggle-grid! (not (d/show-grid?)))))))
 
 (defn mouse-down [client-point modifiers payload]
   (render
