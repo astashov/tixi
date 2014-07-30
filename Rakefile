@@ -38,6 +38,9 @@ task :package do
   }.each do |file|
     copy_file_or_directory(File.join(build_dir, file), dist_dir)
   end
+  FileUtils.rm_rf(File.join(dist_dir, "resources/public/out"))
+  FileUtils.rm_rf(File.join(dist_dir, "resources/public/tixi.js"))
+  FileUtils.rm_rf(File.join(dist_dir, "resources/public/index.html"))
   FileUtils.mv(File.join(dist_dir, "index_prod.html"), File.join(dist_dir, "index.html"))
 end
 

@@ -44,7 +44,15 @@
 (defn- item-text-has-point? [id item point]
   (let [text (:text item)
         center (g/center (:input item))
-        lines (clojure.string/split text "\n")
+        lines (if (i/text? item)
+                (clojure.string/split text "\n")
+                (flatten
+                  (map
+                    (fn [line]
+                      (if (empty? line)
+                        line
+                        (map string/join (partition-all (dec (:width (i/dimensions item))) line))))
+                    (clojure.string/split text "\n"))))
         max-width (apply max (map count lines))
         center-char-num (/ max-width 2)
         center-line-num (/ (count lines) 2)

@@ -282,8 +282,9 @@ goog.provide("tixi.drawer");
                 var pos;
                 var line;
                 if (text) {
-                    var textArray = text.split("\n");
+                    var textArray;
                     if (item.type === "text") {
+                        var textArray = text.split("\n");
                         for (j = 0; j < textArray.length; j += 1) {
                             line = textArray[j];
                             pos = (startY + j) * (width + 1) + startX;
@@ -292,6 +293,17 @@ goog.provide("tixi.drawer");
                                 data.substr(pos + line.length, data.length - (pos + line.length));
                         }
                     } else {
+                        textArray = [];
+                        text.split("\n").forEach(function (line) {
+                            if (line.length === 0) {
+                                textArray.push("");
+                            } else {
+                                for (var k = 0; k < line.length; k += widthItem - 1) {
+                                    textArray.push(line.substr(k, widthItem - 1));
+                                }
+                            }
+                        });
+                        console.log(textArray);
                         var widthText = Math.max.apply(null, textArray.map(stringLength));
                         var heightText = textArray.length;
                         var startXText = Math.ceil(widthCenterItem - widthText / 2);

@@ -1,4 +1,3 @@
-* Fix the bug with selecting items via the text when the text is wrapped
 * Add way to specify text alignment (horizontal and vertical)
 * Correct text items sizes after resize
 * Add possibility to group/ungroup items

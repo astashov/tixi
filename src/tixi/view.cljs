@@ -80,12 +80,13 @@
   (str (:height (p/letter-size)) "px " (:width (p/letter-size)) "px"))
 
 (defn- draw-line-on-canvas [context rect]
-  (.beginPath context)
   (set! (.-lineWidth context) 1)
-  (.moveTo context (-> rect :start :x) (-> rect :start :y))
-  (.lineTo context (-> rect :end :x) (-> rect :end :y))
   (set! (.-strokeStyle context) "#ececec")
-  (.stroke context))
+  (doto context
+    (.beginPath)
+    (.moveTo (-> rect :start :x) (-> rect :start :y))
+    (.lineTo (-> rect :end :x) (-> rect :end :y))
+    (.stroke)))
 
 (q/defcomponent Text
   [{:keys [id item edit-text-id]} channel]
@@ -186,11 +187,6 @@
   (let [rect (g/normalize (d/current-selection data))]
     (dom/div {:className "current-selection" :style (selection-position rect)})))
 
-(q/defcomponent Tool
-  "Displays the currently selected tool"
-  [data]
-  (dom/div {:className "tool"} (str (:tool data))))
-
 (q/defcomponent Grid [show-grid?]
   (q/on-render
     (dom/canvas {:className (str "grid" (when show-grid? " is-visible"))})
@@ -207,8 +203,8 @@
         (dotimes [i (.floor js/Math (/ width letter-width))]
           (draw-line-on-canvas
             context
-            (g/build-rect (* i letter-width) 0
-                          (* i letter-width) height)))
+            (g/build-rect (dec (* i letter-width)) 0
+                          (dec (* i letter-width)) height)))
         (dotimes [i (.floor js/Math (/ height letter-height))]
           (draw-line-on-canvas
             context
@@ -232,8 +228,7 @@
       (when (and (not-empty selected-ids) (not (d/edit-text-id)))
         (Selection data channel))
       (when (and current-selection (> (g/width current-selection) 0) (> (g/height current-selection) 0))
-        (CurrentSelection data channel))
-      (Tool data))))
+        (CurrentSelection data channel)))))
 
 (q/defcomponent Sidebar
   [tool channel]
