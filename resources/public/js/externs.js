@@ -14,3 +14,5 @@ Firebase.prototype.set = function (value) {};
 Firebase.prototype.once = function (value, callback) {};
 
 Object.prototype.val = function () {};
+
+var ga = function(a, b, c, d) {};
