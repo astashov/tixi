@@ -9,22 +9,15 @@
   (swap! d/data assoc-in [:stack] (-> (d/stack-loc)
                                       (z/insert-child (t/node (d/stack)))
                                       z/down)))
-
-(defn- can-undo? []
-  (boolean (z/up (d/stack-loc))))
-
-(defn- can-redo? []
-  (boolean (z/node (z/down (d/stack-loc)))))
-
 (defn undo! []
-  (when (can-undo?)
+  (when (d/can-undo?)
     (swap! d/data assoc-in [:stack] (z/up (d/stack-loc)))
     (swap! d/data assoc-in [:state] (d/stack))
     (doseq [[id _] (d/completed)]
       (mr/touch-item! id))))
 
 (defn redo! []
-  (when (can-redo?)
+  (when (d/can-redo?)
     (swap! d/data assoc-in [:stack] (z/down (d/stack-loc)))
     (swap! d/data assoc-in [:state] (d/stack))
     (doseq [[id _] (d/completed)]

@@ -231,7 +231,7 @@
         (CurrentSelection data channel)))))
 
 (q/defcomponent Sidebar
-  [tool channel]
+  [{:keys [tool can-undo? can-redo?]} channel]
   (dom/div {:className "sidebar"}
     (dom/h1 {:className "sidebar--logo"} "Textik")
     (dom/div {:className "sidebar--tools"}
@@ -262,10 +262,12 @@
         (dom/div {:className "button--icon sidebar--tools--button--icon"}))
       (dom/button {:className "button sidebar--tools--button sidebar--tools--button__undo"
                    :title "Undo [U]"
+                   :disabled (not can-undo?)
                    :onClick (fn [e] (send-tool-click :undo channel))}
         (dom/div {:className "button--icon sidebar--tools--button--icon"}))
       (dom/button {:className "button sidebar--tools--button sidebar--tools--button__redo"
                    :title "Redo [I]"
+                   :disabled (not can-redo?)
                    :onClick (fn [e] (send-tool-click :redo channel))}
         (dom/div {:className "button--icon sidebar--tools--button--icon"}))
       (dom/button {:className "button sidebar--tools--button sidebar--tools--button__result"
@@ -359,7 +361,10 @@
 
 (q/defcomponent Content [data channel]
   (dom/div {:className "content"}
-    (Sidebar (d/tool data) channel)
+    (Sidebar {:tool (d/tool data)
+              :can-undo? (d/can-undo? data)
+              :can-redo? (d/can-redo? data)}
+             channel)
     (Topbar data channel)
     (Project data channel)
     (css-transition-group #js {:transitionName "result"}

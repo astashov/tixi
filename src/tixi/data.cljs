@@ -162,3 +162,9 @@
 
 (defdata show-grid? []
   (:show-grid? data))
+
+(defdata can-undo? []
+  (boolean (z/up (stack-loc data))))
+
+(defdata can-redo? []
+  (boolean (z/node (z/down (stack-loc data)))))

@@ -4,7 +4,6 @@
 * Add nice helpers showing the origin/dimensions of an item when you resize/move it around
 * Find a way how to design UI for Undo Tree
 * Add fills
-* Disable undo/redo buttons when they are impossible
 * Position items by arrow keys
 * Make sure we always show resize cursors (assign classes to .project)
 * Make sure we clear cache when delete an item
