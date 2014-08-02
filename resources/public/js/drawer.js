@@ -303,7 +303,6 @@ goog.provide("tixi.drawer");
                                 }
                             }
                         });
-                        console.log(textArray);
                         var widthText = Math.max.apply(null, textArray.map(stringLength));
                         var heightText = textArray.length;
                         var startXText = Math.ceil(widthCenterItem - widthText / 2);

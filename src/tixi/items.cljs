@@ -130,16 +130,17 @@
     (assoc item :input new-input)))
 
 (defpoly reposition [item input]
+  :text
+  (assoc item :input (g/build-rect (g/origin input) (dimensions item)))
+
   (assoc item :input input))
 
-(defn set-text
-  ([item text]
-    (set-text item text nil))
-  ([item text dimensions]
-    (let [input (if (and (point-like? item) dimensions)
-                  (g/build-rect (g/origin (:input item)) (g/decr dimensions))
-                  (:input item))]
-      (assoc item :input input :text text))))
+(defpoly set-text [item text]
+  :text
+  (assoc item :input (g/build-rect (origin item) (g/decr (text-dimensions item text)))
+              :text text)
+
+  (assoc item :text text))
 
 (defpoly connector? [item]
   (boolean (not-empty (connectors item))))
@@ -162,3 +163,23 @@
 (defn edge-value [item edge]
   (or (get-in item [:chars (pre-edge edge)])
       (get-in item [:chars edge])))
+
+(defpoly lines [item text]
+  :text
+  (string/split (or text (:text item)) "\n")
+
+  (flatten
+    (map
+      (fn [line]
+        (if (empty? line)
+          line
+          (map string/join (partition-all (dec (:width (dimensions item))) line))))
+      (string/split (or text (:text item)) "\n"))))
+
+(defn text-dimensions
+  ([item] (text-dimensions item (:text item)))
+  ([item text]
+   (let [lines-vec (lines item text)
+         width (apply max (map count lines-vec))
+         height (count lines-vec)]
+     (g/build-size width height))))

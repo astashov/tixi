@@ -1,5 +1,4 @@
 * Add way to specify text alignment (horizontal and vertical)
-* Correct text items sizes after resize
 * Add possibility to group/ungroup items
 * Add guides
 * Add nice helpers showing the origin/dimensions of an item when you resize/move it around
@@ -14,7 +13,6 @@
 * Make item/layer names consistent - name everything as 'items'
 * Check if I could publish it as a Google Chrome app.
 * Add some visual confirmation when you reach some outlet by a connector
-* Check if we could avoid setting dimensions to text item from outside, by calculating them based on given text
 * Refactor drawer.js
 * Add support of larger canvases (larger than the current screen size)
 * It seems like sometimes cache is not updated before rendering - mispositioned items. Need to figure out why and fix

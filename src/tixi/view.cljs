@@ -105,7 +105,7 @@
         (te/install-or-remove!
           (= id edit-text-id) install-node (or (:text item) "")
           (fn [value dimensions]
-            (go (>! channel {:type :edit :data {:text value :id id :dimensions (p/position->coords dimensions)}})))
+            (go (>! channel {:type :edit :data {:text value :id id}})))
           (i/text? item))
         (when-let [content (sel1 install-node :.text--wrapper--content)]
           (te/adjust-position! install-node content false (i/text? item)))))))

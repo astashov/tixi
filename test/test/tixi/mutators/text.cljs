@@ -27,5 +27,5 @@
 (deftest set-text-to-item-with-dimensions
   (m/set-tool! :text)
   (let [id (create-layer! (g/build-rect (g/build-point 5 6) (g/build-point 5 6)))]
-    (mt/set-text-to-item! id "bla" (g/build-size 3 3))
+    (mt/set-text-to-item! id "bla\nfoo\nbar")
     (is (= (:input (d/completed-item id)) (g/build-rect 5 6 7 8)))))

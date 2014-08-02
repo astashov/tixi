@@ -119,11 +119,18 @@
                                                          "2_2" {"v" "|"}
                                                          "2_3" {"v" "|"}}}))))
 
+(deftest reposition-text
+  (let [rect (g/build-rect 2 3 4 6)
+        new-rect (g/build-rect 3 4 20 20)
+        item {:type :text :input rect :text "bla"}
+        repositioned-item (i/reposition item new-rect)]
+    (is (= (:input repositioned-item) (g/build-rect 3 4 5 7)))
+    (is (= (:text repositioned-item) "bla"))))
+
 (deftest set-text
   (let [item {:type :rect-line :input (g/build-rect 2 3 4 6)}
         item-with-text (i/set-text item "bla")]
     (is (= (:text item-with-text) "bla"))))
-
 
 (deftest build-text
   (let [rect (g/build-rect 2 3 3 5)
@@ -140,13 +147,13 @@
     (is (= (:text updated-item) nil))
     (is (= (js->clj (i/render updated-item)) {:points [], :data "", :index {}}))))
 
-(deftest set-text-with-dimensions
+(deftest set-text-to-text-item
   (let [rect (g/build-rect 2 3 2 3)
         item {:type :text :input rect}
-        item-with-text (i/set-text item "bla" (g/build-size 3 4))]
-    (is (= (:input item-with-text) (g/build-rect 2 3 4 6)))
-    (is (= (:text item-with-text) "bla"))
-    (is (= (js->clj (i/render item-with-text)) {:points [], :data "  \n  \n  ", :index {}}))))
+        item-with-text (i/set-text item "bla\nfoos\nbar")]
+    (is (= (:input item-with-text) (g/build-rect 2 3 5 5)))
+    (is (= (:text item-with-text) "bla\nfoos\nbar"))
+    (is (= (js->clj (i/render item-with-text)) {:points [], :data "   \n   ", :index {}}))))
 
 (deftest build-line-with-edges
   (let [rect (g/build-rect 2 2 7 5)
@@ -164,3 +171,11 @@
                                               "3_2" {"v" "-"}
                                               "4_2" {"v" ">"}
                                               "5_3" {"v" "+"}}}))))
+
+(deftest text-dimensions
+  (is (= (i/text-dimensions {:type :text :text "abcde\nab\nabcasss"}) (g/build-size 7 3))))
+
+(deftest lines
+  (let [rect (g/build-rect 2 2 7 20)
+        item {:type :rect :input rect :text "abcde\nab\n\nabcdefg"}]
+    (is (= (i/lines item (:text item)) ["abcd" "e" "ab" "" "abcd" "efg"]))))

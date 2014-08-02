@@ -44,22 +44,15 @@
 (defn- item-text-has-point? [id item point]
   (let [text (:text item)
         center (g/center (:input item))
-        lines (if (i/text? item)
-                (clojure.string/split text "\n")
-                (flatten
-                  (map
-                    (fn [line]
-                      (if (empty? line)
-                        line
-                        (map string/join (partition-all (dec (:width (i/dimensions item))) line))))
-                    (clojure.string/split text "\n"))))
-        max-width (apply max (map count lines))
+        lines (i/lines item)
+        dimensions (i/text-dimensions item)
+        max-width (:width dimensions)
         center-char-num (/ max-width 2)
         center-line-num (/ (count lines) 2)
         x (.floor js/Math (+ center-char-num (- (:x point) (:x center))))
         y (.floor js/Math (+ center-line-num (- (:y point) (:y center))))]
     (and (>= y 0)
-         (< y (count lines))
+         (< y (:height dimensions))
          (nth (nth lines y) x))))
 
 (defn width->position [width]
