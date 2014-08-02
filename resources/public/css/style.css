@@ -46,12 +46,15 @@ html, body {
 }
 
 .project {
+  margin-top: -1px;
+  border: solid #eee;
+  border-width: 1px 0 1px 1px;
   overflow: hidden;
   position: absolute;
   top: 3em;
   left: 5em;
   right: 0;
-  bottom: 0;
+  bottom: 2em;
 }
 
 body,
@@ -570,6 +573,7 @@ div.CodeMirror-cursors {
   height: 3em;
   right: 0;
   background: #f8f8f8;
+  z-index: 1;
 }
 
 .topbar--button {
@@ -602,4 +606,30 @@ div.CodeMirror-cursors {
 }
 .grid.is-visible {
   display: block;
+}
+
+.bottombar {
+  position: absolute;
+  left: 5em;
+  bottom: 0;
+  height: 2em;
+  right: 0;
+  background: #f8f8f8;
+  line-height: 2em;
+}
+
+.bottombar a {
+  color: #0074D9;
+  font-size: 0.8em;
+  text-decoration: none;
+  margin: 0 0.5em;
+}
+
+.bottombar--right {
+  float: right;
+  padding-right: 1em;
+}
+
+.bottombar a:hover {
+  border-bottom: 1px solid #0074D9;
 }

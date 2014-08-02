@@ -334,8 +334,15 @@
              :arrow ">"))]
         []))))
 
+(q/defcomponent Bottombar [data channel]
+  (dom/div {:className "bottombar"}
+    (dom/div {:className "bottombar--right"}
+      (dom/a {:href "http://astashov.github.io"} "My Blog")
+      (dom/a {:href "https://github.com/astashov/tixi/issues"} "Bug Tracker")
+      (dom/a {:href "https://github.com/astashov/tixi"} "Github"))))
+
 (q/defcomponent Result [data channel] {:key "result"}
- (let [result (d/result data)
+  (let [result (d/result data)
         content (.-content result)
         coords-size (g/build-size (.-width result) (.-height result))
         position-size (p/coords->position coords-size)]
@@ -367,6 +374,7 @@
              channel)
     (Topbar data channel)
     (Project data channel)
+    (Bottombar data channel)
     (css-transition-group #js {:transitionName "result"}
       (if (d/show-result? data)
         (Result data channel)
