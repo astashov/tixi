@@ -48,7 +48,7 @@
    :line-edges {:start (first line-edge-chars)
                   :end (first line-edge-chars)}})
 
-(def data
+(defonce data
   (atom initial-data))
 
 (defdata clipboard []
