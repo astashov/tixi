@@ -11,6 +11,10 @@
 (defn- find-node [install-node]
   (.querySelector (.-parentNode install-node) ".CodeMirror"))
 
+(defn- get-instance [install-node]
+  (when-let [node (find-node install-node)]
+    (aget node "CodeMirror")))
+
 (defn- remove! [install-node]
   (let [node (find-node install-node)]
     (.removeChild (.-parentNode node) node)))
@@ -54,10 +58,6 @@
 
 (defn- installed? [install-node]
   (boolean (find-node install-node)))
-
-(defn- get-instance [install-node]
-  (when-let [node (find-node install-node)]
-    (aget node "CodeMirror")))
 
 (defn- set-text! [instance text]
   (.setValue instance text))

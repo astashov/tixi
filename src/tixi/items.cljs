@@ -6,6 +6,10 @@
             [tixi.drawer :as dr]))
 
 (declare dimensions)
+(declare direction)
+(declare line?)
+(declare rect-line?)
+(declare text?)
 
 (defn- parse-line [rect]
   (let [[x1 y1 x2 y2] (g/values (g/shifted-to-0 rect))]
@@ -63,26 +67,8 @@
   :text
   #js {:index #js {} :points #js []})
 
-(defn render [item]
-  (let [result (parse item)
-        points (.-points result)
-        index (.-index result)
-        sorted-points (dr/sortData points)
-        [width height] (g/values (dimensions item))
-        data (dr/generateData width height sorted-points)]
-    {:points sorted-points :data data :index index}))
-
 (defn dimensions [item]
   (g/dimensions (:input item)))
-
-(defn origin [item]
-  (g/origin (:input item)))
-
-(defpoly point-like? [item]
-  :text
-  true
-
-  false)
 
 (defpoly direction [item]
   :rect-line
@@ -94,6 +80,34 @@
     "horizontal")
 
   nil)
+
+(defn line? [item]
+  (= (:type item) :line))
+
+(defn rect-line? [item]
+  (= (:type item) :rect-line))
+
+(defn text? [item]
+  (= (:type item) :text))
+
+(defn render [item]
+  (let [result (parse item)
+        points (.-points result)
+        index (.-index result)
+        sorted-points (dr/sortData points)
+        [width height] (g/values (dimensions item))
+        data (dr/generateData width height sorted-points)]
+    {:points sorted-points :data data :index index}))
+
+
+(defn origin [item]
+  (g/origin (:input item)))
+
+(defpoly point-like? [item]
+  :text
+  true
+
+  false)
 
 (defpoly connectors [item]
   #{:line :rect-line}
@@ -135,35 +149,6 @@
 
   (assoc item :input input))
 
-(defpoly set-text [item text]
-  :text
-  (assoc item :input (g/build-rect (origin item) (g/decr (text-dimensions item text)))
-              :text text)
-
-  (assoc item :text text))
-
-(defpoly connector? [item]
-  (boolean (not-empty (connectors item))))
-
-(defn relative-point [item point]
-  (g/relative point (:input item)))
-
-(defn line? [item]
-  (= (:type item) :line))
-
-(defn rect-line? [item]
-  (= (:type item) :rect-line))
-
-(defn text? [item]
-  (= (:type item) :text))
-
-(defn pre-edge [edge]
-  (keyword (str "pre-" (name edge))))
-
-(defn edge-value [item edge]
-  (or (get-in item [:chars (pre-edge edge)])
-      (get-in item [:chars edge])))
-
 (defpoly lines [item text]
   :text
   (string/split (or text (:text item)) "\n")
@@ -183,3 +168,23 @@
          width (apply max (map count lines-vec))
          height (count lines-vec)]
      (g/build-size width height))))
+
+(defpoly set-text [item text]
+  :text
+  (assoc item :input (g/build-rect (origin item) (g/decr (text-dimensions item text)))
+              :text text)
+
+  (assoc item :text text))
+
+(defpoly connector? [item]
+  (boolean (not-empty (connectors item))))
+
+(defn relative-point [item point]
+  (g/relative point (:input item)))
+
+(defn pre-edge [edge]
+  (keyword (str "pre-" (name edge))))
+
+(defn edge-value [item edge]
+  (or (get-in item [:chars (pre-edge edge)])
+      (get-in item [:chars edge])))

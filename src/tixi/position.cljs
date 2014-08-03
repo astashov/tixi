@@ -44,7 +44,7 @@
 (defn- item-text-has-point? [id item point]
   (let [text (:text item)
         center (g/center (:input item))
-        lines (i/lines item)
+        lines (i/lines item text)
         dimensions (i/text-dimensions item)
         max-width (:width dimensions)
         center-char-num (/ max-width 2)
