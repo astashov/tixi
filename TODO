@@ -4,9 +4,7 @@
 * Add nice helpers showing the origin/dimensions of an item when you resize/move it around
 * Find a way how to design UI for Undo Tree
 * Add fills
-* Position items by arrow keys
 * Make sure we always show resize cursors (assign classes to .project)
-* Make sure we clear cache when delete an item
 * Add a way to align items relatively to each other
 * Draw straight/square items with 'Shift'
 * Make item/layer names consistent - name everything as 'items'
@@ -18,16 +16,13 @@
 * Maybe custom colorize the items?
 * Add comments here and there
 * Add autoadjusting of items' size to the inner text size
-* Add link to Github
 * Fix bug - connectors keep 'connected' edges after deleting item with outlet
 * Add "undo previews" - when you hover over the undo button, you will see a preview what gonna happen when you click undo
 * Save user preferences (maybe in local storage?)
+* Add export/import to/from a file
 * Think how would it be possible to implement collaboration
-  - Could try Firebase, the problem - serializing. tixi.sync should know a lot,
-    and need to keep it updated when we change the data schema
-  - How to handle undo's? Keep a separate one for every user? Then need to move undo states out of :state
-  - How to distinguish who made what change? Prob generate uuid, and check if the change is made not by current
-    uuid
+  - How to handle undo's? Keep a separate one for every user? Also, need to add 'direction' of change, is this a new change or 'undo'?
+  - How to distinguish who made what change? Prob generate uuid, and check if the change is made not by current uuid
   - Keep n 'currents' for every user, and n 'undo' stacks
   - Would be nice to show typing text alive - how?
   - If send updates to Firebase while drawing/resizing, we could spam it...

@@ -4,9 +4,6 @@
             [tixi.sync :as s]
             [tixi.tree :as t]))
 
-(defn autoincrement! []
-  (update-state! update-in [:autoincrement] inc))
-
 (defn assign-state! [new-value]
   (swap! d/data assoc-in [:state] new-value)
   (swap! d/data assoc-in [:stack] (z/replace (d/stack-loc)
@@ -16,3 +13,11 @@
 
 (defn update-state! [f ks & args]
   (assign-state! (apply f (d/state) ks args)))
+
+(defn snapshot! []
+  (swap! d/data assoc-in [:stack] (-> (d/stack-loc)
+                                      (z/insert-child (t/node (d/stack)))
+                                      z/down))) 
+(defn autoincrement! []
+  (update-state! update-in [:autoincrement] inc))
+ 

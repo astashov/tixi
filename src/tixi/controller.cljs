@@ -11,8 +11,10 @@
             [tixi.mutators.delete :as md]
             [tixi.mutators.render :as mr]
             [tixi.mutators.selection :as ms]
+            [tixi.mutators.shared :as msh]
             [tixi.mutators.text :as mt]
             [tixi.mutators.undo :as mu]
+            [tixi.mutators.copy-paste :as mcp]
             [tixi.mutators :as m]
             [tixi.google-analytics :as ga]))
 
@@ -73,23 +75,39 @@
                 (m/z-show! (not (d/show-z-indexes?))))
       :copy (do
               (ga/event! "topbar" "copy")
-              (ms/copy!))
+              (mcp/copy!))
       :cut (do
              (ga/event! "topbar" "cut")
-             (ms/cut!))
+             (mcp/cut!))
       :paste (do
                (ga/event! "topbar" "paste")
-               (ms/paste!))
+               (mcp/paste!))
       :grid (do
               (ga/event! "topbar" "grid")
-              (m/toggle-grid! (not (d/show-grid?)))))))
+              (m/toggle-grid! (not (d/show-grid?))))
+      :move-up (do
+                 (ga/event! "keypress" "move-up")
+                 (msh/snapshot!)
+                 (ms/move-selection! (g/build-point 0 -1)))
+      :move-down (do
+                   (ga/event! "keypress" "move-down")
+                   (msh/snapshot!)
+                   (ms/move-selection! (g/build-point 0 1)))
+      :move-left (do
+                   (ga/event! "keypress" "move-left")
+                   (msh/snapshot!)
+                   (ms/move-selection! (g/build-point -1 0)))
+      :move-right (do
+                    (ga/event! "keypress" "move-right")
+                    (msh/snapshot!)
+                    (ms/move-selection! (g/build-point 1 0))))))
 
 (defn mouse-down [client-point modifiers payload]
   (render
     (let [{:keys [action]} payload
           point (p/position->coords client-point)]
       (m/set-action! action)
-      (mu/snapshot!)
+      (msh/snapshot!)
       (when (= action :draw)
         (cond
           (d/draw-tool?)
@@ -97,7 +115,7 @@
 
           (d/select-tool?)
           (let [id (p/item-id-at-point point)]
-            (when (= (d/selected-ids) [id])
+            (when (= (d/selected-ids) #{id})
               (reset! select-second-clicked true))
             (ms/select-layer! id point (:shift modifiers))))))))
 

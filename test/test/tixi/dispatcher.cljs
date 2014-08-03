@@ -87,7 +87,7 @@
   (m/set-tool! :select)
   (di/handle-input-event {:type :down, :data {:action :draw, :point (p/coords->position (g/build-point 2 2))}})
   (di/handle-input-event {:type :down, :data {:action :draw, :point (p/coords->position (g/build-point 5 5))}})
-  (is (= (d/selected-ids) [1])))
+  (is (= (d/selected-ids) #{1})))
 
 (deftest handle-input-event-select-down-more
   (create-layer! (g/build-rect 2 2 4 4))
@@ -98,7 +98,7 @@
   (di/handle-input-event {:type :down, :data {:action :draw,
                                              :point (p/coords->position (g/build-point 5 5)),
                                              :modifiers {:shift true}}})
-  (is (= (d/selected-ids) [0 1])))
+  (is (= (d/selected-ids) #{0 1})))
 
 (deftest handle-input-event-select-down-edit-text
   (let [id (create-layer! (g/build-rect 2 2 4 4))]

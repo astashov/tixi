@@ -8,7 +8,6 @@
             [tixi.sync :as s]
             [tixi.compress :as c]
             [tixi.mutators.shared :as ms]
-            [tixi.mutators.undo :as mu]
             [tixi.utils :refer [p]]
             [cljs.core.async :as async :refer [<!]]))
 
@@ -19,7 +18,7 @@
 
 (s/load (fn [data]
   (when (.val data)
-    (mu/snapshot!)
+    (ms/snapshot!)
     (render
       (ms/assign-state! (r/read-string (c/decompress (.val data))))))))
 

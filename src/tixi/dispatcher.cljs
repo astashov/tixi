@@ -55,6 +55,10 @@
       73 (c/keypress :redo) ; u
       78 (c/keypress :z-inc) ; n
       77 (c/keypress :z-dec) ; m
+      37 (c/keypress :move-left) ; left
+      38 (c/keypress :move-up) ; up
+      39 (c/keypress :move-right) ; right
+      40 (c/keypress :move-down) ; down
       nil)))
 
 (defn handle-input-event [{:keys [type data]}]

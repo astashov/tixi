@@ -7,7 +7,6 @@
             [tixi.mutators.delete :as md]
             [tixi.mutators.render :as mr]
             [tixi.mutators.locks :as ml]
-            [tixi.mutators.undo :as mu]
             [tixi.utils :refer [p]]
             [tixi.position :as p]))
 
@@ -81,6 +80,13 @@
   (when-let [rect (d/selection-rect)]
     (update-selection-rect! (g/move rect diff))))
 
+(defn refresh-selection! []
+  (doseq [id (d/selected-ids)]
+    (when-not (contains? (into #{} (keys (d/completed))) id)
+      (swap! d/data assoc-in [:selection :ids] (disj (d/selected-ids) id))))
+  (set-selection-rel-rects!)
+  (swap! d/data assoc-in [:selection :rect] (p/items-wrapping-rect (d/selected-ids))))
+
 (defn resize-selection! [diff type]
   (when-let [rect (d/selection-rect)]
     (update-selection-rect! (g/resize rect diff type))))
@@ -93,35 +99,10 @@
     (if add-more?
       (swap! d/data update-in [:selection :ids] conj id)
       (when-not (some #{id} (d/selected-ids))
-        (swap! d/data assoc-in [:selection :ids] [id])))
+        (swap! d/data assoc-in [:selection :ids] #{id})))
     (do
-      (swap! d/data assoc-in [:selection :ids] [])
+      (swap! d/data assoc-in [:selection :ids] #{})
       (when point
         (start-selection! point))))
   (set-selection-rel-rects!)
   (swap! d/data assoc-in [:selection :rect] (p/items-wrapping-rect (d/selected-ids)))))
-
-(defn copy! []
-  (let [items (d/selected-items)]
-    (when (not-empty items)
-      (swap! d/data assoc :clipboard items))))
-
-(defn cut! []
-  (let [ids (d/selected-ids)]
-    (copy!)
-    (select-layer! nil)
-    (md/delete-items! ids)))
-
-(defn paste! []
-  (mu/snapshot!)
-  (select-layer! nil)
-  (doseq [item (d/clipboard)]
-    (let [id (d/autoincrement)]
-      (ms/autoincrement!)
-      (ms/update-state! assoc-in [:completed id] (update-in item [:input] g/move (g/build-size 1 1)))
-      (mr/render-items!)
-      (let [new-item (d/completed-item id)]
-        (when (i/connector? new-item)
-          (ml/try-to-lock! new-item id :start (-> new-item :input :start))
-          (ml/try-to-lock! new-item id :end (-> new-item :input :end)))
-        (select-layer! id nil true)))))
