@@ -1,6 +1,6 @@
 (defproject tixi "0.1.0-SNAPSHOT"
-  :description "FIXME: write this!"
-  :url "http://example.com/FIXME"
+  :description "ASCII diagrams editor"
+  :url "http://textik.com"
 
   :dependencies [[org.clojure/clojure "1.5.1"]
                  [com.facebook/react "0.10.0"]
