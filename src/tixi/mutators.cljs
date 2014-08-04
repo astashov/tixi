@@ -58,3 +58,6 @@
                               (d/selected-ids))]
       (ms/update-state! assoc-in [:completed id :edges edge] edge-value)
       (mr/touch-item! id))))
+
+(defn set-canvas-size! [dimensions]
+  (swap! d/data assoc-in [:canvas-size] dimensions))

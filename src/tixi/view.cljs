@@ -12,6 +12,7 @@
             [tixi.utils :refer [p next-of]]
             [tixi.position :as p]
             [tixi.items :as i]
+            [tixi.tags :as tag]
             [goog.style :as style]
             [tixi.text-editor :as te]))
 
@@ -36,8 +37,8 @@
 (defn- event->position [event]
   (let [root (sel1 :.project)
         offset (if root (style/getPageOffset root) (js-obj "x" 0 "y" 0))
-        x (- (.-clientX event) (.-x offset))
-        y (- (.-clientY event) (.-y offset))]
+        x (+ (- (.-clientX event) (.-x offset)) (.-scrollLeft root))
+        y (+ (- (.-clientY event) (.-y offset)) (.-scrollTop root))]
     (g/build-point x y)))
 
 (defn- send-event-with-coords [action type event channel]
@@ -66,6 +67,10 @@
 (defn- send-selection-edges-click [edge channel]
   (go (>! channel {:type :selection-edges :data {:edge edge}})))
 
+(defn- send-canvas-size [width height channel]
+  (let [size (g/build-size width height)]
+    (go (>! channel {:type :canvas-size :data {:size size}}))))
+
 (defn- selection-position [rect]
   (let [normalized-rect (g/normalize rect)
         {left :x top :y} (p/coords->position (g/origin normalized-rect))
@@ -87,6 +92,25 @@
     (.moveTo (-> rect :start :x) (-> rect :start :y))
     (.lineTo (-> rect :end :x) (-> rect :end :y))
     (.stroke)))
+
+(defn- update-grid-size [grid canvas-size]
+  (let [context (.getContext grid "2d")
+        {:keys [width height]} (p/coords->position canvas-size)
+        letter-width (:width (p/letter-size))
+        letter-height (:height (p/letter-size))]
+    (.setAttribute grid "width" width)
+    (.setAttribute grid "height" height)
+    (.translate context 0.5 0.5)
+    (dotimes [i (.floor js/Math (/ width letter-width))]
+      (draw-line-on-canvas
+        context
+        (g/build-rect (dec (* i letter-width)) 0
+                      (dec (* i letter-width)) height)))
+    (dotimes [i (.floor js/Math (/ height letter-height))]
+      (draw-line-on-canvas
+        context
+        (g/build-rect 0 (* i letter-height)
+                      width (* i letter-height))))))
 
 (q/defcomponent Text
   [{:keys [id item edit-text-id]} channel]
@@ -142,22 +166,40 @@
 (q/defcomponent Canvas
   "Displays the canvas"
   [data channel]
-  (dom/div {:className "canvas"
-            :onMouseDown (fn [e] (send-event-with-coords :draw :down e channel))
-            :onMouseUp (fn [e] (send-event-with-coords :draw :up e channel))}
-    (apply dom/div {:className "canvas--content"}
-           (map
-             (fn [[id item]] (Layer {:id id
-                                     :item item
-                                     :is-hover (= id (:hover-id data))
-                                     :is-selected (some #{id} (d/selected-ids data))
-                                     :edit-text-id (d/edit-text-id data)
-                                     :connecting-id (d/connecting-id data)
-                                     :show-z-indexes? (d/show-z-indexes? data)}
-                                    channel))
-             (if-let [{:keys [id item]} (:current data)]
-               (assoc (d/completed data) id item)
-               (d/completed data))))))
+  (q/on-mount
+    (let [canvas-size (when (d/canvas-size data) (p/coords->position (d/canvas-size data)))
+          current-selection (d/current-selection data)
+          selected-ids (d/selected-ids data)]
+      (dom/div {:className "canvas"
+                :style {:width (when canvas-size (str (:width canvas-size) "px"))
+                        :height (when canvas-size (str (:height canvas-size) "px"))}
+                :onMouseMove (fn [e] (send-mousemove e channel))
+                :onMouseDown (fn [e] (send-event-with-coords :draw :down e channel))
+                :onMouseUp (fn [e] (send-event-with-coords :draw :up e channel))}
+        (when (d/canvas-size data)
+          (Grid {:show-grid? (d/show-grid? data)
+                 :canvas-size (d/canvas-size data)}))
+        (apply dom/div {:className "canvas--content"}
+               (map
+                 (fn [[id item]] (Layer {:id id
+                                         :item item
+                                         :is-hover (= id (:hover-id data))
+                                         :is-selected (some #{id} selected-ids)
+                                         :edit-text-id (d/edit-text-id data)
+                                         :connecting-id (d/connecting-id data)
+                                         :show-z-indexes? (d/show-z-indexes? data)}
+                                        channel))
+                 (if-let [{:keys [id item]} (:current data)]
+                   (assoc (d/completed data) id item)
+                   (d/completed data))))
+        (when (and (not-empty selected-ids) (not (d/edit-text-id data)))
+          (Selection data channel))
+        (when (and current-selection (> (g/width current-selection) 0) (> (g/height current-selection) 0))
+          (CurrentSelection data channel))))
+    (fn [canvas]
+      (let [dimensions (-> (g/build-size (.-offsetWidth canvas) (.-offsetHeight canvas))
+                           p/position->coords)]
+        (send-canvas-size (:width dimensions) (:height dimensions) channel)))))
 
 (q/defcomponent Selection
   "Displays the selection box around the selected item"
@@ -187,48 +229,21 @@
   (let [rect (g/normalize (d/current-selection data))]
     (dom/div {:className "current-selection" :style (selection-position rect)})))
 
-(q/defcomponent Grid [show-grid?]
+(q/defcomponent Grid [{:keys [show-grid? canvas-size]}]
   (q/on-render
     (dom/canvas {:className (str "grid" (when show-grid? " is-visible"))})
-    (fn [canvas]
-      (let [project (sel1 :.project)
-            context (.getContext canvas "2d")
-            width (.-offsetWidth project)
-            height (.-offsetHeight project)
-            letter-width (:width (p/letter-size))
-            letter-height (:height (p/letter-size))]
-        (.setAttribute canvas "width" width)
-        (.setAttribute canvas "height" height)
-        (.translate context 0.5 0.5)
-        (dotimes [i (.floor js/Math (/ width letter-width))]
-          (draw-line-on-canvas
-            context
-            (g/build-rect (dec (* i letter-width)) 0
-                          (dec (* i letter-width)) height)))
-        (dotimes [i (.floor js/Math (/ height letter-height))]
-          (draw-line-on-canvas
-            context
-            (g/build-rect 0 (* i letter-height)
-                          width (* i letter-height))))))))
+    (fn [grid] (update-grid-size grid canvas-size))))
 
 (q/defcomponent Project
   "Displays the project"
   [data channel]
-  (let [selected-ids (d/selected-ids data)
-        current-selection (d/current-selection data)]
     (dom/div {:className (str "project"
                            (cond
-                             (some #{(d/hover-id data)} selected-ids) " is-able-to-move"
+                             (some #{(d/hover-id data)} (d/selected-ids data)) " is-able-to-move"
                              (d/hover-id data) " is-hover"
                              :else "")
-                           (if (= (d/tool) :text) " is-text" ""))
-              :onMouseMove (fn [e] (send-mousemove e channel))}
-      (Grid (d/show-grid? data))
-      (Canvas data channel)
-      (when (and (not-empty selected-ids) (not (d/edit-text-id)))
-        (Selection data channel))
-      (when (and current-selection (> (g/width current-selection) 0) (> (g/height current-selection) 0))
-        (CurrentSelection data channel)))))
+                           (if (= (d/tool) :text) " is-text" ""))}
+      (Canvas data channel)))
 
 (q/defcomponent Sidebar
   [{:keys [tool can-undo? can-redo?]} channel]
@@ -336,6 +351,15 @@
 
 (q/defcomponent Bottombar [data channel]
   (dom/div {:className "bottombar"}
+    (dom/div {:className "bottombar--left"}
+      "Canvas Size: "
+      (tag/input {:type "text" :className "bottombar--left--size" :maxLength 5 :value (:width (d/canvas-size data))
+                  :onChange (fn [e]
+                              (send-canvas-size (.. e -target -value) (:height (d/canvas-size data)) channel))})
+      "x"
+      (tag/input {:type "text" :className "bottombar--left--size" :maxLength 5 :value (:height (d/canvas-size data))
+                  :onChange (fn [e]
+                              (send-canvas-size (:width (d/canvas-size data)) (.. e -target -value) channel))}))
     (dom/div {:className "bottombar--right"}
       (dom/a {:href "http://astashov.github.io"} "My Blog")
       (dom/a {:href "https://github.com/astashov/tixi/issues"} "Bug Tracker")

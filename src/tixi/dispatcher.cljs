@@ -32,8 +32,13 @@
       (c/mouse-move (:previous-point @state) point modifiers payload))
     (set-state! :previous-point point)))
 
+(defn not-in-input? [event]
+  (not= (and (.-target event)
+             (.. event -target -tagName))
+        "INPUT"))
+
 (defn handle-keyboard-events [event]
-  (when-not (d/edit-text-id)
+  (when (and (not (d/edit-text-id)) (not-in-input? event))
     (case (.-keyCode event)
       8  (do ; backspace
            (.preventDefault event)
@@ -92,7 +97,10 @@
     (c/change-selection-edges data)
 
     :close
-    (c/close data)))
+    (c/close data)
+
+    :canvas-size
+    (c/canvas-size data)))
 
 (defn install-keyboard-events []
   (dommy/listen! js/document :keydown handle-keyboard-events)

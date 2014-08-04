@@ -31,6 +31,7 @@
    :state initial-state
    :tool :line
    :action nil
+   :canvas-size nil
    :selection {:ids []
                :rect nil
                :current nil
@@ -165,6 +166,9 @@
 
 (defdata can-undo? []
   (boolean (z/up (stack-loc data))))
+
+(defdata canvas-size []
+  (:canvas-size data))
 
 (defdata can-redo? []
   (boolean (z/node (z/down (stack-loc data)))))

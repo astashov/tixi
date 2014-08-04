@@ -196,3 +196,8 @@
     (ga/event! "topbar" "change-selection-edges")
     (let [{:keys [edge]} data]
       (m/cycle-selection-edges! edge))))
+
+(defn canvas-size [data]
+  (render
+    (let [{:keys [size]} data]
+      (m/set-canvas-size! size))))
