@@ -42,6 +42,7 @@
     (g/build-point x y)))
 
 (defn- send-event-with-coords [action type event channel]
+  (.stopPropagation event)
   (when (= (.-button event) 0)
     (let [point (event->position event)
           shift-pressed? (aget (aget event "nativeEvent") "shiftKey")]
@@ -219,8 +220,8 @@
                     :style (selection-position rect)}
       (map (fn [css-class]
              (dom/div {:className (str "selection--dot selection--dot__" css-class)
-                     :onMouseDown (fn [e] (send-event-with-coords (keyword (str "resize-" css-class)) :down e channel))
-                     :onMouseUp (fn [e] (send-event-with-coords (keyword (str "resize-" css-class)) :up e channel))}))
+                       :onMouseDown (fn [e] (send-event-with-coords (keyword (str "resize-" css-class)) :down e channel))
+                       :onMouseUp (fn [e] (send-event-with-coords (keyword (str "resize-" css-class)) :up e channel))}))
            ["nw" "n" "ne" "w" "e" "sw" "s" "se"]))))
 
 (q/defcomponent CurrentSelection

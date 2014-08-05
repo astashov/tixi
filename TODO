@@ -11,7 +11,6 @@
 * Check if I could publish it as a Google Chrome app.
 * Add some visual confirmation when you reach some outlet by a connector
 * Refactor drawer.js
-* Add support of larger canvases (larger than the current screen size)
 * It seems like sometimes cache is not updated before rendering - mispositioned items. Need to figure out why and fix
 * Maybe custom colorize the items?
 * Add comments here and there
@@ -20,6 +19,7 @@
 * Add "undo previews" - when you hover over the undo button, you will see a preview what gonna happen when you click undo
 * Save user preferences (maybe in local storage?)
 * Add export/import to/from a file
+* Autodestroy empty text items
 * Think how would it be possible to implement collaboration
   - How to handle undo's? Keep a separate one for every user? Also, need to add 'direction' of change, is this a new change or 'undo'?
   - How to distinguish who made what change? Prob generate uuid, and check if the change is made not by current uuid
