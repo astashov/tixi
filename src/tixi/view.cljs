@@ -144,23 +144,23 @@
            points)))
 
 (q/defcomponent Layer
-  "Displays the layer"
+  "Displays the item"
   [{:keys [id item is-hover is-selected edit-text-id connecting-id show-outlets? show-z-indexes?]} channel]
   (let [{:keys [data]} (d/item-cache id)
         z-index (:z item)
         {:keys [x y]} (p/coords->position (i/origin item))
         {:keys [width height]} (p/coords->position (g/incr (i/dimensions item)))]
-    (dom/pre {:className (str "canvas--content--layer"
-                              (str " canvas-content--layer__" (name (:type item)))
+    (dom/pre {:className (str "canvas--content--item"
+                              (str " canvas-content--item__" (name (:type item)))
                               (if is-selected " is-selected" "")
                               (if is-hover " is-hover" ""))
               :style {:left x :top y :width width :height height :zIndex z-index}
-              :id (str "layer-" id)}
+              :id (str "item-" id)}
              (Text {:id id :item item :edit-text-id edit-text-id} channel)
              (when (or (and connecting-id (not= connecting-id id)) show-outlets?)
                (Outlets {:item item :points (i/outlets item)}))
              (when show-z-indexes?
-               (dom/div {:className "canvas--content--layer--z-index"
+               (dom/div {:className "canvas--content--item--z-index"
                          :title "z-index"} z-index))
              data)))
 

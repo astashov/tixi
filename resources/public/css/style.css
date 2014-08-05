@@ -25,23 +25,23 @@ html, body {
   letter-spacing: 0;
 }
 
-.canvas--content--layer {
+.canvas--content--item {
   font-size: 1em;
   line-height: 1.2em;
 }
 
 .project.is-hover,
-.project.is-hover .canvas--content--layer {
+.project.is-hover .canvas--content--item {
   cursor: pointer;
 }
 
 .project.is-able-to-move,
-.project.is-able-to-move .canvas--content--layer {
+.project.is-able-to-move .canvas--content--item {
   cursor: move;
 }
 
 .project.is-text,
-.project.is-text .canvas--content--layer {
+.project.is-text .canvas--content--item {
   cursor: text;
 }
 
@@ -91,7 +91,7 @@ body,
   height: 100%;
 }
 
-.canvas--content--layer {
+.canvas--content--item {
   position: absolute;
   top: 0;
   left: 0;
@@ -100,15 +100,15 @@ body,
   cursor: default;
 }
 
-.canvas--content--layer.is-hover {
+.canvas--content--item.is-hover {
   color: red;
 }
 
-.canvas--content--layer.is-selected {
+.canvas--content--item.is-selected {
   color: blue;
 }
 
-.canvas--content--layer--z-index {
+.canvas--content--item--z-index {
   position: absolute;
   top: 50%;
   left: 50%;
@@ -314,19 +314,19 @@ body,
   white-space: normal;
 }
 
-.canvas-content--layer__text .text--wrapper {
+.canvas-content--item__text .text--wrapper {
   padding: 0 !important;
   width: auto;
   height: auto;
 }
 
-.canvas-content--layer__text .text--wrapper--content {
+.canvas-content--item__text .text--wrapper--content {
   word-wrap: initial;
   text-align: left;
   margin-top: 0 !important;
 }
 
-.canvas-content--layer__text .CodeMirror {
+.canvas-content--item__text .CodeMirror {
   text-align: left;
   padding-right: 1px;
   max-width: none !important;

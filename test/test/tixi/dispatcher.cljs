@@ -8,7 +8,7 @@
             [tixi.mutators.text :as mt]
             [tixi.mutators.selection :as ms]
             [tixi.position :as p]
-            [test.tixi.utils :refer [create-layer!]]
+            [test.tixi.utils :refer [create-item!]]
             [tixi.utils :refer [p]]
             [tixi.data :as d]))
 
@@ -51,14 +51,14 @@
   (is (not= (d/tool) :rect)))
 
 (deftest handle-keyboard-events-delete
-  (let [id (create-layer! (g/build-rect (g/build-point 5 6) (g/build-point 7 8)))]
-    (ms/select-layer! id (g/build-point 5 6))
+  (let [id (create-item! (g/build-rect (g/build-point 5 6) (g/build-point 7 8)))]
+    (ms/select-item! id (g/build-point 5 6))
     (di/handle-keyboard-events (build-keyboard-event 8))
     (is (= (vec (keys (d/completed))) []))))
 
 (deftest handle-keyboard-events-ignore-delete
-  (let [id (create-layer! (g/build-rect (g/build-point 5 6) (g/build-point 7 8)))]
-    (ms/select-layer! id (g/build-point 5 6))
+  (let [id (create-item! (g/build-rect (g/build-point 5 6) (g/build-point 7 8)))]
+    (ms/select-item! id (g/build-point 5 6))
     (mt/edit-text-in-item! id)
     (di/handle-keyboard-events (build-keyboard-event 8))
     (is (= (vec (keys (d/completed))) [id]))))
@@ -82,16 +82,16 @@
   (is (= (:input (first (vals (d/completed)))) (g/build-rect 2 4 2 4))))
 
 (deftest handle-input-event-select-down
-  (create-layer! (g/build-rect 2 2 4 4))
-  (create-layer! (g/build-rect 5 5 7 7))
+  (create-item! (g/build-rect 2 2 4 4))
+  (create-item! (g/build-rect 5 5 7 7))
   (m/set-tool! :select)
   (di/handle-input-event {:type :down, :data {:action :draw, :point (p/coords->position (g/build-point 2 2))}})
   (di/handle-input-event {:type :down, :data {:action :draw, :point (p/coords->position (g/build-point 5 5))}})
   (is (= (d/selected-ids) #{1})))
 
 (deftest handle-input-event-select-down-more
-  (create-layer! (g/build-rect 2 2 4 4))
-  (create-layer! (g/build-rect 5 5 7 7))
+  (create-item! (g/build-rect 2 2 4 4))
+  (create-item! (g/build-rect 5 5 7 7))
   (m/set-tool! :select)
   (di/handle-input-event {:type :down, :data {:action :draw,
                                              :point (p/coords->position (g/build-point 2 2))}})
@@ -101,7 +101,7 @@
   (is (= (d/selected-ids) #{0 1})))
 
 (deftest handle-input-event-select-down-edit-text
-  (let [id (create-layer! (g/build-rect 2 2 4 4))]
+  (let [id (create-item! (g/build-rect 2 2 4 4))]
     (m/set-tool! :select)
     (di/handle-input-event {:type :down, :data {:action :draw, :point (p/coords->position (g/build-point 2 2))}})
     (di/handle-input-event {:type :down, :data {:action :draw, :point (p/coords->position (g/build-point 2 2))}})
@@ -109,7 +109,7 @@
     (is (= (d/edit-text-id) id))))
 
 (deftest handle-input-event-select-up
-  (create-layer! (g/build-rect 2 2 4 4))
+  (create-item! (g/build-rect 2 2 4 4))
   (m/set-tool! :select)
   (di/handle-input-event {:type :down, :data {:action :draw, :point (p/coords->position (g/build-point 1 1))}})
   (di/handle-input-event {:type :move, :data {:point (p/coords->position (g/build-point 5 5))}})
@@ -129,20 +129,20 @@
   (is (= (d/current-selection) (g/build-rect 1 1 4 4))))
 
 (deftest handle-mousemove-select-move
-  (create-layer! (g/build-rect 2 2 4 4))
+  (create-item! (g/build-rect 2 2 4 4))
   (m/set-tool! :select)
   (di/handle-input-event {:type :down, :data {:action :draw, :point (p/coords->position (g/build-point 2 2))}})
   (di/handle-input-event {:type :move, :data {:point (p/coords->position (g/build-point 4 4))}})
   (is (= (d/selection-rect) (g/build-rect 4 4 6 6))))
 
 (deftest handle-mousemove-highlight
-  (create-layer! (g/build-rect 2 2 4 4))
+  (create-item! (g/build-rect 2 2 4 4))
   (m/set-tool! :select)
   (di/handle-input-event {:type :move, :data {:point (p/coords->position (g/build-point 2 2))}})
   (is (= (d/hover-id) 0)))
 
 (deftest handle-mousemove-resize
-  (create-layer! (g/build-rect 2 2 4 4))
+  (create-item! (g/build-rect 2 2 4 4))
   (m/set-tool! :select)
   (di/handle-input-event {:type :down, :data {:action :draw, :point (p/coords->position (g/build-point 2 2))}})
   (di/handle-input-event {:type :down, :data {:action :resize-se, :point (p/coords->position (g/build-point 4 4))}})
@@ -151,7 +151,7 @@
 
 (deftest handle-input-event-edit
   (mt/edit-text-in-item! 8)
-  (let [id (create-layer! (g/build-rect 2 2 4 4))]
+  (let [id (create-item! (g/build-rect 2 2 4 4))]
     (di/handle-input-event {:type :edit, :data {:text "bla", :id id}})
     (is (= (d/edit-text-id) nil))
     (is (= (:text (d/completed-item id)) "bla"))))

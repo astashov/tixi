@@ -7,7 +7,6 @@
 * Make sure we always show resize cursors (assign classes to .project)
 * Add a way to align items relatively to each other
 * Draw straight/square items with 'Shift'
-* Make item/layer names consistent - name everything as 'items'
 * Check if I could publish it as a Google Chrome app.
 * Add some visual confirmation when you reach some outlet by a connector
 * Refactor drawer.js

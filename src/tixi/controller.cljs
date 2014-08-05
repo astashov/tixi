@@ -63,7 +63,7 @@
       :delete (do
                 (ga/event! "toolbar" "delete")
                 (md/delete-items! (d/selected-ids))
-                (ms/select-layer! nil))
+                (ms/select-item! nil))
       :z-inc (do
                (ga/event! "topbar" "z-inc")
                (m/z-inc! (d/selected-ids)))
@@ -111,13 +111,13 @@
       (when (= action :draw)
         (cond
           (d/draw-tool?)
-          (mc/initiate-current-layer! point)
+          (mc/initiate-current-item! point)
 
           (d/select-tool?)
           (let [id (p/item-id-at-point point)]
             (when (= (d/selected-ids) #{id})
               (reset! select-second-clicked true))
-            (ms/select-layer! id point (:shift modifiers))))))))
+            (ms/select-item! id point (:shift modifiers))))))))
 
 (defn mouse-up [start-client-point client-point modifiers payload]
   (render
@@ -130,7 +130,7 @@
           (d/draw-tool?)
           (do
             (ga/event! "draw" (str "finish-" (-> (d/current) :item :type name)))
-            (mc/finish-current-layer!))
+            (mc/finish-current-item!))
 
           (d/select-tool?)
           (do
@@ -152,7 +152,7 @@
         (d/draw-action?)
         (cond
           (d/draw-tool?)
-          (mc/update-current-layer! point)
+          (mc/update-current-item! point)
 
           (d/select-tool?)
           (do
@@ -166,7 +166,7 @@
   (render
     (let [point (p/position->coords client-point)]
       (when (d/select-tool?)
-        (ms/highlight-layer! (p/item-id-at-point point))))))
+        (ms/highlight-item! (p/item-id-at-point point))))))
 
 (defn edit-text [data]
   (render

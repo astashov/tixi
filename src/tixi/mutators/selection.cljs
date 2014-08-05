@@ -44,7 +44,7 @@
       (swap! d/data assoc-in [:selection :rect] (p/items-wrapping-rect (d/selected-ids)))))
   (swap! d/data assoc-in [:selection :current] nil))
 
-(defn highlight-layer! [id]
+(defn highlight-item! [id]
   (if id
     (swap! d/data assoc :hover-id id)
     (swap! d/data assoc :hover-id nil)))
@@ -63,7 +63,7 @@
                                  (i/reposition (d/completed-item connector-id)
                                                (absolute-rect id connector-id connector-edge outlet))))))
 
-(defn- adjust-layers-to-selection! []
+(defn- adjust-items-to-selection! []
   (let [sel-rect (d/selection-rect)]
     (doseq [id (d/selected-ids)]
       (let [rel-rect (d/selected-rel-rect id)]
@@ -74,7 +74,7 @@
                 (i/connector? (first (d/selected-items))))
     (m/set-connecting-id! (first (d/selected-ids))))
   (swap! d/data assoc-in [:selection :rect] new-rect)
-  (adjust-layers-to-selection!))
+  (adjust-items-to-selection!))
 
 (defn move-selection! [diff]
   (when-let [rect (d/selection-rect)]
@@ -91,9 +91,9 @@
   (when-let [rect (d/selection-rect)]
     (update-selection-rect! (g/resize rect diff type))))
 
-(defn select-layer!
-  ([id] (select-layer! id nil))
-  ([id point] (select-layer! id point false))
+(defn select-item!
+  ([id] (select-item! id nil))
+  ([id point] (select-item! id point false))
   ([id point add-more?]
   (if id
     (if add-more?

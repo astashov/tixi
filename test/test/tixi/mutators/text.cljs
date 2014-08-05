@@ -5,7 +5,7 @@
             [tixi.geometry :as g]
             [tixi.mutators :as m]
             [tixi.mutators.text :as mt]
-            [test.tixi.utils :refer [create-layer! create-sample-layer!]]
+            [test.tixi.utils :refer [create-item! create-sample-item!]]
             [tixi.utils :refer [p]]
             [tixi.data :as d]))
 
@@ -20,12 +20,12 @@
   (is (= (d/edit-text-id) 3)))
 
 (deftest set-text-to-item!
-  (let [id (create-layer! (g/build-rect (g/build-point 5 6) (g/build-point 7 8)))]
+  (let [id (create-item! (g/build-rect (g/build-point 5 6) (g/build-point 7 8)))]
     (mt/set-text-to-item! id "bla")
     (is (= (:text (d/completed-item id)) "bla"))))
 
 (deftest set-text-to-item-with-dimensions
   (m/set-tool! :text)
-  (let [id (create-layer! (g/build-rect (g/build-point 5 6) (g/build-point 5 6)))]
+  (let [id (create-item! (g/build-rect (g/build-point 5 6) (g/build-point 5 6)))]
     (mt/set-text-to-item! id "bla\nfoo\nbar")
     (is (= (:input (d/completed-item id)) (g/build-rect 5 6 7 8)))))

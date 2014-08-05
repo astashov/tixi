@@ -10,25 +10,25 @@
             [tixi.utils :refer [p]]
             [tixi.data :as d]))
 
-(defn create-layer! [rect]
-  (mc/initiate-current-layer! (:start rect))
-  (mc/update-current-layer! (:end rect))
-  (mc/finish-current-layer!)
+(defn create-item! [rect]
+  (mc/initiate-current-item! (:start rect))
+  (mc/update-current-item! (:end rect))
+  (mc/finish-current-item!)
   (mr/render-items!)
   (last (keys (d/completed))))
 
-(defn- create-sample-layer! []
-  (create-layer! (g/build-rect (g/build-point 2 3) (g/build-point 4 5))))
+(defn- create-sample-item! []
+  (create-item! (g/build-rect (g/build-point 2 3) (g/build-point 4 5))))
 
-(defn create-locked-layers! []
+(defn create-locked-items! []
   (m/set-tool! :rect)
-  (let [id1 (create-layer! (g/build-rect 5 5 15 15))]
+  (let [id1 (create-item! (g/build-rect 5 5 15 15))]
     (m/set-tool! :line)
-    (let [id2 (create-layer! (g/build-rect 2 2 3 3))
-          id3 (create-layer! (g/build-rect 10 10 12 12))]
-      (ms/select-layer! id2)
+    (let [id2 (create-item! (g/build-rect 2 2 3 3))
+          id3 (create-item! (g/build-rect 10 10 12 12))]
+      (ms/select-item! id2)
       (ms/resize-selection! (g/build-size 2 2) :se)
-      (ms/select-layer! id3)
+      (ms/select-item! id3)
       (ms/resize-selection! (g/build-size 3 3) :se)
       [id1 id2 id3])))
 

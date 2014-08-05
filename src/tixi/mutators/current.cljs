@@ -8,18 +8,18 @@
             [tixi.utils :refer [p]]
             [tixi.items :as i]))
 
-(defn- build-layer! [type content]
+(defn- build-item! [type content]
   (let [id (d/autoincrement)
         item {:type type :input content :z 0 :edges (d/line-edges)}]
     (ms/autoincrement!)
     {:id id :item item}))
 
-(defn initiate-current-layer! [point]
-  (swap! d/data assoc :current (build-layer! (d/tool) (g/build-rect point point)))
+(defn initiate-current-item! [point]
+  (swap! d/data assoc :current (build-item! (d/tool) (g/build-rect point point)))
   (when (i/connector? (:item (d/current)))
     (m/set-connecting-id! (:id (d/current)))))
 
-(defn update-current-layer! [point]
+(defn update-current-item! [point]
   (when (d/current)
     (let [{:keys [id item]} (d/current)
           maybe-locked-item (-> item
@@ -27,7 +27,7 @@
                                 (ml/try-to-lock! id :end point))]
       (swap! d/data assoc-in [:current :item] (i/update maybe-locked-item point)))))
 
-(defn finish-current-layer! []
+(defn finish-current-item! []
   (when-let [{:keys [id item]} (d/current)]
     (swap! d/data assoc :current nil)
     (ms/update-state! assoc-in [:completed id] item)

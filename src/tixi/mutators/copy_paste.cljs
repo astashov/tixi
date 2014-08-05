@@ -18,12 +18,12 @@
 (defn cut! []
   (let [ids (d/selected-ids)]
     (copy!)
-    (ms/select-layer! nil)
+    (ms/select-item! nil)
     (md/delete-items! ids)))
 
 (defn paste! []
   (msh/snapshot!)
-  (ms/select-layer! nil)
+  (ms/select-item! nil)
   (doseq [item (d/clipboard)]
     (let [id (d/autoincrement)]
       (msh/autoincrement!)
@@ -33,5 +33,5 @@
         (when (i/connector? new-item)
           (ml/try-to-lock! new-item id :start (-> new-item :input :start))
           (ml/try-to-lock! new-item id :end (-> new-item :input :end)))
-        (ms/select-layer! id nil true)))))
+        (ms/select-item! id nil true)))))
 

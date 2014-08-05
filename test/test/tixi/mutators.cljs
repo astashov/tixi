@@ -5,7 +5,7 @@
             [tixi.geometry :as g]
             [tixi.mutators :as m]
             [tixi.mutators.selection :as ms]
-            [test.tixi.utils :refer [create-layer! create-sample-layer!]]
+            [test.tixi.utils :refer [create-item! create-sample-item!]]
             [tixi.utils :refer [p]]
             [tixi.data :as d]))
 
@@ -24,10 +24,10 @@
   (is (= (d/action) :draw)))
 
 (deftest z-inc!
-  (let [id1 (create-layer! (g/build-rect 2 2 6 6))]
+  (let [id1 (create-item! (g/build-rect 2 2 6 6))]
     (m/z-inc! [id1])
     (m/z-inc! [id1])
-    (let [id2 (create-layer! (g/build-rect 7 7 10 10))]
+    (let [id2 (create-item! (g/build-rect 7 7 10 10))]
       (m/z-inc! [id2])
       (m/z-inc! [id1])
       (is (= (:z (d/completed-item id1)) 2))
@@ -38,11 +38,11 @@
       (is (= (:z (d/completed-item id2)) 2)))))
 
 (deftest z-dec!
-  (let [id1 (create-layer! (g/build-rect 2 2 6 6))]
+  (let [id1 (create-item! (g/build-rect 2 2 6 6))]
     (m/z-dec! [id1])
     (m/z-dec! [id1])
     (is (= (:z (d/completed-item id1)) 0))
-    (let [id2 (create-layer! (g/build-rect 7 7 10 10))]
+    (let [id2 (create-item! (g/build-rect 7 7 10 10))]
       (m/z-inc! [id1 id2])
       (m/z-inc! [id1 id2])
       (m/z-dec! [id1 id2])
@@ -65,18 +65,18 @@
 
 (deftest cycle-selection-edges!
   (m/set-tool! :line)
-  (let [id1 (create-layer! (g/build-rect 0 0 2 3))
-        id2 (create-layer! (g/build-rect 5 5 10 10))
-        id3 (create-layer! (g/build-rect 7 7 13 13))]
+  (let [id1 (create-item! (g/build-rect 0 0 2 3))
+        id2 (create-item! (g/build-rect 5 5 10 10))
+        id3 (create-item! (g/build-rect 7 7 13 13))]
     (m/set-tool! :rect)
-    (let [id4 (create-layer! (g/build-rect 8 8 20 20))]
-      (ms/select-layer! id1)
-      (ms/select-layer! id4 nil true)
+    (let [id4 (create-item! (g/build-rect 8 8 20 20))]
+      (ms/select-item! id1)
+      (ms/select-item! id4 nil true)
       (m/cycle-selection-edges! :start)
       (is (= (:edges (d/completed-item id1)) {:start :arrow :end nil}))
       (is (= (:edges (d/completed-item id4)) {:start nil :end nil}))
 
-      (ms/select-layer! id2 nil true)
+      (ms/select-item! id2 nil true)
       (m/cycle-selection-edges! :start)
       (is (= (:edges (d/completed-item id1)) {:start nil :end nil}))
       (is (= (:edges (d/completed-item id2)) {:start nil :end nil}))

@@ -8,7 +8,7 @@
             [tixi.tree :as t]
             [tixi.geometry :as g]
             [tixi.utils :refer [p]]
-            [test.tixi.utils :refer [create-layer!]]))
+            [test.tixi.utils :refer [create-item!]]))
 
 (defn- setup [f]
   (m/reset-data!)
@@ -75,11 +75,11 @@
 
 (deftest result
   (m/set-tool! :line)
-  (let [id1 (create-layer! (g/build-rect 1 10 13 1))]
+  (let [id1 (create-item! (g/build-rect 1 10 13 1))]
     (m/set-tool! :rect)
-    (let [id2 (create-layer! (g/build-rect 9 3 19 9))]
+    (let [id2 (create-item! (g/build-rect 9 3 19 9))]
       (m/set-tool! :text)
-      (let [id3 (create-layer! (g/build-rect 14 1 14 1))]
+      (let [id3 (create-item! (g/build-rect 14 1 14 1))]
         (mt/set-text-to-item! id2 "bla\nfoo\nbar")
         (mt/set-text-to-item! id3 "oh\ntext" (g/build-size 4 2))
         (is (= (.-width (d/result)) 19))
@@ -98,7 +98,7 @@
 
 (deftest result-text-only
   (m/set-tool! :text)
-  (let [id (create-layer! (g/build-rect 0 0 6 2))]
+  (let [id (create-item! (g/build-rect 0 0 6 2))]
     (mt/set-text-to-item! id (str "foo\n\nbar") (g/build-size 3 3))
     (is (= (.-width (d/result)) 3))
     (is (= (.-height (d/result)) 3))
@@ -109,8 +109,8 @@
 
 (deftest result-z-index
   (m/set-tool! :text)
-  (let [id1 (create-layer! (g/build-rect 0 0 6 2))
-        id2 (create-layer! (g/build-rect 0 0 6 2))]
+  (let [id1 (create-item! (g/build-rect 0 0 6 2))
+        id2 (create-item! (g/build-rect 0 0 6 2))]
     (mt/set-text-to-item! id1 (str "foo\n\nbar") (g/build-size 3 3))
     (mt/set-text-to-item! id2 (str "zuu\n\nwoo") (g/build-size 3 3))
     (is (= (.-content (d/result)) (str "zuu\n" "   \n" "woo")))
@@ -119,19 +119,19 @@
 
 (deftest next-selected-edge-value
   (m/set-tool! :line)
-  (let [id1 (create-layer! (g/build-rect 0 0 2 3))
-        id2 (create-layer! (g/build-rect 5 5 10 10))
-        id3 (create-layer! (g/build-rect 7 7 13 13))]
+  (let [id1 (create-item! (g/build-rect 0 0 2 3))
+        id2 (create-item! (g/build-rect 5 5 10 10))
+        id3 (create-item! (g/build-rect 7 7 13 13))]
     (m/set-tool! :rect)
-    (let [id4 (create-layer! (g/build-rect 8 8 20 20))]
-      (ms/select-layer! id1)
-      (ms/select-layer! id4 nil true)
+    (let [id4 (create-item! (g/build-rect 8 8 20 20))]
+      (ms/select-item! id1)
+      (ms/select-item! id4 nil true)
       (is (= (d/next-selected-edge-value :start) :arrow))
 
       (m/cycle-selection-edges! :start)
       (is (= (d/next-selected-edge-value :start) nil))
 
-      (ms/select-layer! id2 nil true)
+      (ms/select-item! id2 nil true)
       (is (= (d/next-selected-edge-value :start) nil))
 
       (m/cycle-selection-edges! :start)
