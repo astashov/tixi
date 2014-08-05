@@ -14,7 +14,6 @@
 * Maybe custom colorize the items?
 * Add comments here and there
 * Add autoadjusting of items' size to the inner text size
-* Fix bug - connectors keep 'connected' edges after deleting item with outlet
 * Add "undo previews" - when you hover over the undo button, you will see a preview what gonna happen when you click undo
 * Save user preferences (maybe in local storage?)
 * Add export/import to/from a file

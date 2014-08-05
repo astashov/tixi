@@ -39,4 +39,6 @@
     (md/delete-items! (d/selected-ids))
     (is (empty? (get-in (d/state) [:locks :connectors id2 :end])))
     (is (empty? (get-in (d/state) [:locks :connectors id3 :end])))
-    (is (empty? (get-in (d/state) [:locks :outlets id1])))))
+    (is (empty? (get-in (d/state) [:locks :outlets id1])))
+    (is (empty? (:connected (d/completed-item id2))))
+    (is (empty? (:connected (d/completed-item id3))))))

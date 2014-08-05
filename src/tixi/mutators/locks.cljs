@@ -2,6 +2,7 @@
   (:require [tixi.data :as d]
             [tixi.geometry :as g]
             [tixi.mutators.shared :as ms]
+            [tixi.mutators.render :as mr]
             [tixi.items :as i]
             [tixi.position :as p]
             [tixi.google-analytics :as ga]
@@ -31,7 +32,9 @@
   (remove-lock! id item :start)
   (remove-lock! id item :end)
   (doseq [[connector-id connector-edge] (keys (d/outlet id))]
-    (remove-lock! connector-id (d/completed-item connector-id) connector-edge))
+    (ms/update-state! assoc-in [:completed connector-id]
+                               (remove-lock! connector-id (d/completed-item connector-id) connector-edge))
+    (mr/touch-item! connector-id))
   (ms/update-state! update-in [:locks :connectors] dissoc id)
   (ms/update-state! update-in [:locks :outlets] dissoc id))
 
