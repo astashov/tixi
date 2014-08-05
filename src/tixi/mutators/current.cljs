@@ -22,7 +22,9 @@
 (defn update-current-layer! [point]
   (when (d/current)
     (let [{:keys [id item]} (d/current)
-          maybe-locked-item (ml/try-to-lock! item id :end point)]
+          maybe-locked-item (-> item
+                                (ml/try-to-lock! id :start (:start (:input item)))
+                                (ml/try-to-lock! id :end point))]
       (swap! d/data assoc-in [:current :item] (i/update maybe-locked-item point)))))
 
 (defn finish-current-layer! []

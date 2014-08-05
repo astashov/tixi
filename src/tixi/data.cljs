@@ -127,6 +127,9 @@
 (defdata draw-tool? []
   (seq-contains? [:line :rect :rect-line :text] (tool data)))
 
+(defdata connector-tool? []
+  (seq-contains? [:line :rect-line] (tool data)))
+
 (defdata select-tool? []
   (seq-contains? [:select] (tool data)))
 

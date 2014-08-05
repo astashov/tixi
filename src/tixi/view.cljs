@@ -145,7 +145,7 @@
 
 (q/defcomponent Layer
   "Displays the layer"
-  [{:keys [id item is-hover is-selected edit-text-id connecting-id show-z-indexes?]} channel]
+  [{:keys [id item is-hover is-selected edit-text-id connecting-id show-outlets? show-z-indexes?]} channel]
   (let [{:keys [data]} (d/item-cache id)
         z-index (:z item)
         {:keys [x y]} (p/coords->position (i/origin item))
@@ -157,7 +157,7 @@
               :style {:left x :top y :width width :height height :zIndex z-index}
               :id (str "layer-" id)}
              (Text {:id id :item item :edit-text-id edit-text-id} channel)
-             (when (and connecting-id (not= connecting-id id))
+             (when (or (and connecting-id (not= connecting-id id)) show-outlets?)
                (Outlets {:item item :points (i/outlets item)}))
              (when show-z-indexes?
                (dom/div {:className "canvas--content--layer--z-index"
@@ -188,6 +188,7 @@
                                          :is-selected (some #{id} selected-ids)
                                          :edit-text-id (d/edit-text-id data)
                                          :connecting-id (d/connecting-id data)
+                                         :show-outlets? (d/connector-tool? data)
                                          :show-z-indexes? (d/show-z-indexes? data)}
                                         channel))
                  (if-let [{:keys [id item]} (:current data)]
