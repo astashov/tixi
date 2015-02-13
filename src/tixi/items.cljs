@@ -20,11 +20,11 @@
     (case edge
       :start
       (if (= (direction item) "vertical")
-        (if (g/flipped-by-y? (:input item)) "v" "^")
+        (if (g/flipped-by-y? (:input item)) "∨" "∧")
         (if (g/flipped-by-x? (:input item)) ">" "<"))
       :end
       (if (= (direction item) (if (rect-line? item) "horizontal" "vertical"))
-        (if (g/flipped-by-y? (:input item)) "^" "v")
+        (if (g/flipped-by-y? (:input item)) "∧" "∨")
         (if (g/flipped-by-x? (:input item)) "<" ">")))))
 
 (defn- replace-char-in-cache! [item cache i chr]
