@@ -142,6 +142,8 @@ There is also brepl running on 9000 port in dev build, so you could connect to i
 If you want to help to the project, and fix some bug or add some feature - feel free to create a pull request,
 that's the whole point of the open source software, right? :)
 
+To run tests use `lein cljsbuild test unit` command.
+
 If you found a bug, and want to create a ticket - please do that in [Github Issues](https://github.com/astashov/tixi/issues).
 
 If you just want to help and add some code, but have no idea what to work on, there is
