@@ -133,7 +133,7 @@ $ lein figwheel dev
 It will compile a project, and start the figwheel server, which will reload the code in browser every single time
 you change any cljs or CSS file
 
-Now, open http://localhost:3449/index.html in your browser, and you should be able to see it working.
+Now, open [http://localhost:3449/index.html](http://localhost:3449/index.html) in your browser, and you should be able to see it working.
 
 There is also brepl running on 9000 port in dev build, so you could connect to it from REPL.
 
