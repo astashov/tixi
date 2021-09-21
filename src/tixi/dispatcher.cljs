@@ -43,6 +43,9 @@
       8  (do ; backspace
            (.preventDefault event)
            (c/keypress :delete))
+      46  (do ; delete
+           (.preventDefault event)
+           (c/keypress :delete))
       67 (when (or (.-metaKey event) (.-ctrlKey event))
            (c/keypress :copy)) ; c
       76 (c/keypress :line) ; l
